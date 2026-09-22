@@ -42,7 +42,6 @@ ApplicationWindow {
         const next = Object.keys(Theme.palette).sort();
         if (JSON.stringify(next) !== JSON.stringify(swatchKeys))
             swatchKeys = next;
-
     }
 
     Component.onCompleted: refreshSwatchKeys()
@@ -75,7 +74,7 @@ ApplicationWindow {
         id: matugen
 
         mode: "dark"
-        onPaletteReady: function(tokens, wp) {
+        onPaletteReady: function (tokens, wp) {
             // Matugen emits M3 tokens but not Phosphor's brand-gradient
             // extensions (brand_stop_0..3) or the ANSI status colors
             // (success / warning / info). PaletteStore's merge semantics
@@ -86,8 +85,7 @@ ApplicationWindow {
             // stops from M3 accents in display order, cyan ish → blue
             // → purple → rose, matching the canonical Phosphor stop
             // assignment in the default palette.
-            const augmented = Object.assign({
-            }, tokens);
+            const augmented = Object.assign({}, tokens);
             if (tokens.tertiary)
                 augmented.brand_stop_0 = tokens.tertiary;
 
@@ -105,7 +103,7 @@ ApplicationWindow {
             root.wallpaperPath = wp;
             root.lastError = "";
         }
-        onFailed: function(wp, reason) {
+        onFailed: function (wp, reason) {
             root.lastError = qsTr("matugen: %1, %2").arg(wp).arg(reason);
         }
     }
@@ -165,7 +163,6 @@ ApplicationWindow {
                 font.pixelSize: Tokens.font_size_body_m
                 font.family: Tokens.font_family
             }
-
         }
 
         // ─── Preset switcher ─────────────────────────────────────────────
@@ -227,9 +224,7 @@ ApplicationWindow {
                             root.activePreset = modelData;
                         }
                     }
-
                 }
-
             }
 
             // ─── Wallpaper trigger ───────────────────────────────────────
@@ -271,13 +266,11 @@ ApplicationWindow {
                     Accessible.name: qsTr("Pick a wallpaper and run matugen")
                     onClicked: wallpaperDialog.open()
                 }
-
             }
 
             Item {
                 Layout.fillWidth: true
             }
-
         }
 
         // ─── Brand gradient strip ────────────────────────────────────────
@@ -313,9 +306,7 @@ ApplicationWindow {
                     position: 1
                     color: Theme.brand_stop_3
                 }
-
             }
-
         }
 
         // GridLayout with a computed `columns` count reflows on window
@@ -350,11 +341,8 @@ ApplicationWindow {
                         tokenColor: Theme.palette[modelData]
                         Layout.fillWidth: true
                     }
-
                 }
-
             }
-
         }
 
         // ─── Status bar ──────────────────────────────────────────────────
@@ -375,9 +363,6 @@ ApplicationWindow {
                 elide: Text.ElideMiddle
                 verticalAlignment: Text.AlignVCenter
             }
-
         }
-
     }
-
 }

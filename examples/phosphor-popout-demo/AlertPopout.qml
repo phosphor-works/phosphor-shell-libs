@@ -58,10 +58,7 @@ Rectangle {
             onClicked: {
                 if (root._popoutHost)
                     root._popoutHost.dismiss();
-
             }
         }
-
     }
-
 }

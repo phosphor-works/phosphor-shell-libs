@@ -47,7 +47,5 @@ Rectangle {
             font.pixelSize: Tokens.font_size_label_m
             font.family: Tokens.font_family
         }
-
     }
-
 }

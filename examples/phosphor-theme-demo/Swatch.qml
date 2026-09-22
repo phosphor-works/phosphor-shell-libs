@@ -59,9 +59,6 @@ Rectangle {
                 font.pixelSize: Tokens.font_size_body_s
                 font.family: Tokens.font_family
             }
-
         }
-
     }
-
 }

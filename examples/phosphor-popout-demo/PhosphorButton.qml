@@ -65,7 +65,6 @@ Button {
                 duration: Motion.duration_short_3
                 easing: Motion.standard
             }
-
         }
 
         // Without a matching Behavior, the border snaps to the new
@@ -77,9 +76,7 @@ Button {
                 duration: Motion.duration_short_3
                 easing: Motion.standard
             }
-
         }
-
     }
 
     contentItem: Text {
@@ -97,9 +94,6 @@ Button {
                 duration: Motion.duration_short_3
                 easing: Motion.standard
             }
-
         }
-
     }
-
 }
