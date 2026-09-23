@@ -1,11 +1,24 @@
 // SPDX-FileCopyrightText: 2026 fuddlesworth
 // SPDX-License-Identifier: LGPL-2.1-or-later
+.pragma library
+//
+// KEEP `.pragma library` ABOVE THE DESCRIPTION. qt_add_qml_module scans only
+// the first 128 bytes of a .js file for that line (file(STRINGS ... REGEX
+// "^\.pragma library$" LIMIT_INPUT 128) in Qt6QmlMacros.cmake). Below the
+// paragraph that follows, it lands past the window and Qt emits an author
+// warning claiming the file is re-evaluated per importing document. It is
+// not, but the warning is indistinguishable from a real one.
 //
 // The largest empty region of a placement map (A3 §6 b): where the lock
 // screen puts its clock, date and auth field. Pure geometry, no QML, so it
 // is unit-testable and reusable by any surface that wants free space.
-.pragma library
 
+// NOTE: `.pragma library` means one shared instance per QML engine, and every
+// top-level binding here is an export. `Region.Epsilon = 0` from any
+// importer would change the geometry for every other importer in that
+// engine. The underscore prefixes on _num/_axis/_stop are the only thing
+// marking them private; nothing enforces it. Only largestEmptyRect() is
+// meant to be called from outside.
 var Epsilon = 1e-6;
 
 function _num(v) {
@@ -46,7 +59,8 @@ function _stop(axis, v) {
 // empty or inverted cells are ignored.
 //
 // Returns {x, y, width, height}, the whole area when there are no cells, or
-// null when the cells cover everything.
+// null when the cells cover everything OR the area has non-positive width
+// or height. Those two null cases are not distinguished.
 //
 // Method: compress both axes to the distinct cell edges, mark the grid
 // tiles the cells cover, then run the maximal-rectangle histogram scan
@@ -95,7 +109,7 @@ function largestEmptyRect(cells, width, height) {
     for (var b = 0; b < nx; ++b)
         bars[b] = 0;
     var best = null;
-    var bestArea = 0;
+    var bestArea = -1;
 
     for (var j = 0; j < ny; ++j) {
         var rowH = ys[j + 1] - ys[j];
@@ -114,6 +128,12 @@ function largestEmptyRect(cells, width, height) {
                 var left = stack.length > 0 ? stack[stack.length - 1] + 1 : 0;
                 var rw = xs[i3] - xs[left];
                 var area = rw * barH;
+                // bestArea starts at -1, not 0. With 0 the `> bestArea +
+                // Epsilon` test can never be satisfied by a region whose
+                // area is itself below Epsilon, so in fraction mode (width
+                // and height 1) a real but tiny gap returned null, which
+                // this file documents as meaning "the cells cover
+                // everything". Those are different answers.
                 if (area > bestArea + Epsilon) {
                     bestArea = area;
                     best = { x: xs[left], y: ys[j + 1] - barH, width: rw, height: barH };

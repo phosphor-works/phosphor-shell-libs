@@ -63,7 +63,7 @@ namespace {
 constexpr int kReloadDebounceMs = 100;
 } // namespace
 
-// In the anonymous namespace, like the sibling libraries: at file scope
+// In the anonymous namespace, like several sibling libraries (the tree is mixed: most use file scope): at file scope
 // this is an exported symbol, and the target builds with hidden
 // visibility precisely so a library's internals stay internal.
 namespace {
@@ -113,7 +113,7 @@ void registerQmlTypes()
         // its own output awake while visible. This stays a foundation primitive.
         // Session-wide idle monitoring (ext-idle-notify-v1) is NOT registered here:
         // it is owned by Phosphor.Service.Idle's IdleService (a multi-stage timeout
-        // policy + surface-less inhibition), registered in src/shell/main.cpp, so a
+        // policy + surface-less inhibition), registered in phosphor-shell/src/main.cpp, so a
         // single monitor arms each timeout.
         qmlRegisterType<PhosphorWayland::IdleInhibitor>("Phosphor.Shell", 1, 0, "IdleInhibitor");
         qmlRegisterSingletonType<Toplevels>("Phosphor.Shell", 1, 0, "Toplevels", &Toplevels::create);

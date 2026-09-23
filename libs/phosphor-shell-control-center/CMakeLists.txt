@@ -40,8 +40,8 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickShapes)
 # freedesktop icon names through QIcon::fromTheme and falls back to its own
 # glyph for a name the theme lacks. REQUIRED, not QUIET: a missing Kirigami
 # should fail the configure rather than yield a surface whose every glyph
-# silently never loads. This is one of four shell-tier libraries requiring KF6
-# Kirigami, alongside phosphor-shell-bar, phosphor-shell-power and phosphor-shell-launcher.
+# silently never loads. This is one of five shell-tier libraries requiring KF6
+# Kirigami, alongside phosphor-shell-bar, phosphor-shell-power, phosphor-shell-launcher and phosphor-shell-lock.
 find_package(KF6Kirigami REQUIRED)
 
 # The tiles import Phosphor.Theme (tokens) and Phosphor.Widgets
@@ -91,7 +91,7 @@ foreach(_qml_file IN LISTS _phosphor_control_center_qml_files)
 endforeach()
 
 # Directory-scope suppression of -Wmissing-include-dirs for the targets
-# qt_add_qml_module generates here. Full rationale: src/shared/CMakeLists.txt.
+# qt_add_qml_module generates here. Full rationale: plasmazones/src/shared/CMakeLists.txt.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
 qt_add_qml_module(PhosphorShellControlCenterQml

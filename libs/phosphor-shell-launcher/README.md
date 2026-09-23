@@ -5,7 +5,7 @@
 
 The launcher: a spotlight-style search over installed applications, open
 windows, clipboard history, arithmetic and shell commands, per
-[`docs/phosphor-shell-design/mockups-v2/launcher.svg`](../../docs/phosphor-shell-design/mockups-v2/launcher.svg).
+[`docs/phosphor-shell-design/mockups-v2/launcher.svg`](../../../docs/phosphor-shell-design/mockups-v2/launcher.svg).
 Two targets in one directory: a C++ core library
 (`PhosphorShellLauncher`) any host can link without the UI, and the
 `Phosphor.Launcher` QML module that draws it, themed through
@@ -13,12 +13,12 @@ Two targets in one directory: a C++ core library
 [`phosphor-shell-widgets`](../phosphor-shell-widgets/README.md) atoms.
 
 Phase 4.2 deliverable per
-[`docs/phosphor-shell-design/04-implementation-plan.md`](../../docs/phosphor-shell-design/04-implementation-plan.md).
+[`docs/phosphor-shell-design/04-implementation-plan.md`](../../../docs/phosphor-shell-design/04-implementation-plan.md).
 
 ## The contract
 
 `PhosphorRegistry::ILauncherProvider` (in
-[`phosphor-registry`](../phosphor-registry/README.md)) is the seam. A
+[`phosphor-registry`](../../../phosphor/libs/phosphor-registry/README.md)) is the seam. A
 provider is a pure data source: `setQuery()` pushes the text,
 `resultsChanged()` says `results()` would now answer differently, and
 `activate(id, Primary | Alternate)` performs a row's action. It owns no
@@ -103,6 +103,6 @@ a QtQuickTest harness. The clipboard and windows providers are model-backed
 and have no suites of their own yet.
 
 Built only with `-DBUILD_PHOSPHOR_SHELL=ON`, which is off by default.
-The acceptance demo is `examples/phosphor-launcher-demo/`, a plain window
+The acceptance demo is `../../examples/phosphor-launcher-demo/`, a plain window
 that hosts the surface over the real providers, so it lists the running
 session's applications, clipboard and PATH.

@@ -26,8 +26,8 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickTest Test)
 # per-target XDG sandbox (so nothing writes into the developer's real
 # ~/.config/plasmazones). EXISTS-guarded explicit path so a standalone
 # configure of this library still generates.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
+    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
     set(_phosphorshelllock_have_isolation TRUE)
 else()
     set(_phosphorshelllock_have_isolation FALSE)
@@ -41,7 +41,11 @@ function(phosphorshelllock_isolate_test name)
         # isolation call just installed.
         phosphor_append_test_environment(${name} "QT_QPA_PLATFORM=offscreen")
     else()
-        set_tests_properties(${name} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+        # TIMEOUT too: the isolation branch above gets one from
+        # phosphor_apply_test_isolation, but this standalone-configure branch
+        # would otherwise leave both lock tests with no hang guard at all. The
+        # three sibling wrappers (popout, bar, power) all use 30.
+        set_tests_properties(${name} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
     endif()
     set_property(TEST ${name} APPEND PROPERTY LABELS "phosphorshelllock")
 endfunction()
