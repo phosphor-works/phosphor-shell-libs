@@ -31,6 +31,11 @@ endif()
 # Dependencies
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# QuickShapes is not imported by this module's own QML; it is found here in
+# THIS directory scope so the static plugin's dependency walk resolves the
+# Qt6::QuickShapes target that Phosphor.Widgets links (its PhosphorRipple
+# Shape) without a configure warning. Same reason the lock, power, launcher
+# and control-center modules find it.
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickShapes QuickControls2 DBus)
 
 # The surfaces import Phosphor.Theme (tokens) and Phosphor.Widgets (the
@@ -91,7 +96,7 @@ foreach(_qml_file IN LISTS _phosphor_dashboard_qml_files _phosphor_dashboard_js_
 endforeach()
 
 # Directory-scope suppression of -Wmissing-include-dirs for the targets
-# qt_add_qml_module generates here. Full rationale: src/shared/CMakeLists.txt.
+# qt_add_qml_module generates here. Full rationale: plasmazones/src/shared/CMakeLists.txt.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
 qt_add_qml_module(PhosphorShellDashboardQml
@@ -123,6 +128,15 @@ add_library(PhosphorShellDashboard::PhosphorShellDashboardQml ALIAS PhosphorShel
 
 target_compile_features(PhosphorShellDashboardQml PUBLIC cxx_std_20)
 target_include_directories(PhosphorShellDashboardQml PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+target_include_directories(PhosphorShellDashboardQml
+    PRIVATE
+        # Qt 6.10+ qmltyperegistrar emits basename #includes in the generated
+        # *_qmltyperegistrations.cpp; the header directory must be on the
+        # path. Unity builds masked this by batching the generated TU with
+        # sources that already include the header.
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
 
 target_link_libraries(PhosphorShellDashboardQml
     PUBLIC

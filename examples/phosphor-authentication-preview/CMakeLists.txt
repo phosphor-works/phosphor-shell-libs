@@ -1,10 +1,22 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
-qt_standard_project_setup(REQUIRES 6.8)
+# QuickShapes is found in THIS directory scope for the same reason the other
+# demos find it: Phosphor.Widgets' shapes come in through the polkit surface,
+# and the static plugin's dependency walk resolves Qt6::QuickShapes here.
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 QuickShapes)
 
-qt_add_executable(phosphor-authentication-preview
+if(COMMAND qt_policy)
+    qt_policy(SET QTP0001 NEW)
+    # DEPENDENCIES below names its modules by TARGET, which QTP0005 NEW reads
+    # as a target rather than a URI.
+    qt_policy(SET QTP0005 NEW)
+endif()
+
+# Plain add_executable, like the sibling demos. qt_add_executable's deferred
+# finalization would try to import every QML plugin the static modules name,
+# including the system Kirigami plugins that are loaded at runtime instead.
+add_executable(phosphor-authentication-preview
     main.cpp
 )
 

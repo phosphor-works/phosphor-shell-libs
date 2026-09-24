@@ -21,9 +21,13 @@ PerScreen {
             required property bool isPrimary
 
             // Position the window at (40, 40) relative to its target
-            // screen's virtual-desktop origin. The QML `Window.screen`
-            // property is read-only QQuickScreenInfo (NOT QScreen*),
-            // so we can't directly setScreen() from QML — but x/y in
+            // screen's virtual-desktop origin. `Window.screen` is writable
+            // (qquickwindowmodule_p.h declares it READ screen WRITE
+            // setScreen), but it is typed QQuickScreenInfo* while
+            // phosphorScreen is a QScreen*, so phosphorScreen cannot be
+            // assigned to it. Reaching it would mean matching
+            // Qt.application.screens by name, which this demo does not
+            // need — and x/y in
             // virtual-desktop coordinates put the window over the
             // right monitor on X11, and on Wayland the compositor
             // routes the surface based on its position. The delegate
@@ -36,13 +40,20 @@ PerScreen {
             height: 200
             visible: true
             title: screenWindow.name
+
+            // Raw hex rather than Phosphor.Theme tokens, unlike the other
+            // demos. Deliberate: this one demonstrates PerScreen's delegate
+            // lifecycle, and importing Phosphor.Theme would make it link the
+            // theme library and its QML plugin to paint two labels. The
+            // colors are chrome for a diagnostic window, not a palette
+            // example, so there is nothing here for a token to carry.
             color: "#202028"
 
             Text {
                 anchors.centerIn: parent
                 color: "#ffffff"
                 font.pixelSize: 20
-                text: screenWindow.name + (screenWindow.isPrimary ? "  [PRIMARY]" : "")
+                text: screenWindow.isPrimary ? qsTr("%1  [PRIMARY]").arg(screenWindow.name) : screenWindow.name
             }
 
             Text {
@@ -51,7 +62,7 @@ PerScreen {
                 anchors.margins: 12
                 color: "#a0a0c0"
                 font.pixelSize: 12
-                text: "index " + screenWindow.index
+                text: qsTr("index %1").arg(screenWindow.index)
             }
         }
     }

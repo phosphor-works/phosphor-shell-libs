@@ -53,15 +53,20 @@ Rectangle {
         PhosphorButton {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("Dismiss")
+            // accented, or the two colours below are read by nothing:
+            // PhosphorButton gates _fill, _borderColor and _label on it, so
+            // without it this renders as a plain tonal button and the modal's
+            // destructive action loses its error styling. Every other call
+            // site that passes an accentColor sets it too; Main.qml's
+            // "Close all" deliberately sets none of the three and takes the
+            // plain tonal path PhosphorButton documents.
+            accented: true
             accentColor: Theme.error
             labelColor: Theme.on_error
             onClicked: {
                 if (root._popoutHost)
                     root._popoutHost.dismiss();
-
             }
         }
-
     }
-
 }

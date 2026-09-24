@@ -123,4 +123,17 @@ QtObject {
     readonly property real stroke_active: 1.0
     readonly property int bar_thickness: Appearance.barHeight + 2 * Appearance.barOffset
     readonly property int rail_thickness: 2
+
+    // ─── Shell surface dimensions ────────────────────────────────────────
+    // The fixed extents of the shell's own surfaces, so shell.qml composes
+    // them from tokens the way it already does for the bar.
+    // Control-centre pane opened from the bar: its width along the bar and
+    // its depth away from it.
+    readonly property int pane_width: 380
+    readonly property int pane_depth: 460
+    // The wallpaper and theme picker strip, a bottom panel on the overlay
+    // layer.
+    readonly property int picker_thickness: 96
+    // Fallback width of the polkit prompt band when no window anchors it.
+    readonly property int prompt_width: 360
 }

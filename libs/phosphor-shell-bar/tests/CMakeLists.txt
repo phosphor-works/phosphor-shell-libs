@@ -13,8 +13,8 @@
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core DBus Gui Qml Quick QuickShapes QuickTest)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-# Same private-bus isolation as libs/phosphor-shell/tests. The tray tests
-# register their own watcher and fixture apps on this private session bus.
+# Same private-bus isolation as phosphor-shell-libs/libs/phosphor-shell/tests. The
+# tray tests register their own watcher and fixture apps on this private session bus.
 # EXISTS-guarded explicit path, not a bare `include(PhosphorTestIsolation)`:
 # a bare module name resolves only through the root project's
 # CMAKE_MODULE_PATH, so a standalone configure of this library (which the
@@ -23,8 +23,8 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 # environment below can route through phosphor_append_test_environment —
 # a bare `set_tests_properties(... ENVIRONMENT ...)` after the isolation
 # call would replace the whole list and drop the XDG sandbox.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
+    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
     set(_phosphorshellbar_have_isolation TRUE)
 else()
     set(_phosphorshellbar_have_isolation FALSE)
@@ -35,7 +35,10 @@ add_executable(test_phosphor_shell_bar tst_bar.cpp)
 target_compile_features(test_phosphor_shell_bar PRIVATE cxx_std_20)
 target_compile_definitions(test_phosphor_shell_bar PRIVATE
     PHOSPHOR_TRAY_FIXTURE_PYTHON="${Python3_EXECUTABLE}"
-    PHOSPHOR_TRAY_FIXTURE_PATH="${CMAKE_CURRENT_LIST_DIR}/../../../scripts/nested-shell/tray-fixture.py"
+    # The fixture is the nested-shell harness's own tray app, so it lives with
+    # that harness in the shell tier; phosphor-shell-libs/moon.yml records the
+    # read as a test input.
+    PHOSPHOR_TRAY_FIXTURE_PATH="${CMAKE_SOURCE_DIR}/phosphor-shell/scripts/nested-shell/tray-fixture.py"
 )
 
 target_link_libraries(test_phosphor_shell_bar

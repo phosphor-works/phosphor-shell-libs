@@ -10,7 +10,7 @@ brightness and the rest. Pure QML, themed through
 [`phosphor-shell-widgets`](../phosphor-shell-widgets/README.md) atoms.
 
 Phase 4.4 deliverable per
-[`docs/phosphor-shell-design/04-implementation-plan.md`](../../docs/phosphor-shell-design/04-implementation-plan.md).
+[`docs/phosphor-shell-design/04-implementation-plan.md`](../../../docs/phosphor-shell-design/04-implementation-plan.md).
 
 ## Responsibility
 
@@ -26,7 +26,7 @@ and is not an error.
 The built-in tiles ship here, and they import `Phosphor.Service.*`
 modules, but the library still **links** no service: those modules are
 registered by the host process before it loads any QML (each service
-exposes a hand-rolled `registerQmlTypes()`; see `src/shell/main.cpp`), so
+exposes a hand-rolled `registerQmlTypes()`; see `phosphor-shell/src/main.cpp`), so
 they resolve at runtime. That is the same arrangement the bar's
 service-bound widgets use. A host that registers only some services gets
 working tiles for those and inert ones for the rest.
@@ -156,7 +156,7 @@ the detail panel and five built-in tiles are present, with a QtQuickTest
 suite over the host's registry-agnostic contract.
 
 Built only with `-DBUILD_PHOSPHOR_SHELL=ON`, which is off by default.
-The acceptance demo is `examples/phosphor-control-center-demo/`, a plain
+The acceptance demo is `../../examples/phosphor-control-center-demo/`, a plain
 window that hosts the rails over the real services, so a tile whose service
 is missing on the machine reports itself unavailable rather than vanishing.
 

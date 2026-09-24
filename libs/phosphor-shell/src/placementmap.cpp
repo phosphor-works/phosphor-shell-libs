@@ -18,10 +18,9 @@
 Q_LOGGING_CATEGORY(lcPlacementMap, "phosphorshell.placementmap")
 
 namespace {
-// Layout ids the daemon answers for a non-snapping context; neither is a
-// layout document worth fetching.
-constexpr QLatin1String AutotilePrefix("autotile:");
-constexpr QLatin1String NoneLayout("none");
+// Settle window for Scrolling.stripChanged wake-ups: long enough to fold a
+// drag or auto-scroll step burst into one read, short enough to feel live.
+constexpr int kStripRefetchSettleMs = 40;
 } // namespace
 
 namespace PhosphorShell {
@@ -30,7 +29,8 @@ using namespace PlacementMapParser;
 using namespace PlacementMapIface;
 
 // The bus, the call template and the verbs live in placementmap_p.h and
-// placementmap_actions.cpp; this file is the screen's data flow and the
+// placementmap_actions.cpp, and the per-mode daemon reads in
+// placementmap_fetch.cpp; this file is the screen's data flow and the
 // singleton's shared tables.
 
 // =====================================================================
@@ -54,6 +54,12 @@ PlacementMapScreen::PlacementMapScreen(const QString& screenName, int desktopInd
     m_pinnedRefetch.setSingleShot(true);
     m_pinnedRefetch.setInterval(0);
     connect(&m_pinnedRefetch, &QTimer::timeout, this, &PlacementMapScreen::fetchDesktopWindows);
+    m_stripRefetch.setSingleShot(true);
+    m_stripRefetch.setInterval(kStripRefetchSettleMs);
+    connect(&m_stripRefetch, &QTimer::timeout, this, &PlacementMapScreen::fetchStrip);
+    m_modeRefetch.setSingleShot(true);
+    m_modeRefetch.setInterval(kStripRefetchSettleMs);
+    connect(&m_modeRefetch, &QTimer::timeout, this, &PlacementMapScreen::refreshMode);
     initializeNavigation();
 
     if (Workspaces* ws = m_map->workspaces()) {
@@ -148,6 +154,12 @@ void PlacementMapScreen::reseed()
     m_sourceOverflowLeft = 0;
     m_sourceOverflowRight = 0;
     m_sourceStripExtentPx = 0;
+    // In-flight strip replies carry the old generation and are dropped, so
+    // the read they would have finished has to be forgotten here.
+    m_stripRefetch.stop();
+    m_modeRefetch.stop();
+    m_stripFetchInFlight = false;
+    m_stripRefetchWanted = false;
     m_focusedWindowId.clear();
     m_focusFromDaemon = false;
     clearPinnedSource();
@@ -165,6 +177,10 @@ void PlacementMapScreen::serviceLost()
     m_lastBatch.clear();
     m_sourceLens = QRectF();
     m_sourceStripExtentPx = 0;
+    m_stripRefetch.stop();
+    m_modeRefetch.stop();
+    m_stripFetchInFlight = false;
+    m_stripRefetchWanted = false;
     // Same reset reseed() performs. Left out here, the strip keeps drawing
     // the overflow arrows of the strip the dead daemon last described.
     m_sourceOverflowLeft = 0;
@@ -267,160 +283,14 @@ void PlacementMapScreen::setMode(int mode)
     if (mode != Snapping) {
         unregisterDropProxy();
     }
+    if (mode != Scrolling) {
+        // A strip re-read armed for the mode just left must not land on this
+        // one; an answer already in flight is dropped by applyStrip's guard.
+        m_stripRefetch.stop();
+        m_stripRefetchWanted = false;
+    }
     Q_EMIT modeChanged();
     schedulePublish();
-}
-
-void PlacementMapScreen::fetchModeData()
-{
-    switch (m_mode) {
-    case Snapping:
-        if (isPinned()) {
-            fetchPinnedSnappingLayout();
-        } else {
-            fetchSnappingLayout();
-        }
-        break;
-    case Tiling:
-    case Scrolling:
-        // A non-current desktop has no engine replay to read: its cells
-        // are the desktop's windows (placementmap_desktop.cpp).
-        if (isPinned()) {
-            fetchDesktopWindows();
-        } else if (m_mode == Tiling) {
-            fetchCurrentTiles();
-        } else {
-            fetchStrip();
-        }
-        break;
-    default:
-        m_source.clear();
-        m_sourceWindows.clear();
-        m_sourceLens = QRectF();
-        m_sourceStripExtentPx = 0;
-        rebuildFromSource();
-        break;
-    }
-}
-
-void PlacementMapScreen::fetchSnappingLayout()
-{
-    call<QString>(
-        Iface::LayoutRegistry, QStringLiteral("getLayoutForScreen"), {m_screenId}, [this](const QString& layoutId) {
-            if (layoutId.isEmpty() || layoutId == NoneLayout || layoutId.startsWith(AutotilePrefix)) {
-                m_source.clear();
-                m_sourceWindows.clear();
-                rebuildFromSource();
-                return;
-            }
-            call<QString>(Iface::LayoutRegistry, QStringLiteral("getLayout"), {layoutId}, [this](const QString& json) {
-                m_source = parseSnappingLayout(json, m_workArea.size());
-                m_sourceLens = QRectF();
-                rebuildFromSource();
-            });
-        });
-}
-
-void PlacementMapScreen::fetchStrip()
-{
-    // The strip model carries the structure axis, the lens and the overflow
-    // counts. A daemon without it answers UnknownMethod and the visible
-    // cut stands in (full lens, hue sampled inside the cut).
-    if (!m_map->m_caps.stripModel) {
-        fetchVisibleStrip();
-        return;
-    }
-    call<QString>(
-        Iface::Scrolling, QStringLiteral("stripModelJson"), {m_screenId},
-        [this](const QString& json) {
-            applyStrip(parseStripModel(json));
-        },
-        [this](const QDBusError& error) {
-            if (error.type() == QDBusError::UnknownMethod) {
-                m_map->m_caps.stripModel = false;
-            }
-            fetchVisibleStrip();
-        });
-}
-
-void PlacementMapScreen::fetchVisibleStrip()
-{
-    call<QString>(Iface::Scrolling, QStringLiteral("visibleStripJson"), {m_screenId}, [this](const QString& json) {
-        applyStrip(parseVisibleStrip(json));
-    });
-}
-
-void PlacementMapScreen::applyStrip(const StripParse& parse)
-{
-    m_source = parse.cells;
-    m_sourceWindows = parse.windows;
-    m_sourceLens = parse.lens;
-    m_sourceVertical = parse.vertical;
-    m_sourceOverflowLeft = parse.overflowLeft;
-    m_sourceOverflowRight = parse.overflowRight;
-    m_sourceStripExtentPx = parse.stripExtentPx;
-    rebuildFromSource();
-}
-
-void PlacementMapScreen::fetchCurrentTiles()
-{
-    // Replay of the engine's current tiles, so the map is never blank
-    // after a reseed or a mode switch. Without it (older daemon) the last
-    // batch seen on the bus stands until the next retile.
-    if (!m_map->m_caps.currentTiles) {
-        applyTiles(m_lastBatch);
-        return;
-    }
-    call<QString>(
-        Iface::Tiling, QStringLiteral("currentTilesJson"), {m_screenId},
-        [this](const QString& json) {
-            m_lastBatch = tileRectsFromJson(json);
-            applyTiles(m_lastBatch);
-        },
-        [this](const QDBusError& error) {
-            if (error.type() == QDBusError::UnknownMethod) {
-                m_map->m_caps.currentTiles = false;
-            }
-            applyTiles(m_lastBatch);
-        });
-}
-
-void PlacementMapScreen::applyTiles(const QList<TileRect>& tiles)
-{
-    // A batch is the current desktop's; a pinned screen never draws one.
-    if (m_mode != Tiling || isPinned()) {
-        return;
-    }
-    m_source = parseTileBatch(tiles, m_screenId, m_workArea);
-    auto navigationTiles = tiles;
-    for (auto& tile : navigationTiles) {
-        tile.monocle = false;
-    }
-    m_sourceWindows = parseTileBatch(navigationTiles, m_screenId, m_workArea);
-    m_sourceLens = QRectF();
-    m_sourceStripExtentPx = 0;
-    rebuildFromSource();
-}
-
-void PlacementMapScreen::fetchFocus()
-{
-    // The engine's own focus for this screen; mode-agnostic. Without it
-    // (older daemon) the singleton's focus-request proxy stands in, which
-    // misses focus changes made with the pointer. Focus is the current
-    // desktop's; a pinned screen has none to read.
-    if (m_screenId.isEmpty() || !m_map->m_caps.focusQuery || isPinned()) {
-        return;
-    }
-    call<QString>(
-        Iface::Tiling, QStringLiteral("managedFocusedWindow"), {m_screenId},
-        [this](const QString& windowId) {
-            focusedWindowChanged(windowId);
-        },
-        [this](const QDBusError& error) {
-            if (error.type() == QDBusError::UnknownMethod) {
-                m_map->m_caps.focusQuery = false;
-            }
-        });
 }
 
 void PlacementMapScreen::focusedWindowChanged(const QString& windowId)
@@ -471,17 +341,26 @@ void PlacementMapScreen::tilingChanged()
 
 void PlacementMapScreen::stripChanged()
 {
-    if (m_mode == Scrolling) {
-        if (isPinned()) {
-            fetchDesktopWindows();
-        } else {
-            fetchStrip();
-        }
-    } else {
-        // A context epoch change can mean the desktop switched onto a
-        // scrolling context; the mode read is what settles it.
-        refreshMode();
+    // A wake-up, not a payload (see the signal's contract). The live arm
+    // coalesces on the settle timer; the pinned arm re-reads on the next
+    // event-loop turn, which folds a burst delivered in one turn.
+    if (m_mode == Scrolling && !isPinned()) {
+        m_stripRefetch.start();
+        return;
     }
+    if (isPinned()) {
+        // A pinned snapping or tiling desktop cannot change from a strip step.
+        if (m_mode == Scrolling) {
+            m_pinnedRefetch.start();
+        }
+        return;
+    }
+    // A context epoch change can mean the desktop switched onto a scrolling
+    // context; the mode read is what settles it. Coalesced like the strip
+    // read: PlacementMap fans a strip signal out to every map of that screen
+    // id (its pinned-desktop maps included), so a drag step must not cost
+    // each of them a mode round trip per step.
+    m_modeRefetch.start();
 }
 
 void PlacementMapScreen::occupancyChanged()

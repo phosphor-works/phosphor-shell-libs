@@ -96,7 +96,7 @@ foreach(_qml_file IN LISTS _phosphor_picker_qml_files)
 endforeach()
 
 # Directory-scope suppression of -Wmissing-include-dirs for the targets
-# qt_add_qml_module generates here. Full rationale: src/shared/CMakeLists.txt.
+# qt_add_qml_module generates here. Full rationale: plasmazones/src/shared/CMakeLists.txt.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
 qt_add_qml_module(PhosphorShellPickerQml
@@ -116,7 +116,7 @@ qt_add_qml_module(PhosphorShellPickerQml
 )
 
 # The collection is materialized once into the user's durable image library.
-set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/../../examples/phosphor-shell/wallpapers/wallpaper.png" PROPERTIES QT_RESOURCE_ALIAS "alpine.png")
+set_source_files_properties("${CMAKE_SOURCE_DIR}/phosphor-shell/shell/wallpapers/wallpaper.png" PROPERTIES QT_RESOURCE_ALIAS "alpine.png")
 qt_add_resources(PhosphorShellPickerQml appearance_wallpapers
     PREFIX "/phosphor/appearance/wallpapers"
     BASE "wallpapers"
@@ -124,7 +124,7 @@ qt_add_resources(PhosphorShellPickerQml appearance_wallpapers
 )
 qt_add_resources(PhosphorShellPickerQml appearance_violet
     PREFIX "/phosphor/appearance/wallpapers"
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/../../examples/phosphor-shell/wallpapers/wallpaper.png"
+    FILES "${CMAKE_SOURCE_DIR}/phosphor-shell/shell/wallpapers/wallpaper.png"
 )
 
 add_library(PhosphorShellPicker::PhosphorShellPickerQml ALIAS PhosphorShellPickerQml)
@@ -135,7 +135,11 @@ target_include_directories(PhosphorShellPickerQml
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/PhosphorShellPicker
+        # Qt 6.10+ qmltyperegistrar emits basename #includes in the generated
+        # *_qmltyperegistrations.cpp; the header subdirectory must be on the
+        # path. Unity builds masked this by batching the generated TU with
+        # sources that already include the headers.
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/PhosphorShellPicker>
 )
 
 target_link_libraries(PhosphorShellPickerQml
