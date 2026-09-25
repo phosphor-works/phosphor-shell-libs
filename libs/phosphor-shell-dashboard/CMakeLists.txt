@@ -33,11 +33,11 @@ endif()
 # Dependencies
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# QuickShapes has to be found in THIS directory scope, not merely inherited from
-# a parent, for the reason phosphor-shell-bar's CMakeLists spells out: this module
-# links PhosphorShellWidgets, whose QML draws through QtQuick.Shapes types, so the
-# static qml plugin's dependency walk resolves Qt6::QuickShapes here and warns at
-# configure time without it. Two warnings per configure, on every build.
+# QuickShapes is not imported by this module's own QML; it is found here in
+# THIS directory scope so the static plugin's dependency walk resolves the
+# Qt6::QuickShapes target that Phosphor.Widgets links (its PhosphorRipple
+# Shape) without a configure warning. Same reason the lock, power, launcher
+# and control-center modules find it.
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickShapes DBus)
 
 # The surfaces import Phosphor.Theme (tokens) and Phosphor.Widgets (the
@@ -89,7 +89,7 @@ foreach(_qml_file IN LISTS _phosphor_dashboard_qml_files _phosphor_dashboard_js_
 endforeach()
 
 # Directory-scope suppression of -Wmissing-include-dirs for the targets
-# qt_add_qml_module generates here. Full rationale: src/shared/CMakeLists.txt.
+# qt_add_qml_module generates here. Full rationale: plasmazones/src/shared/CMakeLists.txt.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
 qt_add_qml_module(PhosphorShellDashboardQml

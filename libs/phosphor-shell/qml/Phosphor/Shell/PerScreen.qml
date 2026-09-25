@@ -20,15 +20,27 @@
 //   - Receives initial properties `phosphorScreen` (QScreen*), `name`
 //     (string), `index` (int), `isPrimary` (bool) on creation. Declare
 //     these as `required property`s on the delegate root to consume.
-//   - The property is named `phosphorScreen` (NOT `screen`) so it
-//     doesn't collide with the built-in `Window.screen` property —
-//     Qt 6 rejects `screen` as an initial property on Window
-//     ("Could not set initial property screen", because the
-//     underlying QWindow's screen binding is established before
-//     createObject's initialProperties phase resolves).
-//   - For Window delegates that want to open on the right monitor,
-//     bind `screen: phosphorScreen` in the delegate body — the
-//     binding is evaluated during construction in the right order.
+//   - The property is named `phosphorScreen` (NOT `screen`) so it doesn't
+//     collide with QQuickWindowQmlImpl's own `screen` property, which is
+//     typed QQuickScreenInfo*. Passing a QScreen* as the initial property
+//     `screen` is refused with "Could not set initial property screen".
+//     That is a plain type mismatch, not a creation-ordering effect: a
+//     correctly typed QQuickScreenInfo* is accepted there without complaint.
+//   - `screen: phosphorScreen` works only for a delegate whose C++ root
+//     DECLARES ITS OWN `Q_PROPERTY(QScreen* screen ...)`. LockSurfaceWindow
+//     does (LockSurfaceWindow.h:51), which is why the lock surface can bind
+//     it. QWindow itself declares no `screen` property — it has only the
+//     plain screen()/setScreen() accessor pair — so a bare QQuickWindow
+//     subclass exposes nothing to QML here and the binding is an unknown
+//     property.
+//     It does NOT work for the plain QML `Window` element either: that
+//     declares `screen` as a QQuickScreenInfo* (qquickwindowmodule_p.h), and
+//     binding a QScreen* to it fails at runtime with an "Unable to assign ...
+//     to QQuickScreenInfo" warning naming the source type. Position such a
+//     window by geometry, or match `Qt.application.screens` by name.
+//     PanelWindow is deliberately NOT an example here: it is a QQuickItem,
+//     not a window, and the Lifetime note below explains why this type
+//     cannot host one at all.
 //   - The delegate is destroyed when its screen leaves the model.
 //
 // Lifetime: delegates are created with a NULL QObject parent (they must
@@ -242,8 +254,15 @@ Item {
                     "index": i,
                     "isPrimary": isPrimary
                 });
-                if (inst)
+                if (inst) {
                     root._instances.set(screen, inst);
+                } else {
+                    // Swallowing this leaves the screen with no delegate and
+                    // root.count under-reporting, with nothing to show for it.
+                    // Same silent-nothing hazard the delegate guard above exists
+                    // to prevent.
+                    console.warn("PerScreen: delegate creation failed for screen", name, "--", root.delegate.errorString());
+                }
             }
         }
         root.count = root._instances.size;

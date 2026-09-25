@@ -14,8 +14,8 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS Core Test)
 # in-tree but this LIBRARY's directory in a standalone configure, so the guard
 # below was always FALSE there and the isolation was skipped even though the
 # module was reachable. The relative walk finds it from either.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
+    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
 endif()
 
 function(phosphorshelllauncher_add_test name)

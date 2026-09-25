@@ -9,12 +9,12 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS Test)
 # sandbox (so nothing writes into the developer's real ~/.config/plasmazones).
 # CMAKE_CURRENT_LIST_DIR, not CMAKE_SOURCE_DIR: the latter is the repo root
 # in-tree but this LIBRARY's directory in a standalone configure, so the include
-# looked for libs/<lib>/cmake/PhosphorTestIsolation.cmake and hard-failed at
+# looked for <tier>/libs/<lib>/cmake/PhosphorTestIsolation.cmake and hard-failed at
 # generate time. The relative walk reaches the repo root from either. The EXISTS
 # guard covers the remaining case, a genuine extracted `git subtree split` where
 # the repo-root module is not in the subtree at all.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/PhosphorTestIsolation.cmake)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
+    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
 else()
     # Stand-ins so the call sites below need no guard of their own.
     # phosphor_append_test_environment is reproduced EXACTLY, because it is

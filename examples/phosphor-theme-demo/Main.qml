@@ -22,8 +22,15 @@ ApplicationWindow {
     property string lastError: ""
     // Track which preset the user last applied via the button row. The
     // store doesn't remember this (its `sourcePath` is for on-disk loads
-    // only), so the demo holds it locally for highlight state. Cleared
-    // when an external source overrides via loadFromFile.
+    // only), so the demo holds it locally for highlight state.
+    //
+    // Deliberately NOT cleared when a file load overrides the palette: the
+    // pill then keeps showing the last preset the user picked, which is
+    // slightly stale but harmless in a demo. Clearing it on paletteChanged
+    // would be wrong — that signal also fires for the preset buttons
+    // themselves — and gating on a non-empty sourcePath would be wrong too,
+    // since sourcePath stays set after a load and would then wipe the
+    // highlight of any preset clicked afterwards.
     property string activePreset: "dark"
     // Set when matugen produces a palette from a user-picked wallpaper.
     // Stays set across re-runs so the header shows what the active
@@ -31,18 +38,17 @@ ApplicationWindow {
     property string wallpaperPath: ""
     // Snapshot of the palette's sorted key list. Recomputing this on
     // every paletteChanged would tear down and rebuild every Swatch
-    // delegate (the Repeater rebinds when model changes), destroying
-    // hover state and burning frames. The key set only changes when
+    // delegate (the Repeater rebinds when model changes), burning
+    // frames. The key set only changes when
     // tokens are added/removed (rare, matugen never removes tokens
     // thanks to PaletteStore's merge semantics), so a JSON-stringify
     // comparison cheaply gates the assignment.
-    property var swatchKeys: []
+    property list<string> swatchKeys: []
 
     function refreshSwatchKeys() {
         const next = Object.keys(Theme.palette).sort();
         if (JSON.stringify(next) !== JSON.stringify(swatchKeys))
             swatchKeys = next;
-
     }
 
     Component.onCompleted: refreshSwatchKeys()
@@ -54,7 +60,26 @@ ApplicationWindow {
 
     Connections {
         function onLoadError(path, reason) {
-            root.lastError = path + ": " + reason;
+            // Single-pass substitution through a regex with a FUNCTION
+            // replacement. Both simpler forms are wrong here, measured:
+            //
+            //   .arg(path).arg(reason) re-scans what it just inserted, so a
+            //   path containing "%2" swallows the reason:
+            //     "/tmp/%2.json" -> "/tmp/bad JSON.json: bad JSON"
+            //
+            //   .replace("%2", reason).replace("%1", path) fixes that but
+            //   introduces a worse one, because String.replace interprets $
+            //   patterns in the REPLACEMENT:
+            //     "/tmp/$&x.json"  -> "/tmp/%1x.json: bad JSON"
+            //     "/tmp/$'x.json"  -> "/tmp/: bad JSONx.json: bad JSON"
+            //
+            // A function replacement is never scanned for $ patterns and
+            // never revisits what it wrote, so both hazards close at once.
+            // $, &, ' and ` are all legal in Linux filenames and this path is
+            // user-picked, so this is reachable, not theoretical.
+            root.lastError = qsTr("%1: %2").replace(/%([12])/g, function (m, n) {
+                return n === "1" ? path : reason;
+            });
         }
 
         function onPaletteChanged() {
@@ -67,7 +92,7 @@ ApplicationWindow {
         target: Theme.paletteStore
     }
 
-    // Matugen subprocess. Spawned on-demand from the "Wallpaper..." button.
+    // Matugen subprocess. Spawned on-demand from the "wallpaper…" pill.
     // Failures (matugen missing, image unreadable, unexpected JSON shape)
     // route through the same status bar PaletteStore uses, so any single
     // visible error surface tells the user what went wrong.
@@ -75,7 +100,7 @@ ApplicationWindow {
         id: matugen
 
         mode: "dark"
-        onPaletteReady: function(tokens, wp) {
+        onPaletteReady: function (tokens, wp) {
             // Matugen emits M3 tokens but not Phosphor's brand-gradient
             // extensions (brand_stop_0..3) or the ANSI status colors
             // (success / warning / info). PaletteStore's merge semantics
@@ -86,8 +111,7 @@ ApplicationWindow {
             // stops from M3 accents in display order, cyan ish → blue
             // → purple → rose, matching the canonical Phosphor stop
             // assignment in the default palette.
-            const augmented = Object.assign({
-            }, tokens);
+            const augmented = Object.assign({}, tokens);
             if (tokens.tertiary)
                 augmented.brand_stop_0 = tokens.tertiary;
 
@@ -105,8 +129,13 @@ ApplicationWindow {
             root.wallpaperPath = wp;
             root.lastError = "";
         }
-        onFailed: function(wp, reason) {
-            root.lastError = qsTr("matugen: %1, %2").arg(wp).arg(reason);
+        onFailed: function (wp, reason) {
+            // Same single-pass form as the loadError handler above, and for
+            // the same reason: wp is the user-picked wallpaper path, and
+            // reason is matugen's raw stderr tail.
+            root.lastError = qsTr("matugen: %1, %2").replace(/%([12])/g, function (m, n) {
+                return n === "1" ? wp : reason;
+            });
         }
     }
 
@@ -165,7 +194,6 @@ ApplicationWindow {
                 font.pixelSize: Tokens.font_size_body_m
                 font.family: Tokens.font_family
             }
-
         }
 
         // ─── Preset switcher ─────────────────────────────────────────────
@@ -191,6 +219,8 @@ ApplicationWindow {
                 model: PresetPalettes.names()
 
                 Rectangle {
+                    id: presetPill
+
                     required property string modelData
                     readonly property bool isActive: root.activePreset === modelData
                     readonly property bool isHovered: hover.containsMouse
@@ -206,8 +236,8 @@ ApplicationWindow {
                         id: label
 
                         anchors.centerIn: parent
-                        text: modelData
-                        color: parent.isActive ? Theme.on_primary : Theme.on_surface
+                        text: presetPill.modelData
+                        color: presetPill.isActive ? Theme.on_primary : Theme.on_surface
                         font.pixelSize: Tokens.font_size_label_l
                         font.family: Tokens.font_family
                         font.weight: Tokens.font_weight_medium
@@ -220,16 +250,14 @@ ApplicationWindow {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("Apply %1 preset").arg(modelData)
+                        Accessible.name: qsTr("Apply %1 preset").arg(presetPill.modelData)
                         onClicked: {
-                            const tokens = PresetPalettes.byName(modelData);
+                            const tokens = PresetPalettes.byName(presetPill.modelData);
                             Theme.paletteStore.applyTokens(tokens);
-                            root.activePreset = modelData;
+                            root.activePreset = presetPill.modelData;
                         }
                     }
-
                 }
-
             }
 
             // ─── Wallpaper trigger ───────────────────────────────────────
@@ -237,6 +265,8 @@ ApplicationWindow {
             // palette to PaletteStore. While the subprocess is in flight
             // the pill swaps to a "running…" label and is non-interactive.
             Rectangle {
+                id: wallpaperPill
+
                 readonly property bool isActive: root.activePreset === "wallpaper"
                 readonly property bool isHovered: wallpaperHover.containsMouse && !matugen.running
                 readonly property string pillLabel: matugen.running ? qsTr("running…") : qsTr("wallpaper…")
@@ -253,8 +283,8 @@ ApplicationWindow {
                     id: wallpaperLabel
 
                     anchors.centerIn: parent
-                    text: parent.pillLabel
-                    color: parent.isActive ? Theme.on_tertiary : Theme.on_surface
+                    text: wallpaperPill.pillLabel
+                    color: wallpaperPill.isActive ? Theme.on_tertiary : Theme.on_surface
                     font.pixelSize: Tokens.font_size_label_l
                     font.family: Tokens.font_family
                     font.weight: Tokens.font_weight_medium
@@ -271,13 +301,11 @@ ApplicationWindow {
                     Accessible.name: qsTr("Pick a wallpaper and run matugen")
                     onClicked: wallpaperDialog.open()
                 }
-
             }
 
             Item {
                 Layout.fillWidth: true
             }
-
         }
 
         // ─── Brand gradient strip ────────────────────────────────────────
@@ -286,7 +314,7 @@ ApplicationWindow {
         // glance.
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 48
+            Layout.preferredHeight: Tokens.spacing_xxxl
             radius: Tokens.radius_l
             border.color: Theme.outline_variant
             border.width: 1
@@ -313,9 +341,7 @@ ApplicationWindow {
                     position: 1
                     color: Theme.brand_stop_3
                 }
-
             }
-
         }
 
         // GridLayout with a computed `columns` count reflows on window
@@ -332,10 +358,17 @@ ApplicationWindow {
             contentWidth: availableWidth
 
             GridLayout {
+                // Must track Swatch.qml's implicitWidth. The column count is
+                // derived from the card's intrinsic minimum, so if the two
+                // drift the grid either overflows the viewport or leaves a
+                // dead column. Swatch.qml owns the number and carries the
+                // reciprocal note; change it there and here together.
+                readonly property int swatchMinWidth: 220
+
                 width: scrollView.availableWidth
                 columnSpacing: Tokens.spacing_m
                 rowSpacing: Tokens.spacing_m
-                columns: Math.max(1, Math.floor((width + columnSpacing) / (220 + columnSpacing)))
+                columns: Math.max(1, Math.floor((width + columnSpacing) / (swatchMinWidth + columnSpacing)))
 
                 Repeater {
                     // Bind to the cached key list (see root.swatchKeys)
@@ -350,11 +383,8 @@ ApplicationWindow {
                         tokenColor: Theme.palette[modelData]
                         Layout.fillWidth: true
                     }
-
                 }
-
             }
-
         }
 
         // ─── Status bar ──────────────────────────────────────────────────
@@ -362,6 +392,22 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.preferredHeight: Tokens.spacing_xxl
             visible: root.lastError.length > 0
+            // error_container background with an on_surface foreground. The
+            // token set defines on_error only against error, and has no
+            // on_error_container, so the container background has to borrow the
+            // surface foreground instead. Pairing on_error with error_container
+            // fails WCAG AA in two of the four bundled palettes (light gives
+            // white on #FEE2E2 at 1.22:1, sunset near-black on #7F1D1D at
+            // 1.94:1), and pairing on_error with error fails the other two
+            // (dark 3.34:1, forest 3.76:1). on_surface on error_container is
+            // the pairing with the most headroom of those that clear 4.5:1 in
+            // all four: dark 8.16, light 13.96, sunset 8.51, forest 9.34.
+            // (on_primary_container/error_container and background/error also
+            // clear it, with lower minimums.) This is the surface that reports
+            // a broken palette, so it has to stay readable exactly when the
+            // palette is wrong. Note the guarantee covers the four BUNDLED
+            // palettes; PaletteStore.loadFromFile and MatugenRunner can install
+            // arbitrary token maps.
             color: Theme.error_container
             radius: Tokens.radius_s
 
@@ -369,15 +415,12 @@ ApplicationWindow {
                 anchors.fill: parent
                 anchors.margins: Tokens.spacing_s
                 text: root.lastError
-                color: Theme.on_error
+                color: Theme.on_surface
                 font.pixelSize: Tokens.font_size_body_s
                 font.family: Tokens.font_family
                 elide: Text.ElideMiddle
                 verticalAlignment: Text.AlignVCenter
             }
-
         }
-
     }
-
 }

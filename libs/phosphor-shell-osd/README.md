@@ -10,7 +10,7 @@ and built on the [`phosphor-shell-widgets`](../phosphor-shell-widgets/README.md)
 atoms.
 
 Phase 3.3 deliverable per
-[`docs/phosphor-shell-design/04-implementation-plan.md`](../../docs/phosphor-shell-design/04-implementation-plan.md).
+[`docs/phosphor-shell-design/04-implementation-plan.md`](../../../docs/phosphor-shell-design/04-implementation-plan.md).
 
 ## Responsibility
 
@@ -101,7 +101,7 @@ same trigger to all. `show()`'s `targetScreen` argument routes it
 
 Shipped. `OSDHost`, the band chrome, and the four built-in OSDs are in
 the tree with a QtQuickTest suite and an acceptance demo
-(`examples/phosphor-osd-demo/`, driven by `phosphorctl call osd.show`).
+(`../../examples/phosphor-osd-demo/`, driven by `phosphorctl call osd.show`).
 The edge-band form and the window-edge anchoring landed with the
 spectrum identity work; `OSDHost` takes `placementMap`, `edgeMargin` and
 `topInset`, and reports `anchoredToWindow`.

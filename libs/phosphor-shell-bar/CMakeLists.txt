@@ -12,8 +12,8 @@
 # atoms (SpectrumRail, SpectrumStroke, PhosphorRipple). This lib depends on
 # KF6 Kirigami, for Kirigami.Icon's named-icon resolution in the status
 # widgets. The other shell-tier libraries that need it for the same reason
-# are phosphor-shell-power, phosphor-shell-control-center and
-# phosphor-shell-launcher.
+# are phosphor-shell-power, phosphor-shell-control-center,
+# phosphor-shell-launcher and phosphor-shell-lock.
 #
 # Phase 4.1 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
@@ -120,7 +120,7 @@ foreach(_qml_file IN LISTS _phosphor_bar_qml_files)
 endforeach()
 
 # Directory-scope suppression of -Wmissing-include-dirs for the targets
-# qt_add_qml_module generates here. Full rationale: src/shared/CMakeLists.txt.
+# qt_add_qml_module generates here. Full rationale: plasmazones/src/shared/CMakeLists.txt.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "-Wno-missing-include-dirs")
 
 qt_add_qml_module(PhosphorShellBarQml
