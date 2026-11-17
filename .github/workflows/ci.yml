@@ -112,10 +112,11 @@ jobs:
 
       # clang ships clang-format, qt6-declarative ships qmlformat. From the same
       # Arch packages contributors use, because their output differs between
-      # major versions.
+      # major versions. diffutils for the qmlformat step's diff, which the bare
+      # image lacks.
       - name: Install the formatters
         run: |
-          pacman -S --noconfirm --needed clang qt6-declarative
+          pacman -S --noconfirm --needed clang qt6-declarative diffutils
           clang-format --version
 
       # Only the files a change touches, so formatting drift elsewhere in the
