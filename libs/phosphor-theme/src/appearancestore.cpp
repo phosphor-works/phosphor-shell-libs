@@ -116,7 +116,7 @@ QVariantMap AppearanceStore::defaults()
 }
 AppearanceStore::AppearanceStore(QObject* parent)
     : AppearanceStore(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-                          + QStringLiteral("/phosphor-shell/appearance.json"),
+                          + QStringLiteral("/lambent/appearance.json"),
                       parent)
 {
 }

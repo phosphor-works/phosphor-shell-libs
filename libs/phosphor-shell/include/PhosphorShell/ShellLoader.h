@@ -13,7 +13,7 @@ namespace PhosphorShell {
 class PHOSPHORSHELL_EXPORT ShellLoader
 {
 public:
-    explicit ShellLoader(const QString& shellName = QStringLiteral("phosphor-shell"));
+    explicit ShellLoader(const QString& shellName = QStringLiteral("lambent"));
 
     [[nodiscard]] QUrl resolve() const;
     [[nodiscard]] QString shellConfigDir() const;

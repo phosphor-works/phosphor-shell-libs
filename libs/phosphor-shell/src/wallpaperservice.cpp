@@ -44,7 +44,7 @@ QString wallpapersKey()
 
 QString storeDirectoryName()
 {
-    return QStringLiteral("phosphor-shell");
+    return QStringLiteral("lambent");
 }
 
 QString storeFileName()

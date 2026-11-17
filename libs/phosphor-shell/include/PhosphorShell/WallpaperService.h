@@ -27,7 +27,7 @@ namespace PhosphorShell {
  * desktop's configuration. The store is a per-screen map keyed by output
  * name, where the empty key is the wallpaper every output without an
  * entry of its own shows, persisted at `storePath()`
- * (`$XDG_CONFIG_HOME/phosphor-shell/wallpaper.json`, beside the shell
+ * (`$XDG_CONFIG_HOME/lambent/wallpaper.json`, beside the shell
  * file the loader discovers).
  *
  * Two layers sit on top of the configured map, both per screen and both
@@ -85,7 +85,7 @@ public:
     WallpaperService(std::unique_ptr<PhosphorShaders::IWallpaperProvider> seedProvider, QObject* parent = nullptr);
     ~WallpaperService() override;
 
-    /// Where the store lives: `$XDG_CONFIG_HOME/phosphor-shell/wallpaper.json`.
+    /// Where the store lives: `$XDG_CONFIG_HOME/lambent/wallpaper.json`.
     [[nodiscard]] static QString storePath();
 
     [[nodiscard]] QImage image() const;

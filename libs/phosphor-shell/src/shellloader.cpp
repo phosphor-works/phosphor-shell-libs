@@ -71,7 +71,7 @@ QUrl ShellLoader::resolve() const
 
     for (const QString& basePath : std::as_const(searched)) {
         // QDir::filePath joins normally and collapses any trailing slash on
-        // basePath, avoiding `/foo//phosphor-shell/shell.qml`. The filesystem
+        // basePath, avoiding `/foo//lambent/shell.qml`. The filesystem
         // tolerates the doubled slash but it leaks into log output and
         // breaks symbolic comparisons of the resolved path.
         const QString shellDir = QDir(basePath).filePath(m_shellName);
@@ -82,7 +82,7 @@ QUrl ShellLoader::resolve() const
     }
 
     // Final fallback: a qrc-baked example shell linked into the binary at
-    // build time (see examples/phosphor-shell/CMakeLists.txt — registers
+    // build time (see Lambent's shell/CMakeLists.txt, which registers
     // a qt-qml-module under URI `Phosphor.Shell.Example`). Qt's
     // qt_add_qml_module places module files at
     // `:/qt/qml/<URI-with-slashes>/shell.qml`; QFile resolves the `:/`

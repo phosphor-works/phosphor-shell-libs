@@ -136,7 +136,7 @@ void TestWallpaperService::seedsFromTheDesktopOnlyWhileEmpty()
     }
     // The seed is persisted, under the all-screens key, in the store
     // beside the shell file.
-    QVERIFY(WallpaperService::storePath().endsWith(QStringLiteral("/phosphor-shell/wallpaper.json")));
+    QVERIFY(WallpaperService::storePath().endsWith(QStringLiteral("/lambent/wallpaper.json")));
     QCOMPARE(storedWallpapers().value(QString()).toString(), m_alpha);
 
     // A populated store is authoritative: the desktop is never asked again,

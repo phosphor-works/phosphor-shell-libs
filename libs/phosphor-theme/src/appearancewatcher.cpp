@@ -13,7 +13,7 @@ namespace PhosphorTheme {
 AppearanceWatcher::AppearanceWatcher(QObject* parent)
     : AppearanceWatcher(
           QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-              + QStringLiteral("/phosphor-shell/appearance.json"),
+              + QStringLiteral("/lambent/appearance.json"),
           QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QStringLiteral("/kwinrc"), parent)
 {
 }

@@ -25,7 +25,7 @@ const QString Path = QStringLiteral("path"), Colors = QStringLiteral("colors"), 
 QString defaultDirectory()
 {
     return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
-        + QStringLiteral("/phosphor-shell/appearance");
+        + QStringLiteral("/lambent/appearance");
 }
 }
 AppearanceLibrary::AppearanceLibrary(QObject* parent)
