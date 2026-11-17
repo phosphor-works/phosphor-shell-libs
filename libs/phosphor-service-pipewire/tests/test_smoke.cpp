@@ -427,6 +427,9 @@ private Q_SLOTS:
         conn.connectToDaemon();
         QTest::qWait(250);
         const bool wasConnected = conn.isConnected();
+        // With no daemon the connection attempt itself reports that it
+        // failed, once. That error is the connection's, not the writes'.
+        const qsizetype errorsBeforeWrites = errorSpy.count();
         conn.writeVolumes(99999u, {0.5});
         conn.writeMuted(99999u, false);
         QTest::qWait(100);
@@ -523,7 +526,7 @@ private Q_SLOTS:
             // QSKIP so CI dashboards distinguish the no-daemon path
             // from a real pass against a live daemon.
             QCOMPARE(conn.isConnected(), false);
-            QCOMPARE(errorSpy.count(), 0);
+            QCOMPARE(errorSpy.count(), errorsBeforeWrites);
             QSKIP("no PipeWire daemon present; live-write branch not exercised");
         }
     }

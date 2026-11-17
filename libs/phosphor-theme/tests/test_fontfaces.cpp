@@ -21,14 +21,25 @@ class TestFontFaces : public QObject
 private Q_SLOTS:
     void resolvePrefersTheFirstInstalledCandidate()
     {
+        // A family the database confirms with hasFamily(), which is what
+        // resolve() asks. families() can also list a family hasFamily()
+        // rejects: on a system with few fonts it names the "Sans Serif"
+        // alias, so the first listed entries are not proof of anything.
+        QString installed;
         const QStringList families = QFontDatabase::families();
-        if (families.size() < 2) {
-            QSKIP("fewer than two font families installed");
+        for (const QString& family : families) {
+            if (QFontDatabase::hasFamily(family)) {
+                installed = family;
+                break;
+            }
+        }
+        if (installed.isEmpty()) {
+            QSKIP("no installed font family");
         }
         // A name no database carries first, then a real family: the real
         // one wins, and the fallback is untouched.
-        const QStringList candidates{QStringLiteral("Phosphor Nonexistent Face 9f3a"), families.at(1)};
-        QCOMPARE(FontFaces::resolve(candidates, QStringLiteral("fallback")), families.at(1));
+        const QStringList candidates{QStringLiteral("Phosphor Nonexistent Face 9f3a"), installed};
+        QCOMPARE(FontFaces::resolve(candidates, QStringLiteral("fallback")), installed);
     }
 
     void resolveFallsBackWhenNothingIsInstalled()
