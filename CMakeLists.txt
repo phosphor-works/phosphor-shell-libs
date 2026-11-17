@@ -189,6 +189,7 @@ add_subdirectory(libs/phosphor-service-polkit)        # PolicyKit authentication
 add_subdirectory(libs/phosphor-service-clipboard)     # Wayland clipboard history (data-control) (Phase 2.8)
 add_subdirectory(libs/phosphor-service-lock)          # PAM auth + ext-session-lock-v1 coordination (Phase 2.9)
 add_subdirectory(libs/phosphor-service-session)       # logind session/power actions + inhibitors (Phase 2.10)
+add_subdirectory(libs/phosphor-service-nightlight)    # night light over wlr-gamma-control (compositor-neutral)
 
 # Example demos and CLI acceptance harnesses are not part of the installed
 # product. The Nix flake builds from a source tree with examples/ stripped
