@@ -24,6 +24,11 @@
   pipewire,
   pam,
   ddcutil,
+  python3,
+  glib,
+  gobject-introspection,
+  makeFontsConf,
+  dejavu_fonts,
   src,
   version,
   withTests ? false,
@@ -63,6 +68,10 @@ let
       };
     }
   ];
+  trayFixturePython = python3.withPackages (ps: [
+    ps.dbus-python
+    ps.pygobject3
+  ]);
 in
 stdenv.mkDerivation {
   pname = if withTests then "phosphor-shell-libs-tests" else "phosphor-shell-libs";
@@ -110,8 +119,16 @@ stdenv.mkDerivation {
   ];
 
   # dbus-run-session gives each test a private session bus
-  # (cmake/PhosphorTestIsolation.cmake).
-  nativeCheckInputs = [ dbus ];
+  # (cmake/PhosphorTestIsolation.cmake). The tray tests run a fixture of real
+  # StatusNotifierItem apps (libs/phosphor-shell-bar/tests/tray-fixture.py)
+  # through a Python with dbus-python and PyGObject, which reaches GLib
+  # through gobject-introspection.
+  nativeCheckInputs = [
+    dbus
+    trayFixturePython
+    gobject-introspection
+  ];
+  checkInputs = [ glib ];
 
   cmakeFlags = [
     "-DCMAKE_BUILD_TYPE=Release"
@@ -119,7 +136,10 @@ stdenv.mkDerivation {
     "-DPHOSPHOR_DEPS_ARCHIVES=${depsArchives}"
     "-DKDE_INSTALL_QTPLUGINDIR=${placeholder "out"}/${qt6.qtbase.qtPluginPrefix}"
     "-DKDE_INSTALL_QMLDIR=${placeholder "out"}/${qt6.qtbase.qtQmlPrefix}"
-  ];
+  ]
+  # The interpreter the tray tests launch their fixture with, named so CMake
+  # cannot pick another Python on PATH that lacks the modules.
+  ++ lib.optional withTests "-DPython3_EXECUTABLE=${trayFixturePython.interpreter}";
 
   doCheck = withTests;
   # The tests run uninstalled, from the build tree, so nothing wraps them.
@@ -140,6 +160,11 @@ stdenv.mkDerivation {
       fi
     done
     export NIXPKGS_QT6_QML_IMPORT_PATH QT_PLUGIN_PATH
+    # GLib's typelibs, for the tray fixture's `from gi.repository import GLib`.
+    addToSearchPath GI_TYPELIB_PATH "${glib.out}/lib/girepository-1.0"
+    export GI_TYPELIB_PATH
+    # One real font family, so the theme's font tests resolve an installed face.
+    export FONTCONFIG_FILE=${makeFontsConf { fontDirectories = [ dejavu_fonts ]; }}
     export QT_QPA_PLATFORM=offscreen
     export HOME="$(mktemp -d)"
     export CTEST_OUTPUT_ON_FAILURE=1

@@ -36,3 +36,10 @@ pam
 ddcutil
 # The offscreen and Wayland tests' runtime.
 mesa
+# A real font family, so the theme's font tests resolve an installed face
+# rather than skipping on fontconfig's aliases.
+ttf-dejavu
+# The tray tests' fixture (libs/phosphor-shell-bar/tests/tray-fixture.py), a
+# set of real StatusNotifierItem apps on the test's private bus.
+python-dbus
+python-gobject
