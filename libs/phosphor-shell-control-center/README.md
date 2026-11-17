@@ -10,7 +10,7 @@ brightness and the rest. Pure QML, themed through
 [`phosphor-shell-widgets`](../phosphor-shell-widgets/README.md) atoms.
 
 Phase 4.4 deliverable per
-[`docs/phosphor-shell-design/04-implementation-plan.md`](../../../docs/phosphor-shell-design/04-implementation-plan.md).
+[Lambent's `docs/design/04-implementation-plan.md`](https://github.com/phosphor-works/Lambent/blob/main/docs/design/04-implementation-plan.md).
 
 ## Responsibility
 
@@ -55,7 +55,7 @@ tiles' Tab order, the detail panel's Escape and every key handler in this
 module are inert there. All of it works in a standalone popout. Pointer
 interaction is the same either way, and nothing here is reachable only by
 keyboard. See the control-center section of
-`docs/phosphor-shell-design/04-implementation-plan.md` for what closing
+Lambent's `docs/design/04-implementation-plan.md` for what closing
 that would cost.
 
 ## Key types
