@@ -9,7 +9,6 @@ import Phosphor.Widgets
 
 FocusScope {
     id: root
-    property string screenName: ""
     property var workspaces: null
     property var mapFor: null
     property var surfaceEffects: null
@@ -40,7 +39,6 @@ FocusScope {
     // Scrolling can expose only part of an edge window on the desktop. Stage
     // includes its whole frame, then fits the desktop without distorting it.
     readonly property rect fittedPreview: scrolling ? Qt.rect(previewRect.x + (previewRect.width - canvas.width * previewScale) / 2, previewRect.y + (previewRect.height - canvas.height * previewScale) / 2, canvas.width * previewScale, canvas.height * previewScale) : previewRect
-    readonly property rect nativeRect: Qt.rect(fittedPreview.x - canvas.x * fittedPreview.width / canvas.width, fittedPreview.y - canvas.y * fittedPreview.height / canvas.height, width * fittedPreview.width / canvas.width, height * fittedPreview.height / canvas.height)
     readonly property rect barRect: Qt.rect(Appearance.barInset, Appearance.bottom ? height - Appearance.barOffset - Appearance.barHeight : Appearance.barOffset, width - Appearance.barInset * 2, Appearance.barHeight)
     readonly property real footerY: {
         const defaultY = height - Math.min(130, height * 0.14);
@@ -52,7 +50,7 @@ FocusScope {
         return Math.min(height - 32, Math.max(defaultY, windowList.y + windowList.height + 12));
     }
     function desktopFrame(window) {
-        const frame = window.nativeRect && window.nativeRect.width > 0 ? window.nativeRect : Qt.rect(window.x, window.y, window.w, window.h);
+        const frame = Qt.rect(window.x, window.y, window.w, window.h);
         return Qt.rect(workArea.x + frame.x * workArea.width, workArea.y + frame.y * workArea.height, frame.width * workArea.width, frame.height * workArea.height);
     }
     function completeCanvas() {
@@ -99,12 +97,9 @@ FocusScope {
             refreshPreview();
             forceActiveFocus();
         } else {
-            desktop.hide();
             release.restart();
         }
     }
-    onNativeRectChanged: if (open)
-        Qt.callLater(refreshPreview)
     onPreviewRectChanged: Qt.callLater(refreshSurface)
     onBarRectChanged: Qt.callLater(refreshSurface)
     onSurfaceEffectsChanged: Qt.callLater(refreshSurface)
@@ -133,14 +128,9 @@ FocusScope {
         interval: Motion.reducedMotion ? 0 : 270
         onTriggered: root.released()
     }
-    DesktopStage {
-        id: desktop
-    }
     function refreshPreview() {
         if (open && map && typeof map.refreshGeometry === "function")
             map.refreshGeometry();
-        if (open && width > 0 && height > 0)
-            desktop.show(screenName, Qt.rect(nativeRect.x / width, nativeRect.y / height, nativeRect.width / width, nativeRect.height / height), !Motion.reducedMotion, Qt.rect(previewRect.x / width, previewRect.y / height, previewRect.width / width, previewRect.height / height));
     }
     function refreshSurface() {
         if (surfaceEffects)

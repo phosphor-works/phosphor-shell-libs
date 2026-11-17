@@ -29,8 +29,6 @@ struct PHOSPHORSHELL_EXPORT Cell
 {
     QString id;
     QRectF rect;
-    /// Native visual frame for Stage, distinct from scrolling strip coordinates.
-    QRectF nativeRect;
     qreal t = 0.0;
     bool occupied = false;
     bool focused = false;
@@ -64,7 +62,6 @@ struct PHOSPHORSHELL_EXPORT Cell
     bool urgent = false;
     bool offscreen = false;
     bool minimized = false;
-    int colorIndex = -1;
 };
 
 /// One non-floating window on a screen, for `applyOccupancy`: the zones
@@ -252,15 +249,6 @@ PHOSPHORSHELL_EXPORT void applyFocusByWindowId(QList<Cell>& cells, const QString
 /// (id, x, y, w, h, t, occupied, focused, label, zoneNumber, stack,
 /// stripT, columnIndex, windowId, appId, title, urgent).
 PHOSPHORSHELL_EXPORT QVariantList toVariantList(const QList<Cell>& cells);
-
-/// Compositor window snapshots include floating and minimized windows.
-PHOSPHORSHELL_EXPORT QList<Cell> parseNativeWindows(const QString& json, const QRect& workArea);
-/// Inactive desktops retain native geometry in tiling mode. Scrolling windows
-/// can be parked by the compositor, so represent their count as bounded columns.
-PHOSPHORSHELL_EXPORT QList<Cell> inactiveDesktopCells(const QList<Cell>& live, bool scrolling);
-/// Keep engine ordering and scrolling coordinates, add unplaced windows,
-/// and remove windows no longer on this output and desktop.
-PHOSPHORSHELL_EXPORT QList<Cell> mergeNavigationWindows(const QList<Cell>& placed, const QList<Cell>& live);
 
 /// `{x, y, w, h, vertical}` for a lens band, or an empty map for a null rect.
 PHOSPHORSHELL_EXPORT QVariantMap lensToVariant(const QRectF& lens, bool vertical = false);

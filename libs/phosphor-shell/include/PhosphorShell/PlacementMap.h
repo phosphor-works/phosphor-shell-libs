@@ -235,12 +235,6 @@ Q_SIGNALS:
 private:
     void resolveScreenId();
     void fetchDeviceScale();
-    void initializeNavigation();
-    void fetchNavigation();
-private Q_SLOTS:
-    void requestNavigation();
-
-private:
     void fetchModeData();
     void fetchSnappingLayout();
     void fetchStrip();
@@ -333,10 +327,6 @@ private:
     QList<PlacementMapParser::Cell> m_source;
     QList<PlacementMapParser::Cell> m_sourceWindows;
     QList<PlacementMapParser::Cell> m_resolvedWindows;
-    QList<PlacementMapParser::Cell> m_nativeWindows;
-    QTimer m_navigationRefresh;
-    bool m_nativeAvailable = false;
-    int m_navigationGeneration = 0;
     QList<PlacementMapParser::TileRect> m_lastBatch;
     QRectF m_sourceLens;
     bool m_sourceVertical = false;
