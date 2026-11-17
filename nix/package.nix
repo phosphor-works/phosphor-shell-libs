@@ -177,6 +177,8 @@ stdenv.mkDerivation {
       lgpl21Plus
       mit
       bsd2
+      # The vendored wlr-gamma-control protocol of phosphor-service-nightlight.
+      hpndSellVariant
     ];
     platforms = [
       "x86_64-linux"

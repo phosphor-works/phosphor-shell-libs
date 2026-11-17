@@ -8,7 +8,7 @@ libraries behind them. They build on [phosphor-libs](https://github.com/phosphor
 | --- | --- |
 | Foundation | `phosphor-theme`, `phosphor-popout`, `phosphor-shell`, `phosphor-shell-widgets` |
 | Surfaces | `phosphor-shell-bar`, `phosphor-shell-control-center`, `phosphor-shell-dashboard`, `phosphor-shell-launcher`, `phosphor-shell-lock`, `phosphor-shell-notifications`, `phosphor-shell-osd`, `phosphor-shell-picker`, `phosphor-shell-polkit`, `phosphor-shell-power` |
-| Services | `phosphor-service-bluetooth`, `phosphor-service-brightness`, `phosphor-service-clipboard`, `phosphor-service-icontheme`, `phosphor-service-lock`, `phosphor-service-mpris`, `phosphor-service-network`, `phosphor-service-notifications`, `phosphor-service-pipewire`, `phosphor-service-polkit`, `phosphor-service-session`, `phosphor-service-sni`, `phosphor-service-upower` |
+| Services | `phosphor-service-bluetooth`, `phosphor-service-brightness`, `phosphor-service-clipboard`, `phosphor-service-icontheme`, `phosphor-service-lock`, `phosphor-service-mpris`, `phosphor-service-network`, `phosphor-service-nightlight`, `phosphor-service-notifications`, `phosphor-service-pipewire`, `phosphor-service-polkit`, `phosphor-service-session`, `phosphor-service-sni`, `phosphor-service-upower` |
 
 Each library lives in `libs/<name>/`. `examples/` holds demos and command-line acceptance harnesses for them.
 
@@ -44,3 +44,11 @@ To build the app against a local checkout instead, configure it with
 ## License
 
 LGPL-2.1-or-later. See `COPYING.LESSER`.
+
+Third-party files keep their own licences:
+
+| File | Origin | Licence |
+| --- | --- | --- |
+| `libs/phosphor-service-nightlight/protocols/wlr-gamma-control-unstable-v1.xml` | [wlr-protocols](https://gitlab.freedesktop.org/wlroots/wlr-protocols) `unstable/`, commit `1106a4a1c57562ddd438c547da4c0d6dc150d624`, unchanged | HPND-sell-variant (in the file) |
+
+The code wayland-scanner generates from a protocol file at build time carries that file's licence.

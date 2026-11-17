@@ -189,6 +189,7 @@ add_subdirectory(libs/phosphor-service-polkit)        # PolicyKit authentication
 add_subdirectory(libs/phosphor-service-clipboard)     # Wayland clipboard history (data-control) (Phase 2.8)
 add_subdirectory(libs/phosphor-service-lock)          # PAM auth + ext-session-lock-v1 coordination (Phase 2.9)
 add_subdirectory(libs/phosphor-service-session)       # logind session/power actions + inhibitors (Phase 2.10)
+add_subdirectory(libs/phosphor-service-nightlight)    # night light over wlr-gamma-control (compositor-neutral)
 
 # Example demos and CLI acceptance harnesses are not part of the installed
 # product. The Nix flake builds from a source tree with examples/ stripped
@@ -284,6 +285,12 @@ add_subdirectory(examples/phosphor-service-lock-cli)
 # phosphor-service-session library (Phase 2.10). Drives the logind session
 # capabilities + actions (status / lock / logout / suspend / ... / power-off).
 add_subdirectory(examples/phosphor-service-session-cli)
+
+# phosphor-service-nightlight-cli. Acceptance harness for the
+# phosphor-service-nightlight library. Holds a colour temperature on every output
+# of the running compositor through wlr-gamma-control for a few seconds, then
+# fades back.
+add_subdirectory(examples/phosphor-service-nightlight-cli)
 
 # phosphor-registry-plugin-demo. Sibling of phosphor-registry-demo
 # that exercises PluginLoader and the live reload of added or removed
