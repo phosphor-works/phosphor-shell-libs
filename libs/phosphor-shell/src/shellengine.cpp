@@ -543,7 +543,7 @@ bool ShellEngine::materializePanels(QString* failureReason)
         }
 
         PhosphorLayer::Role role;
-        role = role.withAnchors(anchors).withScopePrefix(QStringLiteral("phosphor-shell"));
+        role = role.withAnchors(anchors).withScopePrefix(QStringLiteral("lambent"));
         const auto panelKeyboard = [panel] {
             return panel->keyboardFocus() == PanelWindow::Exclusive ? PhosphorLayer::KeyboardInteractivity::Exclusive
                 : panel->keyboardFocus() == PanelWindow::OnDemand   ? PhosphorLayer::KeyboardInteractivity::OnDemand
@@ -618,7 +618,7 @@ bool ShellEngine::materializePanels(QString* failureReason)
         cfg.screen = targetScreen;
         cfg.initialSize = panelSize;
         cfg.marginsOverride = layerMargins;
-        cfg.debugName = QStringLiteral("phosphor-shell-panel");
+        cfg.debugName = QStringLiteral("lambent-panel");
 
         // Hand off rootPanel ownership in one noexcept step:
         // unique_ptr::release returns a raw pointer and clears its source;
