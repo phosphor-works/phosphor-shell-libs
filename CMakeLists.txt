@@ -286,6 +286,12 @@ add_subdirectory(examples/phosphor-service-lock-cli)
 # capabilities + actions (status / lock / logout / suspend / ... / power-off).
 add_subdirectory(examples/phosphor-service-session-cli)
 
+# phosphor-service-nightlight-cli. Acceptance harness for the
+# phosphor-service-nightlight library. Holds a colour temperature on every output
+# of the running compositor through wlr-gamma-control for a few seconds, then
+# fades back.
+add_subdirectory(examples/phosphor-service-nightlight-cli)
+
 # phosphor-registry-plugin-demo. Sibling of phosphor-registry-demo
 # that exercises PluginLoader and the live reload of added or removed
 # plugins. The third (CPU-meter) widget builds as a separate bar-widget
