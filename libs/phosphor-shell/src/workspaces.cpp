@@ -3,49 +3,52 @@
 
 #include <PhosphorShell/Workspaces.h>
 
-#include <PhosphorWorkspaces/VirtualDesktopManager.h>
+#include "extworkspaceclient_p.h"
+#include "workspacebackend_p.h"
 
 #include <QCoreApplication>
-#include <QLoggingCategory>
-#include <QPointer>
-#include <QQmlEngine>
-#include <QThread>
 
 namespace {
-Q_LOGGING_CATEGORY(lcWorkspaces, "phosphorshell.workspaces")
-
-/// The label for a desktop KWin reports with an empty name, or for a row the
-/// name list does not reach yet. KWin names every desktop it creates itself
-/// ("Desktop N" in KWin's language), so this shows only for a name a client
-/// set empty. Through QCoreApplication::translate with this library's own
-/// context, the shape the shell libraries use for their strings: it ships in
-/// English until a catalogue for the context is extracted.
+/// The label for a workspace the compositor names empty. Through
+/// QCoreApplication::translate with this library's own context, the shape
+/// the shell libraries use for their strings: it ships in English until a
+/// catalogue for the context is extracted.
 QString fallbackWorkspaceName(int position)
 {
-    return QCoreApplication::translate("PhosphorShell", "Desktop %1").arg(position);
+    return QCoreApplication::translate("PhosphorShell", "Workspace %1").arg(position);
+}
+
+QString displayName(const PhosphorShell::WorkspaceEntry& entry, int position)
+{
+    return entry.name.isEmpty() ? fallbackWorkspaceName(position) : entry.name;
+}
+
+/// Row of the first active workspace, or -1.
+int activeRowOf(const QList<PhosphorShell::WorkspaceEntry>& entries)
+{
+    for (int row = 0; row < entries.size(); ++row) {
+        if (entries.at(row).active) {
+            return row;
+        }
+    }
+    return -1;
 }
 } // namespace
 
 namespace PhosphorShell {
 
-using PhosphorWorkspaces::VirtualDesktopManager;
-
 // =====================================================================
 // WorkspaceListModel
 // =====================================================================
 
-WorkspaceListModel::WorkspaceListModel(VirtualDesktopManager* manager, QObject* parent)
+WorkspaceListModel::WorkspaceListModel(WorkspaceBackend* backend, QObject* parent)
     : QAbstractListModel(parent)
-    , m_manager(manager)
+    , m_backend(backend)
 {
-    if (!m_manager) {
+    if (!m_backend) {
         return;
     }
-    // Connect before seeding, so a change landing between the two is not
-    // lost.
-    connect(m_manager.data(), &VirtualDesktopManager::desktopsChanged, this, &WorkspaceListModel::reload);
-    connect(m_manager.data(), &VirtualDesktopManager::desktopCountChanged, this, &WorkspaceListModel::reload);
-    connect(m_manager.data(), &VirtualDesktopManager::currentDesktopChanged, this, &WorkspaceListModel::refreshActive);
+    connect(m_backend.data(), &WorkspaceBackend::workspacesChanged, this, &WorkspaceListModel::reload);
     reload();
 }
 
@@ -68,10 +71,7 @@ QVariant WorkspaceListModel::data(const QModelIndex& index, int role) const
     case IdRole:
         return m_ids.at(index.row());
     case NameRole:
-        // reload() fills every row the id list has, so this fallback is a
-        // belt against indexing out of range, with the same label reload()
-        // gives an empty name rather than an empty pill.
-        return index.row() < m_names.size() ? m_names.at(index.row()) : fallbackWorkspaceName(index.row() + 1);
+        return m_names.at(index.row());
     case IsActiveRole:
         return index.row() == m_activeRow;
     default:
@@ -90,56 +90,34 @@ QHash<int, QByteArray> WorkspaceListModel::roleNames() const
 
 void WorkspaceListModel::reload()
 {
-    if (!m_manager) {
-        return;
+    const QList<WorkspaceEntry> entries = m_backend ? m_backend->workspaces() : QList<WorkspaceEntry>();
+    QStringList ids;
+    QStringList names;
+    ids.reserve(entries.size());
+    names.reserve(entries.size());
+    for (int row = 0; row < entries.size(); ++row) {
+        ids.append(entries.at(row).id);
+        names.append(displayName(entries.at(row), row + 1));
     }
-    const QStringList ids = m_manager->desktopIds();
-    // KWin's own names, not desktopNames(): that fills an empty name with the
-    // workspace library's untranslated placeholder. Index-aligned with the
-    // ids, an empty entry or a row past the end filled with the translated
-    // label.
-    QStringList names = m_manager->rawDesktopNames();
-    for (int row = 0; row < ids.size(); ++row) {
-        if (row >= names.size()) {
-            names.append(fallbackWorkspaceName(row + 1));
-        } else if (names.at(row).isEmpty()) {
-            names[row] = fallbackWorkspaceName(row + 1);
-        }
-    }
-    const int activeRow = m_manager->currentDesktop() - 1;
+    const int activeRow = activeRowOf(entries);
 
-    if (ids == m_ids && names == m_names) {
-        // Same list. The active workspace may still have moved (both
-        // signals routed here can fire for a pure switch), and that is a
-        // dataChanged, not a reset.
-        refreshActive();
+    if (ids != m_ids || names != m_names) {
+        beginResetModel();
+        m_ids = ids;
+        m_names = names;
+        m_activeRow = activeRow;
+        endResetModel();
         return;
     }
-
-    beginResetModel();
-    m_ids = ids;
-    m_names = names;
-    m_activeRow = (activeRow >= 0 && activeRow < m_ids.size()) ? activeRow : -1;
-    endResetModel();
-}
-
-void WorkspaceListModel::refreshActive()
-{
-    if (!m_manager) {
+    if (activeRow == m_activeRow) {
         return;
     }
-    const int row = m_manager->currentDesktop() - 1;
-    const int next = (row >= 0 && row < m_ids.size()) ? row : -1;
-    if (next == m_activeRow) {
-        return;
-    }
+    // Same list, a different active workspace: two targeted dataChanged
+    // emissions rather than a reset. A pager rebuilt on every workspace
+    // switch would drop hover state and restart any transition mid-flight.
     const int previous = m_activeRow;
-    m_activeRow = next;
-
-    // Two targeted dataChanged emissions rather than a reset: a pager
-    // rebuilt on every workspace switch would drop hover state and restart
-    // any transition mid-flight.
-    if (previous >= 0 && previous < m_ids.size()) {
+    m_activeRow = activeRow;
+    if (previous >= 0) {
         Q_EMIT dataChanged(index(previous), index(previous), {IsActiveRole});
     }
     if (m_activeRow >= 0) {
@@ -151,83 +129,27 @@ void WorkspaceListModel::refreshActive()
 // Workspaces (singleton facade)
 // =====================================================================
 
-VirtualDesktopManager* Workspaces::sharedManager()
+Workspaces::Workspaces(QObject* parent)
+    : Workspaces(ExtWorkspaceClient::shared(), parent)
 {
-    // GUI-thread-only: the manager owns a QDBusInterface parented to
-    // itself and subscribes session-bus signals. Asserting beats racing on
-    // the unguarded function-static below.
-    Q_ASSERT_X(qApp && QThread::currentThread() == qApp->thread(), "Workspaces::sharedManager",
-               "must be called from the GUI thread");
-    // Release-build pair for the assert above. Without it the contract
-    // vanishes in release and a worker-thread caller races on the unguarded
-    // function-static below, producing exactly the double construction the
-    // singleton exists to prevent — two D-Bus subscriptions to the same
-    // interface. Every caller already handles a null return.
-    if (!qApp || QThread::currentThread() != qApp->thread()) {
-        qCCritical(lcWorkspaces) << "sharedManager() called off the GUI thread; refusing to construct";
-        return nullptr;
-    }
-
-    // QPointer, not a raw pointer: the manager is parented to qApp, but
-    // this static outlives it. After ~QCoreApplication a raw pointer
-    // would be non-null and dangling, and `!instance` could never
-    // detect it — so a second QCoreApplication in the same process (any
-    // test binary, an embedder) would hand out freed memory. QPointer
-    // auto-clears, restoring the intended construct-on-first-use.
-    static QPointer<VirtualDesktopManager> instance;
-    if (instance.isNull() && qApp) {
-        instance = new VirtualDesktopManager(qApp);
-        // start() BEFORE init(), which is not the obvious order. `start()`
-        // sets the running flag and then refreshes only `if (m_useKWinDBus)`
-        // — still false at this point, since only init() sets it — so its own
-        // refresh is a genuine no-op. The flag is what makes the desktop-list
-        // fetch inside init() take the ASYNC path; init-then-start would run
-        // that fetch as a blocking call on the GUI thread during startup.
-        instance->start();
-        instance->init();
-    }
-    return instance.data();
 }
 
-Workspaces::Workspaces(QObject* parent)
+Workspaces::Workspaces(WorkspaceBackend* backend, QObject* parent)
     : QObject(parent)
-{
-    auto* mgr = sharedManager();
-    // Always build the model, even with no manager, so QML can bind
+    , m_backend(backend)
+    // Always a model, even with no backend, so QML can bind
     // `Repeater { model: Workspaces.model }` unconditionally.
-    m_model = new WorkspaceListModel(mgr, this);
-    if (!mgr) {
+    , m_model(new WorkspaceListModel(backend, this))
+{
+    if (!m_backend) {
         return;
     }
-
     m_activeId = activeId();
     m_activeName = activeName();
     m_activeIndex = activeIndex();
-    m_count = mgr->desktopIds().size();
-
-    const auto sync = [this, mgr] {
-        // activeChanged covers BOTH activeId and activeIndex, so it must be
-        // gated on either moving. A desktop added or removed before the
-        // current one renumbers the position while the id stays put, which
-        // would otherwise leave activeIndex stale with no notification.
-        const QString nextActive = activeId();
-        const int nextIndex = activeIndex();
-        const QString nextName = activeName();
-        if (nextActive != m_activeId || nextIndex != m_activeIndex || nextName != m_activeName) {
-            m_activeId = nextActive;
-            m_activeName = nextName;
-            m_activeIndex = nextIndex;
-            Q_EMIT activeChanged();
-        }
-        const int nextCount = mgr->desktopIds().size();
-        if (nextCount != m_count) {
-            m_count = nextCount;
-            Q_EMIT countChanged();
-        }
-    };
-    connect(mgr, &VirtualDesktopManager::currentDesktopChanged, this, sync);
-    connect(mgr, &VirtualDesktopManager::desktopCountChanged, this, sync);
-    connect(mgr, &VirtualDesktopManager::desktopsChanged, this, sync);
+    m_count = count();
+    connect(m_backend.data(), &WorkspaceBackend::workspacesChanged, this, &Workspaces::sync);
+    connect(m_backend.data(), &WorkspaceBackend::supportedChanged, this, &Workspaces::supportedChanged);
 }
 
 Workspaces::~Workspaces() = default;
@@ -236,10 +158,31 @@ Workspaces* Workspaces::create(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
     Q_UNUSED(engine)
     Q_UNUSED(scriptEngine)
-    // Per-engine wrapper over the process-wide manager, matching
-    // Toplevels: the QML registry deletes the wrapper on engine teardown
-    // while the manager (parented to qApp) survives the hot reload.
+    // Per-engine wrapper over the process-wide client, matching Toplevels:
+    // the QML registry deletes the wrapper on engine teardown while the
+    // client (parented to qApp) survives the hot reload.
     return new Workspaces();
+}
+
+void Workspaces::sync()
+{
+    // activeChanged covers activeId, activeName and activeIndex, so it is
+    // gated on any of them moving. A workspace added or removed before the
+    // current one renumbers the position while the id stays put.
+    const QString nextId = activeId();
+    const QString nextName = activeName();
+    const int nextIndex = activeIndex();
+    if (nextId != m_activeId || nextName != m_activeName || nextIndex != m_activeIndex) {
+        m_activeId = nextId;
+        m_activeName = nextName;
+        m_activeIndex = nextIndex;
+        Q_EMIT activeChanged();
+    }
+    const int nextCount = count();
+    if (nextCount != m_count) {
+        m_count = nextCount;
+        Q_EMIT countChanged();
+    }
 }
 
 QAbstractListModel* Workspaces::model() const
@@ -247,62 +190,46 @@ QAbstractListModel* Workspaces::model() const
     return m_model;
 }
 
-QString Workspaces::activeName() const
-{
-    auto* manager = sharedManager();
-    return manager ? manager->desktopNames().value(manager->currentDesktop() - 1) : QString();
-}
-
 QString Workspaces::activeId() const
 {
-    auto* mgr = sharedManager();
-    if (!mgr) {
+    if (!m_backend) {
         return {};
     }
-    const QStringList ids = mgr->desktopIds();
-    const int row = mgr->currentDesktop() - 1;
-    if (row < 0 || row >= ids.size()) {
+    const auto entries = m_backend->workspaces();
+    const int row = activeRowOf(entries);
+    return row >= 0 ? entries.at(row).id : QString();
+}
+
+QString Workspaces::activeName() const
+{
+    if (!m_backend) {
         return {};
     }
-    return ids.at(row);
+    const auto entries = m_backend->workspaces();
+    const int row = activeRowOf(entries);
+    return row >= 0 ? displayName(entries.at(row), row + 1) : QString();
 }
 
 int Workspaces::activeIndex() const
 {
-    auto* mgr = sharedManager();
-    // 0, not currentDesktop(), when there is no workspace source:
-    // VirtualDesktopManager reports 1 in that state while count() reports 0,
-    // and publishing "position 1 of 0" is a self-inconsistent readout.
-    if (!mgr || !mgr->isAvailable() || mgr->desktopIds().isEmpty()) {
-        return 0;
-    }
-    // Clamped to the id-list size, which is what count() reports: in the
-    // window a count shrink opens (the manager commits its clamped
-    // m_currentDesktop before the async list refresh lands), the raw
-    // position can briefly exceed the still-old id list and a consumer
-    // would read "position N of fewer-than-N".
-    return qMin(mgr->currentDesktop(), static_cast<int>(mgr->desktopIds().size()));
+    return m_backend ? activeRowOf(m_backend->workspaces()) + 1 : 0;
 }
 
 int Workspaces::count() const
 {
-    auto* mgr = sharedManager();
-    return mgr ? mgr->desktopIds().size() : 0;
+    return m_backend ? int(m_backend->workspaces().size()) : 0;
 }
 
 bool Workspaces::isSupported() const
 {
-    auto* mgr = sharedManager();
-    return mgr && mgr->isAvailable();
+    return m_backend && m_backend->isSupported();
 }
 
 void Workspaces::switchTo(const QString& id)
 {
-    auto* mgr = sharedManager();
-    if (!mgr) {
-        return;
+    if (m_backend && !id.isEmpty()) {
+        m_backend->activate(id);
     }
-    mgr->setCurrentDesktopById(id);
 }
 
 } // namespace PhosphorShell

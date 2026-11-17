@@ -76,9 +76,9 @@ void registerQmlTypes()
         // single monitor arms each timeout.
         qmlRegisterType<PhosphorWayland::IdleInhibitor>("Phosphor.Shell", 1, 0, "IdleInhibitor");
         qmlRegisterSingletonType<Toplevels>("Phosphor.Shell", 1, 0, "Toplevels", &Toplevels::create);
-        // Compositor workspaces (KWin's virtual desktops today). A
-        // singleton for the same reason Toplevels is one: the underlying
-        // manager holds one D-Bus subscription per process.
+        // Compositor workspaces over ext-workspace-v1. A singleton for the
+        // same reason Toplevels is one: the underlying client binds the
+        // global once per process.
         qmlRegisterSingletonType<Workspaces>("Phosphor.Shell", 1, 0, "Workspaces", &Workspaces::create);
         // The placement engine's geometry per screen (the bar's live map).
         // One set of daemon subscriptions per engine, screens vended by

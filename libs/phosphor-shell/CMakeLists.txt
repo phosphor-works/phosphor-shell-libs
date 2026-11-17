@@ -23,7 +23,7 @@ else()
 endif()
 
 if(NOT PROJECT_VERSION)
-    project(PhosphorShell VERSION ${PHOSPHORSHELL_VERSION} LANGUAGES CXX)
+    project(PhosphorShell VERSION ${PHOSPHORSHELL_VERSION} LANGUAGES C CXX)
     set(CMAKE_CXX_STANDARD 20)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_AUTOMOC ON)
@@ -60,14 +60,24 @@ endif()
 if(NOT TARGET PhosphorWayland::PhosphorWayland)
     find_package(PhosphorWayland CONFIG REQUIRED)
 endif()
-# Backs the Workspaces QML singleton. Cheap: Qt6::Core + Qt6::DBus plus a
-# few small in-tree type libs, no KWin headers and nothing from src/.
-# The registration lives HERE rather than in phosphor-workspaces because
-# that library is on the engine-QML firewall list (see the root
-# CMakeLists) and may not link Qt6::Qml, directly or transitively.
-if(NOT TARGET PhosphorWorkspaces::PhosphorWorkspaces)
-    find_package(PhosphorWorkspaces CONFIG REQUIRED)
-endif()
+# ext-workspace-v1 (wayland-protocols staging), vendored under protocols/ like
+# phosphor-wayland's: the Workspaces backend binds it from its own registry.
+find_program(WAYLAND_SCANNER wayland-scanner REQUIRED)
+set(_phosphorshell_proto_dir ${CMAKE_CURRENT_SOURCE_DIR}/protocols)
+set(_phosphorshell_gen_dir ${CMAKE_CURRENT_BINARY_DIR}/generated-protocols)
+file(MAKE_DIRECTORY ${_phosphorshell_gen_dir})
+add_custom_command(
+    OUTPUT ${_phosphorshell_gen_dir}/ext-workspace-v1-client-protocol.h
+           ${_phosphorshell_gen_dir}/ext-workspace-v1-protocol.c
+    COMMAND ${WAYLAND_SCANNER} client-header
+            ${_phosphorshell_proto_dir}/ext-workspace-v1.xml
+            ${_phosphorshell_gen_dir}/ext-workspace-v1-client-protocol.h
+    COMMAND ${WAYLAND_SCANNER} private-code
+            ${_phosphorshell_proto_dir}/ext-workspace-v1.xml
+            ${_phosphorshell_gen_dir}/ext-workspace-v1-protocol.c
+    DEPENDS ${_phosphorshell_proto_dir}/ext-workspace-v1.xml
+    COMMENT "PhosphorShell: generating ext-workspace-v1 protocol code"
+)
 
 # Sibling Phosphor libraries this one links. Each lookup is GUARDED rather than
 # unconditional: in-tree the parent add_subdirectory()s the sibling before this
@@ -142,6 +152,13 @@ set(phosphorshell_SRCS
     src/lazyloader.cpp
     src/toplevels.cpp
     src/workspaces.cpp
+    src/workspacebackend_p.h
+    src/workspacestate_p.h
+    src/workspacestate.cpp
+    src/extworkspaceclient_p.h
+    src/extworkspaceclient.cpp
+    ${_phosphorshell_gen_dir}/ext-workspace-v1-client-protocol.h
+    ${_phosphorshell_gen_dir}/ext-workspace-v1-protocol.c
     src/placementmap.cpp
     src/placementmap_actions.cpp
     src/placementmap_desktop.cpp
@@ -192,6 +209,9 @@ target_include_directories(PhosphorShell
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR}>
+    PRIVATE
+        # The generated ext-workspace-v1 client header.
+        ${_phosphorshell_gen_dir}
 )
 
 target_compile_features(PhosphorShell PUBLIC cxx_std_20)
@@ -214,17 +234,6 @@ target_link_libraries(PhosphorShell
         PhosphorShaders::PhosphorShaders
         PhosphorWayland::PhosphorWayland
     PRIVATE
-        # PRIVATE, not PUBLIC: Workspaces.h only forward-declares
-        # VirtualDesktopManager and holds it behind a QPointer in a private
-        # section, so no consumer of PhosphorShell needs the definition or
-        # the include dirs. NOTE that PRIVATE does not keep the name out of
-        # the installed export entirely: for a SHARED library CMake records
-        # private deps in IMPORTED_LINK_DEPENDENT_LIBRARIES_<CONFIG>, and the
-        # generated PhosphorShellTargets.cmake refuses to load while any
-        # target named there is missing — so PhosphorShellConfig.cmake.in
-        # still carries a find_dependency(PhosphorWorkspaces) (and Qt6
-        # WaylandClient, below) for installed consumers.
-        PhosphorWorkspaces::PhosphorWorkspaces
         # PlacementMap: JSON zone keys and D-Bus for the placement engine's
         # geometry feed.
         PhosphorZones::PhosphorZones
@@ -233,7 +242,8 @@ target_link_libraries(PhosphorShell
         # xdg_popup.reposition directly. Qt's xdg-shell client plugin owns
         # the xdg_popup proxy lifecycle, but reposition is just a stateless
         # request on the same proxy — same approach quickshell uses
-        # (src/wayland/popupanchor.cpp).
+        # (src/wayland/popupanchor.cpp). WaylandClient also brings
+        # libwayland-client, which the ext-workspace-v1 client binds with.
         Qt6::WaylandClient
         Qt6::WaylandClientPrivate
 )

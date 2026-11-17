@@ -3,13 +3,6 @@
 
 find_package(Qt6 6.10 REQUIRED COMPONENTS Test Qml Quick)
 
-# D-Bus isolation, applied through the shared helper below.
-# test_phosphorshell_workspaces reaches the session bus through
-# VirtualDesktopManager (org.kde.KWin), so without it the test would read the
-# developer's live compositor and behave differently than on CI. It keeps both
-# branches and skips whichever did not apply, so under ctest it deterministically
-# exercises the no-compositor contract while running the binary directly on a
-# KWin session still performs the real integration check.
 
 # Shared test isolation: a private D-Bus session (so a test that touches D-Bus
 # cannot activate the INSTALLED daemon, which then holds the test's stdout pipe
@@ -106,16 +99,53 @@ set_tests_properties(test_phosphorshell_panelwindow_setters PROPERTIES
     LABELS "phosphorshell"
 )
 
-# Workspaces singleton + its list model. Isolated onto the private bus like
-# every other test here, so under ctest it always takes the no-compositor
-# branch, on a KWin desktop as much as on CI.
-add_executable(test_phosphorshell_workspaces test_workspaces.cpp)
-target_link_libraries(test_phosphorshell_workspaces
-    PRIVATE
-        Qt6::Test
-        PhosphorShell::PhosphorShell
+# Workspaces: the QML-facing singleton and model over a backend the test
+# drives, the ext-workspace-v1 client state without the wire, and the client
+# against a libwayland server in the test process. None needs a compositor.
+# They include the library's private headers from src/.
+find_package(Wayland REQUIRED COMPONENTS Server)
+find_program(WAYLAND_SCANNER wayland-scanner REQUIRED)
+set(_phosphorshell_test_gen_dir ${CMAKE_CURRENT_BINARY_DIR}/generated-protocols)
+file(MAKE_DIRECTORY ${_phosphorshell_test_gen_dir})
+add_custom_command(
+    OUTPUT ${_phosphorshell_test_gen_dir}/ext-workspace-v1-server-protocol.h
+           ${_phosphorshell_test_gen_dir}/ext-workspace-v1-protocol.c
+    COMMAND ${WAYLAND_SCANNER} server-header
+            ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/ext-workspace-v1.xml
+            ${_phosphorshell_test_gen_dir}/ext-workspace-v1-server-protocol.h
+    COMMAND ${WAYLAND_SCANNER} private-code
+            ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/ext-workspace-v1.xml
+            ${_phosphorshell_test_gen_dir}/ext-workspace-v1-protocol.c
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/ext-workspace-v1.xml
+    COMMENT "PhosphorShell tests: generating the ext-workspace-v1 server code"
 )
-add_test(NAME test_phosphorshell_workspaces COMMAND test_phosphorshell_workspaces)
+
+foreach(_name workspaces workspacestate extworkspaceclient)
+    add_executable(test_phosphorshell_${_name} test_${_name}.cpp)
+    target_include_directories(test_phosphorshell_${_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+    target_link_libraries(test_phosphorshell_${_name}
+        PRIVATE
+            Qt6::Test
+            PhosphorShell::PhosphorShell
+    )
+    add_test(NAME test_phosphorshell_${_name} COMMAND test_phosphorshell_${_name})
+    phosphorshell_isolate_test(test_phosphorshell_${_name} "QT_QPA_PLATFORM=offscreen")
+    set_tests_properties(test_phosphorshell_${_name} PROPERTIES LABELS "phosphorshell" TIMEOUT 30)
+endforeach()
+# The protocol's interface tables for the test's server side. A static
+# library of its own, so the C file stays out of the C++ test target and its
+# shared precompiled header.
+add_library(phosphorshell_test_extworkspace_server STATIC
+    ${_phosphorshell_test_gen_dir}/ext-workspace-v1-server-protocol.h
+    ${_phosphorshell_test_gen_dir}/ext-workspace-v1-protocol.c
+)
+target_include_directories(phosphorshell_test_extworkspace_server PUBLIC ${_phosphorshell_test_gen_dir})
+target_link_libraries(phosphorshell_test_extworkspace_server PUBLIC Wayland::Server)
+target_link_libraries(test_phosphorshell_extworkspaceclient
+    PRIVATE
+        phosphorshell_test_extworkspace_server
+        Qt6::WaylandClient
+)
 
 # PlacementMapParser: the bus-free JSON → cells half of the bar's placement
 # map, plus the forScreen() ownership guard. Needs a session bus only to
@@ -139,15 +169,6 @@ add_test(NAME test_phosphorshell_placementmap_live COMMAND test_phosphorshell_pl
 phosphorshell_isolate_test(test_phosphorshell_placementmap_live "QT_QPA_PLATFORM=offscreen")
 set_tests_properties(test_phosphorshell_placementmap_live PROPERTIES LABELS "phosphorshell")
 
-# Workspaces isolation, deliberately here rather than beside its add_test
-# above: interleaving the two is what left placementmapparser unlabelled.
-phosphorshell_isolate_test(test_phosphorshell_workspaces "QT_QPA_PLATFORM=offscreen")
-# TIMEOUT set AFTER the isolation call, which only supplies its 120s default
-# when no TIMEOUT is set yet — last write wins.
-set_tests_properties(test_phosphorshell_workspaces PROPERTIES
-    LABELS "phosphorshell"
-    TIMEOUT 30
-)
 
 # PerScreenPanels: the per-screen panel instantiator. Registers its types
 # into a test-local URI, so it needs neither a shell file nor a layer-shell

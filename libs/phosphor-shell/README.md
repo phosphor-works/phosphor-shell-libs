@@ -47,6 +47,7 @@ configs port with minimal rework.
 | `ShellGlobal`            | QML context object (`PhosphorShell`) with shell-wide config and runtime state. |
 | `ScreenModel`            | Reactive list of physical screens for per-screen `Variants`. |
 | `Toplevels`              | `zwlr-foreign-toplevel-management-v1` consumer (window list for taskbars). |
+| `Workspaces`             | `ext-workspace-v1` consumer (workspace list and switching for pagers). `supported` follows the global. |
 
 ## QML module
 

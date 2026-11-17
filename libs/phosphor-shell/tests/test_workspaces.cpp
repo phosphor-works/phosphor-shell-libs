@@ -1,159 +1,201 @@
 // SPDX-FileCopyrightText: 2026 fuddlesworth
 // SPDX-License-Identifier: LGPL-2.1-or-later
 //
-// Contract tests for the Workspaces singleton and its list model.
-//
-// These talk to the real session bus, so on a KWin desktop the
-// compositor-present branch runs for real and on a headless runner the
-// no-compositor branch does. Both are asserted; whichever did not apply
-// reports a QSKIP so a run that exercised neither is visible rather than
-// looking like a pass.
-//
-// Nothing here ever performs a real workspace switch. These tests may run
-// on a developer's live session, and yanking the desktop out from under
-// someone mid-run is not an acceptable side effect — so only the
-// rejected-input paths of switchTo() are exercised.
+// The Workspaces singleton and its list model over a backend this test
+// drives: the QML-facing contract (roles, change-gated signals, a switch as
+// a dataChanged rather than a reset, `supported` following the source)
+// without a compositor. test_extworkspaceclient covers the protocol side.
 
 #include <PhosphorShell/Workspaces.h>
+
+#include "workspacebackend_p.h"
 
 #include <QAbstractListModel>
 #include <QSignalSpy>
 #include <QtTest/QtTest>
 
+using PhosphorShell::WorkspaceBackend;
+using PhosphorShell::WorkspaceEntry;
 using PhosphorShell::WorkspaceListModel;
 using PhosphorShell::Workspaces;
+
+namespace {
+class FakeBackend : public WorkspaceBackend
+{
+public:
+    bool isSupported() const override
+    {
+        return supported;
+    }
+    QList<WorkspaceEntry> workspaces() const override
+    {
+        return entries;
+    }
+    void activate(const QString& id) override
+    {
+        activated.append(id);
+    }
+
+    void setSupported(bool value)
+    {
+        supported = value;
+        Q_EMIT supportedChanged();
+    }
+    void publish(const QList<WorkspaceEntry>& next)
+    {
+        entries = next;
+        Q_EMIT workspacesChanged();
+    }
+
+    bool supported = false;
+    QList<WorkspaceEntry> entries;
+    QStringList activated;
+};
+
+WorkspaceEntry entry(const char* id, const char* name, bool active = false)
+{
+    return WorkspaceEntry{QString::fromLatin1(id), QString::fromLatin1(name), active, false};
+}
+} // namespace
 
 class TestWorkspaces : public QObject
 {
     Q_OBJECT
 
 private Q_SLOTS:
-    /// QML binds `Repeater { model: Workspaces.model }` unconditionally, so
-    /// the model must exist even with no compositor behind it. The role
-    /// names are the delegate's entire contract — a rename would break
-    /// every `required property` silently, since QML reports a missing
-    /// role as undefined rather than an error.
-    void modelExistsAndRoleNamesArePinned()
+    /// The role names are the delegate's entire contract: a rename would
+    /// break every `required property` silently, since QML reports a
+    /// missing role as undefined rather than an error.
+    void roleNamesArePinned()
     {
-        Workspaces workspaces;
-        auto* model = workspaces.model();
-        QVERIFY(model);
-
-        const QHash<int, QByteArray> roles = model->roleNames();
+        FakeBackend backend;
+        Workspaces workspaces(&backend);
+        const QHash<int, QByteArray> roles = workspaces.model()->roleNames();
         QCOMPARE(roles.value(WorkspaceListModel::IdRole), QByteArray("workspaceId"));
         QCOMPARE(roles.value(WorkspaceListModel::NameRole), QByteArray("name"));
         QCOMPARE(roles.value(WorkspaceListModel::IsActiveRole), QByteArray("isActive"));
         QCOMPARE(roles.size(), 3);
     }
 
-    /// With no workspace source the pager must collapse rather than show a
-    /// single permanent pill. `supported` is what the widget gates on.
-    void withoutACompositorEverythingIsEmpty()
+    /// QML binds `Repeater { model: Workspaces.model }` unconditionally, so
+    /// the model exists even with nothing behind it.
+    void withoutABackendEverythingIsEmpty()
     {
-        Workspaces workspaces;
-        if (workspaces.isSupported()) {
-            QSKIP("a workspace source is present; the no-compositor branch is not exercised");
-        }
+        Workspaces workspaces(static_cast<WorkspaceBackend*>(nullptr));
+        QVERIFY(workspaces.model());
+        QVERIFY(!workspaces.isSupported());
         QCOMPARE(workspaces.count(), 0);
+        QCOMPARE(workspaces.activeIndex(), 0);
         QVERIFY(workspaces.activeId().isEmpty());
         QCOMPARE(workspaces.model()->rowCount(), 0);
+        workspaces.switchTo(QStringLiteral("anything"));
     }
 
-    /// The real thing: the model must describe the compositor's actual
-    /// workspaces, and exactly one of them must be active. A pager showing
-    /// zero or two highlighted pills is the visible failure.
-    void withKWinTheModelMatchesTheCompositor()
+    /// `supported` follows the source as its global comes and goes.
+    void supportedFollowsTheBackend()
     {
-        Workspaces workspaces;
-        if (!workspaces.isSupported()) {
-            QSKIP("no workspace source present; the compositor branch is not exercised");
-        }
+        FakeBackend backend;
+        Workspaces workspaces(&backend);
+        QSignalSpy supported(&workspaces, &Workspaces::supportedChanged);
+        QVERIFY(!workspaces.isSupported());
+        backend.setSupported(true);
+        QCOMPARE(supported.count(), 1);
+        QVERIFY(workspaces.isSupported());
+        backend.setSupported(false);
+        QCOMPARE(supported.count(), 2);
+        QVERIFY(!workspaces.isSupported());
+    }
 
-        // The manager fetches the desktop list ASYNCHRONOUSLY (that is what
-        // start()-before-init() buys — no blocking D-Bus call on the GUI
-        // thread at startup), so the reply has not landed the instant the
-        // singleton is constructed.
-        QTRY_VERIFY_WITH_TIMEOUT(workspaces.count() > 0, 3000);
-
+    void modelAndActiveFollowTheList()
+    {
+        FakeBackend backend;
+        Workspaces workspaces(&backend);
+        QSignalSpy active(&workspaces, &Workspaces::activeChanged);
+        QSignalSpy count(&workspaces, &Workspaces::countChanged);
         auto* model = workspaces.model();
-        QVERIFY(model);
-        QCOMPARE(model->rowCount(), workspaces.count());
-        QVERIFY2(workspaces.count() > 0, "a supported workspace source reported no workspaces");
 
-        int activeRows = 0;
-        QStringList ids;
-        for (int row = 0; row < model->rowCount(); ++row) {
-            const QModelIndex idx = model->index(row, 0);
-            const QString id = model->data(idx, WorkspaceListModel::IdRole).toString();
-            QVERIFY2(!id.isEmpty(), "a workspace row has no id; switchTo could never address it");
-            ids << id;
-            if (model->data(idx, WorkspaceListModel::IsActiveRole).toBool()) {
-                ++activeRows;
-            }
-        }
+        backend.publish({entry("a", "Mail"), entry("b", "Code", true), entry("c", "")});
+        QCOMPARE(count.count(), 1);
+        QCOMPARE(active.count(), 1);
+        QCOMPARE(workspaces.count(), 3);
+        QCOMPARE(workspaces.activeId(), QStringLiteral("b"));
+        QCOMPARE(workspaces.activeName(), QStringLiteral("Code"));
+        QCOMPARE(workspaces.activeIndex(), 2);
+        QCOMPARE(model->rowCount(), 3);
+        QCOMPARE(model->data(model->index(0), WorkspaceListModel::IdRole).toString(), QStringLiteral("a"));
+        QCOMPARE(model->data(model->index(1), WorkspaceListModel::IsActiveRole).toBool(), true);
+        // An unnamed workspace still gets a label, numbered by position.
+        QCOMPARE(model->data(model->index(2), WorkspaceListModel::NameRole).toString(), QStringLiteral("Workspace 3"));
 
-        // Ids are the addressing scheme, so duplicates would make switchTo
-        // ambiguous.
-        QCOMPARE(ids.size(), QSet<QString>(ids.cbegin(), ids.cend()).size());
-        QCOMPARE(activeRows, 1);
-        QVERIFY2(ids.contains(workspaces.activeId()), "activeId is not one of the model's rows");
+        // The same list again: nothing to announce.
+        backend.publish(backend.entries);
+        QCOMPARE(count.count(), 1);
+        QCOMPARE(active.count(), 1);
 
-        // activeIndex is 1-based and must agree with the flagged row.
-        QVERIFY(workspaces.activeIndex() >= 1);
-        QVERIFY(workspaces.activeIndex() <= workspaces.count());
-        QCOMPARE(ids.at(workspaces.activeIndex() - 1), workspaces.activeId());
+        // A workspace added before the active one keeps its id and moves
+        // its position, which is still an activeChanged.
+        backend.publish({entry("z", "New"), entry("a", "Mail"), entry("b", "Code", true), entry("c", "")});
+        QCOMPARE(workspaces.activeId(), QStringLiteral("b"));
+        QCOMPARE(workspaces.activeIndex(), 3);
+        QCOMPARE(active.count(), 2);
+        QCOMPARE(count.count(), 2);
     }
 
-    /// An unknown id must never reach the compositor. Workspaces::switchTo
-    /// forwards unconditionally; the rejection lives one layer down in
-    /// VirtualDesktopManager::setCurrentDesktopById, which validates against
-    /// the known id list before writing. Writing an unrecognised UUID would
-    /// either be rejected by KWin or switch to something this side has no
-    /// record of, leaving activeId stale.
-    ///
-    /// This is also what makes the test safe to run on a live session: it
-    /// cannot move a developer's actual desktop.
-    void switchToAnUnknownIdIsIgnored()
+    /// A switch re-styles two rows. A reset would rebuild every pager
+    /// delegate and restart its transition.
+    void aSwitchIsTwoDataChangesNotAReset()
     {
-        Workspaces workspaces;
-        // Let the async list fetch settle first: reading activeId before it
-        // lands would capture an empty baseline that the reply then changes,
-        // and this test would blame switchTo for it.
-        if (workspaces.isSupported()) {
-            QTRY_VERIFY_WITH_TIMEOUT(workspaces.count() > 0, 3000);
-        }
-        const QString before = workspaces.activeId();
+        FakeBackend backend;
+        backend.entries = {entry("a", "One", true), entry("b", "Two"), entry("c", "Three")};
+        Workspaces workspaces(&backend);
+        auto* model = workspaces.model();
+        QSignalSpy reset(model, &QAbstractItemModel::modelReset);
+        QSignalSpy changed(model, &QAbstractItemModel::dataChanged);
 
+        backend.publish({entry("a", "One"), entry("b", "Two"), entry("c", "Three", true)});
+        QCOMPARE(reset.count(), 0);
+        QCOMPARE(changed.count(), 2);
+        QCOMPARE(changed.at(0).at(0).value<QModelIndex>().row(), 0);
+        QCOMPARE(changed.at(1).at(0).value<QModelIndex>().row(), 2);
+        QCOMPARE(changed.at(1).at(2).value<QList<int>>(), QList<int>{WorkspaceListModel::IsActiveRole});
+        QCOMPARE(workspaces.activeId(), QStringLiteral("c"));
+
+        // A rename is a different list.
+        backend.publish({entry("a", "Uno"), entry("b", "Two"), entry("c", "Three", true)});
+        QCOMPARE(reset.count(), 1);
+
+        // No workspace active at all.
+        backend.publish({entry("a", "Uno"), entry("b", "Two"), entry("c", "Three")});
+        QCOMPARE(workspaces.activeIndex(), 0);
+        QVERIFY(workspaces.activeId().isEmpty());
+    }
+
+    void switchToForwardsKnownShapes()
+    {
+        FakeBackend backend;
+        Workspaces workspaces(&backend);
         workspaces.switchTo(QString());
-        workspaces.switchTo(QStringLiteral("not-a-real-workspace-uuid"));
-        // A real switch would come back asynchronously over D-Bus, so give
-        // it a window to land before concluding nothing happened.
-        QTest::qWait(200);
-
-        QCOMPARE(workspaces.activeId(), before);
-
-        // The file's contract: whichever branch did not apply reports a
-        // QSKIP so a run that exercised neither is visible. With no
-        // workspace source the calls above no-op inside the manager and
-        // the before/after comparison holds vacuously (empty == empty),
-        // so say so rather than reporting silent coverage.
-        if (!workspaces.isSupported()) {
-            QSKIP("no workspace source; the rejection path in setCurrentDesktopById was not exercised");
-        }
+        workspaces.switchTo(QStringLiteral("b"));
+        QCOMPARE(backend.activated, QStringList{QStringLiteral("b")});
     }
 
-    /// The wrapper is per-engine over a process-wide manager, so a hot
-    /// reload builds a fresh one against the same subscriptions.
-    void repeatedConstructionIsSafe()
+    /// The global vanishing empties everything in one update.
+    void losingTheSourceEmptiesTheModel()
     {
-        for (int generation = 0; generation < 3; ++generation) {
-            Workspaces workspaces;
-            QVERIFY(workspaces.model());
-        }
-        QTest::qWait(50);
+        FakeBackend backend;
+        backend.supported = true;
+        backend.entries = {entry("a", "One", true)};
+        Workspaces workspaces(&backend);
+        QSignalSpy count(&workspaces, &Workspaces::countChanged);
+        QSignalSpy active(&workspaces, &Workspaces::activeChanged);
+        backend.publish({});
+        backend.setSupported(false);
+        QCOMPARE(count.count(), 1);
+        QCOMPARE(active.count(), 1);
+        QCOMPARE(workspaces.model()->rowCount(), 0);
+        QVERIFY(!workspaces.isSupported());
     }
 };
 
-QTEST_MAIN(TestWorkspaces)
-
+QTEST_GUILESS_MAIN(TestWorkspaces)
 #include "test_workspaces.moc"

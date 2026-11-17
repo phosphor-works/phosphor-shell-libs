@@ -6,7 +6,6 @@
 #include <PhosphorShell/phosphorshell_export.h>
 
 #include <QAbstractListModel>
-#include <QList>
 #include <QObject>
 #include <QPointer>
 #include <QString>
@@ -17,19 +16,18 @@ class QQmlEngine;
 class QJSEngine;
 QT_END_NAMESPACE
 
-namespace PhosphorWorkspaces {
-class VirtualDesktopManager;
-} // namespace PhosphorWorkspaces
-
 namespace PhosphorShell {
+
+class WorkspaceBackend;
 
 /**
  * @brief Incrementally-updating model of the compositor's workspaces.
  *
  * Roles:
- *   - `workspaceId` — the compositor's stable workspace identifier.
- *                    Not `id`: QML's parser rejects `id` as a delegate
- *                    property name, and qmlformat fails outright on it.
+ *   - `workspaceId` — the workspace's identifier, unique and stable while
+ *                    the workspace exists. Not `id`: QML's parser rejects
+ *                    `id` as a delegate property name, and qmlformat fails
+ *                    outright on it.
  *   - `name`        — the user-visible label.
  *   - `isActive`    — whether this is the current workspace.
  *
@@ -50,7 +48,8 @@ public:
     };
     Q_ENUM(Role)
 
-    explicit WorkspaceListModel(PhosphorWorkspaces::VirtualDesktopManager* manager, QObject* parent = nullptr);
+    /// Null `backend`: an empty model.
+    explicit WorkspaceListModel(WorkspaceBackend* backend, QObject* parent = nullptr);
     ~WorkspaceListModel() override;
 
     [[nodiscard]] int rowCount(const QModelIndex& parent = {}) const override;
@@ -59,12 +58,11 @@ public:
 
 private:
     void reload();
-    void refreshActive();
 
-    QPointer<PhosphorWorkspaces::VirtualDesktopManager> m_manager;
+    QPointer<WorkspaceBackend> m_backend;
     QStringList m_ids;
     QStringList m_names;
-    // 0-based row of the active workspace, or -1 when none matches.
+    // 0-based row of the active workspace, or -1 when none is.
     int m_activeRow = -1;
 };
 
@@ -85,29 +83,26 @@ private:
  *         }
  *     }
  *
+ * The workspaces come from the compositor over ext-workspace-v1 (staging
+ * in wayland-protocols). Every workspace group is listed, groups in the
+ * order the compositor announced them, each ordered by its coordinates;
+ * hidden workspaces are left out. When several groups (one per output, say)
+ * each have an active workspace, `activeId` is the first of them in that
+ * order.
+ *
  * ## Identifiers, not indices
  *
  * The model's `workspaceId` role and `switchTo(id)` are the whole interface for
  * addressing a workspace. Positions renumber whenever a workspace is
  * created or removed, so anything holding a workspace across such an event
  * — a pager delegate mid-animation, a rule, a shortcut — must key on the
- * id. This also matches the shape the planned CompositorService façade
- * specifies (`workspaces()` as a model, `switchToWorkspace(id)`), so the
- * QML side will not need to change when a non-KWin backend lands behind
- * it.
+ * id.
  *
- * `supported` is false wherever no workspace source answered — a non-KWin
- * compositor, or a session where KWin's D-Bus interface is absent.
- *
- * It is CONSTANT, and that is a real limitation rather than an oversight
- * to work around: the underlying availability flag is latched by a single
- * D-Bus probe at construction and there is no re-probe. A shell that
- * reaches this singleton before KWin has registered on the session bus
- * therefore reads false for the rest of the process. Gate UI on `count`
- * instead, which is notified and is already 0 whenever no source answered.
- * `supported` is for diagnostics and for telling "no compositor support"
- * apart from "supported, but zero workspaces" — a distinction no current
- * compositor actually produces.
+ * `supported` is true while the compositor advertises
+ * ext_workspace_manager_v1, and follows the global as it appears and
+ * disappears. The global arrives asynchronously, so a shell reading it at
+ * startup sees false first and then true. Without it everything is empty:
+ * `count` is 0 and `activeId` is empty.
  */
 // Registered as a QML singleton imperatively in ShellEngine::load(), same
 // as Toplevels; the QML_* macros would need qt_add_qml_module, which this
@@ -118,17 +113,23 @@ class PHOSPHORSHELL_EXPORT Workspaces : public QObject
 
     /// Bind `Repeater { model: Workspaces.model }`.
     Q_PROPERTY(QAbstractListModel* model READ model CONSTANT)
-    /// Identifier of the current workspace, or empty when unsupported.
+    /// Identifier of the current workspace, or empty when there is none.
     Q_PROPERTY(QString activeId READ activeId NOTIFY activeChanged)
     Q_PROPERTY(QString activeName READ activeName NOTIFY activeChanged)
     /// 1-based position of the current workspace, for a plain numeric
-    /// readout. Do NOT use it to address a workspace — see the class docs.
+    /// readout, 0 when there is none. Do NOT use it to address a
+    /// workspace — see the class docs.
     Q_PROPERTY(int activeIndex READ activeIndex NOTIFY activeChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(bool supported READ isSupported CONSTANT)
+    Q_PROPERTY(bool supported READ isSupported NOTIFY supportedChanged)
 
 public:
+    /// Over the process-wide ext-workspace client on Qt's Wayland
+    /// connection.
     explicit Workspaces(QObject* parent = nullptr);
+    /// Over `backend`, which must outlive this object or be destroyed with
+    /// it. Null: always unsupported and empty.
+    explicit Workspaces(WorkspaceBackend* backend, QObject* parent = nullptr);
     ~Workspaces() override;
 
     /// QML-singleton factory hook.
@@ -149,17 +150,15 @@ public:
 Q_SIGNALS:
     void activeChanged();
     void countChanged();
+    void supportedChanged();
 
 private:
-    /// Process-wide VirtualDesktopManager, lazily constructed and parented
-    /// to qApp. Shared for the same reason Toplevels shares its manager:
-    /// one D-Bus subscription per process, and a hot reload rebuilds the
-    /// QML engine without re-subscribing.
-    static PhosphorWorkspaces::VirtualDesktopManager* sharedManager();
+    void sync();
 
+    QPointer<WorkspaceBackend> m_backend;
     WorkspaceListModel* m_model = nullptr;
     // Last-published values, so the notifications are change-gated rather
-    // than mirroring every refresh the manager performs.
+    // than mirroring every update the backend makes.
     QString m_activeId;
     QString m_activeName;
     int m_activeIndex = 0;
