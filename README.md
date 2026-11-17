@@ -15,7 +15,7 @@ Each library lives in `libs/<name>/`. `examples/` holds demos and command-line a
 ## Build
 
 Needs what phosphor-libs needs (CMake 3.25, Qt 6.10 with its private headers, extra-cmake-modules, Wayland), plus
-KF6 Kirigami and GuiAddons, libpipewire, polkit-qt6 and PAM. The first configure downloads the phosphor-libs commit
+KF6 Kirigami, libxkbcommon, libpipewire, polkit-qt6 and PAM. The first configure downloads the phosphor-libs commit
 that `cmake/PhosphorShellLibsDependencies.cmake` pins, and the archives that commit pins, into `.cache/cpm`.
 
 ```sh

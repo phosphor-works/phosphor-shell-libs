@@ -17,14 +17,17 @@ qt6-svg
 qt6-wayland
 wayland
 wayland-protocols
+# phosphor-shell-lock reads the keyboard layout and Caps Lock from the seat's
+# keymap; xkeyboard-config gives its test keymaps to compile.
+libxkbcommon
+xkeyboard-config
 # Qt declares QVulkanInstance only when the Vulkan headers are present, and
 # phosphor-libs' phosphor-surfaces uses it wherever Qt was built with Vulkan.
 vulkan-headers
-# KF6: the libraries draw their icons through Kirigami, and phosphor-shell-lock
-# uses KGuiAddons. KGlobalAccel and PlasmaActivities are
-# optional lookups in phosphor-libs, installed so CI builds what they switch on.
+# KF6: the libraries draw their icons through Kirigami. KGlobalAccel and
+# PlasmaActivities are optional lookups in phosphor-libs, installed so CI
+# builds what they switch on.
 kirigami
-kguiaddons
 kglobalaccel
 plasma-activities
 # The service libraries' system interfaces: PipeWire (phosphor-service-pipewire),

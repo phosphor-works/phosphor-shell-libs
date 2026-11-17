@@ -149,22 +149,25 @@ FocusScope {
             Layout.fillWidth: true
             Layout.topMargin: Appearance.compact ? 12 : 17
             spacing: 8
-            ShellButton {
-                objectName: "lockKeyboard"
-                opacity: 1
-                flat: true
-                implicitHeight: 26
-                implicitWidth: contentItem.implicitWidth
+            // The active layout, read only: Wayland has no standard request
+            // to switch it.
+            RowLayout {
+                Layout.minimumHeight: 26
+                spacing: 6
                 visible: !!root.keyboard && root.keyboard.layoutName !== ""
-                enabled: !!root.keyboard && root.keyboard.canCycle
-                iconName: "input-keyboard"
-                text: root.keyboard ? root.keyboard.layoutName + (root.keyboard.canCycle ? "  ⌄" : "") : ""
-                label: qsTr("Keyboard layout") + ": " + text
-                labelSize: 10
-                foreground: Appearance.muted
-                onClicked: {
-                    root.keyboard.nextLayout();
-                    root.focusPassword();
+                ShellIcon {
+                    source: "input-keyboard"
+                    color: Appearance.muted
+                    Layout.preferredWidth: 13
+                    Layout.preferredHeight: 13
+                }
+                Text {
+                    objectName: "lockKeyboard"
+                    text: root.keyboard ? root.keyboard.layoutName : ""
+                    color: Appearance.muted
+                    font.family: Tokens.font_family_ui
+                    font.pixelSize: Math.round((10) * Appearance.textScale)
+                    Accessible.name: qsTr("Keyboard layout") + ": " + text
                 }
             }
             Item {

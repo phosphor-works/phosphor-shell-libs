@@ -19,6 +19,7 @@
   kdePackages,
   wayland,
   wayland-scanner,
+  libxkbcommon,
   vulkan-headers,
   dbus,
   pipewire,
@@ -115,10 +116,11 @@ stdenv.mkDerivation {
     # Qt declares QVulkanInstance only with the Vulkan headers present, and
     # phosphor-surfaces uses it when Qt has Vulkan, as nixpkgs' Qt does.
     vulkan-headers
-    # The shell libraries draw their icons through Kirigami, and
-    # phosphor-shell-lock uses KGuiAddons.
+    # The shell libraries draw their icons through Kirigami.
     kdePackages.kirigami
-    kdePackages.kguiaddons
+    # phosphor-shell-lock reads the keyboard layout and Caps Lock from the
+    # seat's keymap.
+    libxkbcommon
     # The service libraries' system interfaces: PipeWire, polkit-qt6, PAM, and
     # ddcutil for phosphor-service-brightness's optional external-monitor
     # backend.
