@@ -53,14 +53,15 @@ FocusScope {
     // Whether the engine has placed this pane yet.
     //
     // A pane is a real toplevel: the compositor maps it wherever ITS
-    // placement policy says, and the PlasmaZones rule moves it to the zone
-    // afterwards, on windowOpened. Measured from inside the nested
-    // compositor on a 1024x768 output: mapped at 322,168 380x460, dead
-    // centre, and moved to 516,36 500x284 fifty-six milliseconds later.
-    // Painting in that window paints in the wrong place, and the control
-    // center visibly appeared centred and popped. Writing the rule before
-    // the map does not help and already happens — the daemon applies it
-    // after the window exists, which is the whole gap.
+    // placement policy says. When the app has given the pane's app id a
+    // window rule through the Placement API, the placement engine moves it
+    // to the rule's zone afterwards, on windowOpened. Measured from inside
+    // a nested compositor on a 1024x768 output: mapped at 322,168 380x460,
+    // dead centre, and moved to 516,36 500x284 fifty-six milliseconds
+    // later. Painting in that window paints in the wrong place, and the
+    // control center visibly appeared centred and popped. Writing the rule
+    // before the map does not help: the engine applies it after the window
+    // exists, which is the whole gap.
     //
     // The move is observable from here without asking the compositor
     // anything: this host fills the toplevel, so the engine resizing the
@@ -150,8 +151,8 @@ FocusScope {
         //
         // It does NOT close the window: the jump is the compositor's, and a
         // Wayland client cannot see its own toplevel position. The complete
-        // fix is placing the pane on its first configure, in the daemon's
-        // rule path.
+        // fix is placing the pane on its first configure, in the placement
+        // engine's rule path.
         //
         // An earlier attempt also HELD the enter for the 140 ms placement
         // window of A2 §4.4. That closed the window but delayed every pane
