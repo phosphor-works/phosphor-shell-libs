@@ -70,6 +70,16 @@ Item {
             trayFixture.stop();
         }
 
+        // Waits until the window has drawn a frame with the item in it.
+        // waitForRendering() waits for the window's next frameSwapped, and a
+        // scene that has already finished drawing schedules none, so on a fast
+        // renderer it timed out with the item long on screen. Asking the window
+        // for a frame first means there is always a next one to wait for.
+        function rendered(item) {
+            item.Window.window.update();
+            verify(waitForRendering(item));
+        }
+
         function init() {
             TrayModel.reset();
             seed("everyday", 8);
@@ -110,7 +120,7 @@ Item {
                 initialMenuKey: entry(id).instanceKey
             } : {});
             verify(!!panel, "Component exists");
-            verify(waitForRendering(panel));
+            rendered(panel);
             if (id)
                 tryVerify(() => !!findChild(panel, "trayMenuItem-1"));
             return panel;
@@ -126,7 +136,7 @@ Item {
                 width: 340
             });
             verify(!!panel, "Component exists");
-            verify(waitForRendering(panel));
+            rendered(panel);
             const close = control(panel, "trayClose");
             verify(fitsHorizontally(close, panel));
             const phone = control(panel, "trayApp-" + entry("kdeconnect").preferenceKey);
@@ -215,7 +225,7 @@ Item {
             mouseClick(control(panel, "traySettings"));
             tryCompare(panel, "settingsOpen", true);
             const attention = control(panel, "trayAttention");
-            verify(waitForRendering(attention));
+            rendered(attention);
             mouseClick(attention);
             tryVerify(() => Appearance.settings.trayAttention === false);
             const limit = control(panel, "trayLimit");
@@ -307,7 +317,7 @@ Item {
             compare(panel.closeCount, 0);
             panel.closeMenu();
             tryCompare(panel, "hasMenu", false);
-            verify(waitForRendering(phone));
+            rendered(phone);
             tryCompare(phone, "activeFocus", true);
             const discord = control(panel, "trayApp-" + entry("discord").preferenceKey);
             discord.forceActiveFocus();
@@ -386,7 +396,7 @@ Item {
             panel.openMenu(entry("steam"), panel);
             tryVerify(() => !!findChild(panel, "trayMenuItem-20"));
             const submenu = control(panel, "trayMenuItem-20");
-            verify(waitForRendering(submenu));
+            rendered(submenu);
             compare(panel.selectedEntry.itemId, "steam");
             mouseClick(submenu);
             tryCompare(control(panel, "trayMenuModel"), "rootId", 20);
