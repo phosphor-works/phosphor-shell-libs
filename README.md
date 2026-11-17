@@ -44,3 +44,11 @@ To build the app against a local checkout instead, configure it with
 ## License
 
 LGPL-2.1-or-later. See `COPYING.LESSER`.
+
+Third-party files keep their own licences:
+
+| File | Origin | Licence |
+| --- | --- | --- |
+| `libs/phosphor-service-nightlight/protocols/wlr-gamma-control-unstable-v1.xml` | [wlr-protocols](https://gitlab.freedesktop.org/wlroots/wlr-protocols) `unstable/`, commit `1106a4a1c57562ddd438c547da4c0d6dc150d624`, unchanged | HPND-sell-variant (in the file) |
+
+The code wayland-scanner generates from a protocol file at build time carries that file's licence.
