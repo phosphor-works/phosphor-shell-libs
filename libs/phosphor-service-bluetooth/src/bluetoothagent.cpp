@@ -12,7 +12,7 @@
 #include <optional>
 
 namespace {
-constexpr auto kAgentPath = "/org/phosphor_works/Lambent/BluetoothAgent";
+constexpr auto kAgentPath = "/org/phosphor_works/PhosphorServiceBluetooth/Agent";
 constexpr auto kRejectedError = "org.bluez.Error.Rejected";
 constexpr auto kCanceledError = "org.bluez.Error.Canceled";
 } // namespace
