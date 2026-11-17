@@ -2,132 +2,134 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 #include <PhosphorShellLock/LockKeyboard.h>
 
-#include <KModifierKeyInfo>
-#include <QDBusArgument>
-#include <QDBusMessage>
-#include <QDBusPendingCallWatcher>
-#include <QDBusServiceWatcher>
+#include "keyboardstate.h"
+
+#include <QGuiApplication>
+#include <QtGui/qguiapplication_platform.h>
+
+#include <wayland-client.h>
+
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include <cstring>
 
 namespace PhosphorShellLock {
 namespace {
-const QString layoutPath = QStringLiteral("/Layouts");
-const QString layoutInterface = QStringLiteral("org.kde.KeyboardLayouts");
+wl_seat* qtSeat()
+{
+    auto* app = qGuiApp ? qGuiApp->nativeInterface<QNativeInterface::QWaylandApplication>() : nullptr;
+    // Qt asks the seat for a keyboard only when it has the capability, and
+    // asking a seat that never had one is a protocol error.
+    return app && app->keyboard() ? app->seat() : nullptr;
 }
+}
+
+struct LockKeyboard::Listener
+{
+    static void keymap(void* data, wl_keyboard*, uint32_t format, int32_t fd, uint32_t size)
+    {
+        auto* self = static_cast<LockKeyboard*>(data);
+        QByteArray text;
+        if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1 && size > 0) {
+            void* mapped = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
+            if (mapped != MAP_FAILED) {
+                // The keymap is NUL-terminated within `size`.
+                const auto* chars = static_cast<const char*>(mapped);
+                text = QByteArray(chars, qsizetype(strnlen(chars, size)));
+                munmap(mapped, size);
+            }
+        }
+        close(fd);
+        self->m_state->setKeymap(text);
+        self->publish();
+    }
+
+    static void enter(void*, wl_keyboard*, uint32_t, wl_surface*, wl_array*)
+    {
+    }
+
+    static void leave(void*, wl_keyboard*, uint32_t, wl_surface*)
+    {
+    }
+
+    static void key(void*, wl_keyboard*, uint32_t, uint32_t, uint32_t, uint32_t)
+    {
+    }
+
+    static void modifiers(void* data, wl_keyboard*, uint32_t, uint32_t depressed, uint32_t latched, uint32_t locked,
+                          uint32_t group)
+    {
+        auto* self = static_cast<LockKeyboard*>(data);
+        self->m_state->updateModifiers(depressed, latched, locked, group);
+        self->publish();
+    }
+
+    static void repeatInfo(void*, wl_keyboard*, int32_t, int32_t)
+    {
+    }
+
+    static constexpr wl_keyboard_listener listener = {
+        .keymap = keymap,
+        .enter = enter,
+        .leave = leave,
+        .key = key,
+        .modifiers = modifiers,
+        .repeat_info = repeatInfo,
+    };
+};
 
 LockKeyboard::LockKeyboard(QObject* parent)
-    : LockKeyboard(QDBusConnection::sessionBus(), QStringLiteral("org.kde.keyboard"), parent)
+    : LockKeyboard(qtSeat(), parent)
 {
 }
 
-LockKeyboard::LockKeyboard(const QDBusConnection& bus, const QString& service, QObject* parent)
+LockKeyboard::LockKeyboard(wl_seat* seat, QObject* parent)
     : QObject(parent)
-    , m_bus(bus)
-    , m_service(service)
-    , m_modifiers(new KModifierKeyInfo(this))
+    , m_state(std::make_unique<KeyboardState>())
 {
-    connect(m_modifiers, &KModifierKeyInfo::keyLocked, this, [this](Qt::Key key, bool) {
-        if (key == Qt::Key_CapsLock)
-            Q_EMIT capsLockChanged();
-    });
-    connect(m_modifiers, &KModifierKeyInfo::keyAdded, this, [this](Qt::Key key) {
-        if (key == Qt::Key_CapsLock)
-            Q_EMIT capsLockChanged();
-    });
-    connect(m_modifiers, &KModifierKeyInfo::keyRemoved, this, [this](Qt::Key key) {
-        if (key == Qt::Key_CapsLock)
-            Q_EMIT capsLockChanged();
-    });
-    m_bus.connect(service, layoutPath, layoutInterface, QStringLiteral("layoutChanged"), this, SLOT(refresh()));
-    m_bus.connect(service, layoutPath, layoutInterface, QStringLiteral("layoutListChanged"), this, SLOT(refresh()));
-    auto* watcher = new QDBusServiceWatcher(service, bus, QDBusServiceWatcher::WatchForOwnerChange, this);
-    connect(watcher, &QDBusServiceWatcher::serviceOwnerChanged, this, &LockKeyboard::refresh);
-    refresh();
+    if (!seat) {
+        return;
+    }
+    // A wl_keyboard of our own: Qt's has its listener already, and keeps
+    // its xkb state private.
+    m_keyboard = wl_seat_get_keyboard(seat);
+    wl_keyboard_add_listener(m_keyboard, &Listener::listener, this);
+}
+
+LockKeyboard::~LockKeyboard()
+{
+    if (!m_keyboard) {
+        return;
+    }
+    if (wl_keyboard_get_version(m_keyboard) >= WL_KEYBOARD_RELEASE_SINCE_VERSION) {
+        wl_keyboard_release(m_keyboard);
+    } else {
+        wl_keyboard_destroy(m_keyboard);
+    }
 }
 
 QString LockKeyboard::layoutName() const
 {
-    return m_index < uint(m_layouts.size()) ? m_layouts.at(m_index) : QString();
-}
-
-bool LockKeyboard::canCycle() const
-{
-    return m_layouts.size() > 1;
+    return m_layoutName;
 }
 
 bool LockKeyboard::capsLock() const
 {
-    return m_modifiers->isKeyLocked(Qt::Key_CapsLock);
+    return m_capsLock;
 }
 
-void LockKeyboard::publish(const QStringList& names, uint index)
+void LockKeyboard::publish()
 {
-    if (m_layouts == names && m_index == index)
-        return;
-    m_layouts = names;
-    m_index = index;
-    Q_EMIT layoutChanged();
-}
-
-void LockKeyboard::refresh()
-{
-    const auto revision = ++m_revision;
-    const auto message =
-        QDBusMessage::createMethodCall(m_service, layoutPath, layoutInterface, QStringLiteral("getLayoutsList"));
-    auto* watcher = new QDBusPendingCallWatcher(m_bus.asyncCall(message), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, revision](QDBusPendingCallWatcher* call) {
-        const auto reply = call->reply();
-        call->deleteLater();
-        if (revision != m_revision)
-            return;
-        if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().isEmpty()) {
-            publish({}, 0);
-            return;
-        }
-        QStringList names;
-        const auto array = qvariant_cast<QDBusArgument>(reply.arguments().first());
-        if (array.currentSignature() != QLatin1String("a(sss)")) {
-            publish({}, 0);
-            return;
-        }
-        array.beginArray();
-        while (!array.atEnd()) {
-            QString shortName, displayName, longName;
-            array.beginStructure();
-            array >> shortName >> displayName >> longName;
-            array.endStructure();
-            names.append(displayName.isEmpty() ? shortName.toUpper() : displayName);
-        }
-        array.endArray();
-        const auto indexMessage =
-            QDBusMessage::createMethodCall(m_service, layoutPath, layoutInterface, QStringLiteral("getLayout"));
-        auto* indexWatcher = new QDBusPendingCallWatcher(m_bus.asyncCall(indexMessage), this);
-        connect(indexWatcher, &QDBusPendingCallWatcher::finished, this,
-                [this, revision, names](QDBusPendingCallWatcher* indexCall) {
-                    const auto indexReply = indexCall->reply();
-                    indexCall->deleteLater();
-                    if (revision != m_revision)
-                        return;
-                    if (indexReply.type() == QDBusMessage::ErrorMessage || indexReply.arguments().isEmpty()) {
-                        publish({}, 0);
-                        return;
-                    }
-                    bool valid = false;
-                    const auto index = indexReply.arguments().first().toUInt(&valid);
-                    publish(valid && index < uint(names.size()) ? names : QStringList(), index);
-                });
-    });
-}
-
-void LockKeyboard::nextLayout()
-{
-    if (!canCycle())
-        return;
-    const auto message =
-        QDBusMessage::createMethodCall(m_service, layoutPath, layoutInterface, QStringLiteral("switchToNextLayout"));
-    auto* watcher = new QDBusPendingCallWatcher(m_bus.asyncCall(message), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher* call) {
-        call->deleteLater();
-        refresh();
-    });
+    const QString layoutName = m_state->layoutName();
+    const bool capsLock = m_state->capsLock();
+    if (layoutName != m_layoutName) {
+        m_layoutName = layoutName;
+        Q_EMIT layoutChanged();
+    }
+    if (capsLock != m_capsLock) {
+        m_capsLock = capsLock;
+        Q_EMIT capsLockChanged();
+    }
 }
 }

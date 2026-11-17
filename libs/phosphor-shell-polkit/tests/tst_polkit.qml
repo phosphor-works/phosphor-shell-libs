@@ -89,7 +89,6 @@ Item {
         QtObject {
             property string layoutName: "US"
             property bool capsLock: false
-            property bool canCycle: false
         }
     }
     Component {

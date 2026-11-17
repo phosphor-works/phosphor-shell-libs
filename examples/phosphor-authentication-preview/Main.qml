@@ -61,11 +61,6 @@ Window {
         id: keyboardState
         property bool capsLock: false
         property string layoutName: "English (US)"
-        readonly property bool canCycle: true
-
-        function nextLayout(): void {
-            layoutName = layoutName === "English (US)" ? "German" : "English (US)";
-        }
     }
 
     PolkitSurface {

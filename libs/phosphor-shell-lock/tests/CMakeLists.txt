@@ -87,7 +87,18 @@ target_link_libraries(test_phosphor_shell_lock_surface
 add_test(NAME test_phosphor_shell_lock_surface COMMAND test_phosphor_shell_lock_surface)
 phosphorshelllock_isolate_test(test_phosphor_shell_lock_surface)
 
+# LockKeyboard against a seat served by a libwayland server in the test
+# process; KeyboardState against keymaps compiled from the system's xkb data.
+find_package(Wayland REQUIRED COMPONENTS Server)
 add_executable(test_phosphor_lock_keyboard test_lockkeyboard.cpp)
-target_link_libraries(test_phosphor_lock_keyboard PRIVATE ${_phosphorshelllock_test_libs} Qt6::Test Qt6::DBus)
+target_include_directories(test_phosphor_lock_keyboard PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(test_phosphor_lock_keyboard
+    PRIVATE
+        ${_phosphorshelllock_test_libs}
+        Qt6::Test
+        Qt6::WaylandClient
+        Wayland::Server
+        PkgConfig::XKBCOMMON
+)
 add_test(NAME test_phosphor_lock_keyboard COMMAND test_phosphor_lock_keyboard)
 phosphorshelllock_isolate_test(test_phosphor_lock_keyboard)

@@ -24,13 +24,18 @@ endif()
 # so the static plugin's dependency walk resolves the Qt6::QuickShapes
 # target that Phosphor.Widgets links (its PhosphorRipple Shape) without a
 # configure warning. Same reason the launcher module finds it.
-find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui DBus Qml Quick QuickShapes)
+find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickShapes WaylandClient)
 
 # Kirigami.Icon draws the app glyph in each outline and the field's lock
 # glyph. Same requirement as the bar, power, control-center and launcher
 # modules: a host without Kirigami cannot build this tier.
 find_package(KF6Kirigami REQUIRED)
-find_package(KF6GuiAddons REQUIRED)
+
+# LockKeyboard reads the layout and Caps Lock from the seat's keymap and
+# modifiers. GLOBAL: this module is static, so the shell that links it
+# resolves the target too.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET GLOBAL xkbcommon)
 
 # The lock surface role comes from phosphor-wayland (LockSurface +
 # SessionLock). An in-tree sibling under BUILD_PHOSPHOR_SHELL; only
@@ -81,6 +86,8 @@ set(_phosphor_lock_qml_sources
     src/phosphorshelllock_qml_plugin.cpp
     src/locksurfacewindow.cpp
     src/lockkeyboard.cpp
+    src/keyboardstate.h
+    src/keyboardstate.cpp
     include/PhosphorShellLock/LockKeyboard.h
     # Listed so AUTOMOC on the module target emits the metatype JSON that
     # qmltyperegistrar turns into the `LockSurface` registration.
@@ -127,12 +134,14 @@ target_link_libraries(PhosphorShellLockQml
     PUBLIC
         Qt6::Core
         Qt6::Gui
-        Qt6::DBus
         Qt6::Qml
         Qt6::Quick
         KF6::Kirigami
-        KF6::GuiAddons
         PhosphorWayland::PhosphorWayland
+    PRIVATE
+        # libwayland-client, for the seat's wl_keyboard.
+        Qt6::WaylandClient
+        PkgConfig::XKBCOMMON
 )
 
 # Link the sibling QML modules + their plugin registrars so the
