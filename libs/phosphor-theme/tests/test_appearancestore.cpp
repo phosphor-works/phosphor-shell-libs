@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 #include <PhosphorTheme/AppearanceStore.h>
 #include <PhosphorTheme/ShellPalette.h>
+#include <QDir>
 #include <QFile>
 #include <QImage>
 #include <cmath>
@@ -685,6 +686,33 @@ private Q_SLOTS:
         QVERIFY(!store.applyPreset(QStringLiteral("ember")));
         QCOMPARE(store.values(), before);
         QVERIFY(!store.error().isEmpty());
+    }
+    void withoutAPathSettingsStayInMemory()
+    {
+        QTemporaryDir dir;
+        QVERIFY(QDir::setCurrent(dir.path()));
+        AppearanceStore store{QString()};
+        QVERIFY(store.setValue(QStringLiteral("radius"), 23));
+        QVERIFY(store.beginPreview());
+        QVERIFY(store.setValue(QStringLiteral("radius"), 25));
+        store.revertPreview();
+        QCOMPARE(store.values().value(QStringLiteral("radius")).toInt(), 23);
+        QVERIFY(store.setValue(QStringLiteral("radius"), 27));
+        QVERIFY(store.applyPreview());
+        store.endPreview();
+        QCOMPARE(store.values().value(QStringLiteral("radius")).toInt(), 27);
+        QVERIFY(store.error().isEmpty());
+        QVERIFY(QDir(dir.path()).isEmpty(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot));
+    }
+    void singletonUsesTheConfiguredPath()
+    {
+        QTemporaryDir dir;
+        const auto path = dir.filePath(QStringLiteral("app/appearance.json"));
+        AppearanceStore::setSingletonPath(path);
+        QCOMPARE(AppearanceStore::singletonPath(), path);
+        auto* store = AppearanceStore::create(nullptr, nullptr);
+        QVERIFY(store->setValue(QStringLiteral("radius"), 24));
+        QCOMPARE(AppearanceStore(path).values().value(QStringLiteral("radius")).toInt(), 24);
     }
 };
 QTEST_GUILESS_MAIN(TestAppearanceStore)

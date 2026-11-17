@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 #include <PhosphorTheme/AppearanceStore.h>
 #include <PhosphorTheme/ShellPalette.h>
+#include "phosphortheme_logging.h"
 #include <QDir>
 #include <QCoreApplication>
 #include <QColor>
@@ -17,7 +18,6 @@
 #include <QLockFile>
 #include <QRegularExpression>
 #include <QSet>
-#include <QStandardPaths>
 #include <cmath>
 
 namespace PhosphorTheme {
@@ -32,6 +32,19 @@ bool validTrayPreferenceKey(const QString& key)
     }
     return true;
 }
+QString& singletonPathStorage()
+{
+    static QString path;
+    return path;
+}
+}
+void AppearanceStore::setSingletonPath(const QString& path)
+{
+    singletonPathStorage() = path;
+}
+QString AppearanceStore::singletonPath()
+{
+    return singletonPathStorage();
 }
 AppearanceStore* AppearanceStore::create(QQmlEngine*, QJSEngine*)
 {
@@ -115,17 +128,19 @@ QVariantMap AppearanceStore::defaults()
             {QStringLiteral("visualizer"), QStringLiteral("ribbon")}};
 }
 AppearanceStore::AppearanceStore(QObject* parent)
-    : AppearanceStore(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-                          + QStringLiteral("/lambent/appearance.json"),
-                      parent)
+    : AppearanceStore(singletonPath(), parent)
 {
+    if (m_path.isEmpty())
+        qCWarning(lcPhosphorTheme) << "AppearanceStore: no singleton path is set, so appearance settings are not saved";
 }
 AppearanceStore::AppearanceStore(const QString& path, QObject* parent)
     : QObject(parent)
     , m_path(path)
     , m_values(defaults())
-    , m_previewLock(std::make_unique<QLockFile>(path + QStringLiteral(".preview.lock")))
 {
+    if (path.isEmpty())
+        return;
+    m_previewLock = std::make_unique<QLockFile>(path + QStringLiteral(".preview.lock"));
     m_previewLock->setStaleLockTime(0);
     QFile file(path);
     if (!file.exists())
@@ -145,7 +160,7 @@ AppearanceStore::AppearanceStore(const QString& path, QObject* parent)
 }
 AppearanceStore::~AppearanceStore()
 {
-    if (m_previewLock->isLocked())
+    if (m_previewLock && m_previewLock->isLocked())
         QFile::remove(m_path + QStringLiteral(".preview"));
 }
 QVariantMap AppearanceStore::effectiveValues(const QString& path, bool* previewActive)
@@ -412,6 +427,11 @@ bool AppearanceStore::write(const QVariantMap& values)
 }
 bool AppearanceStore::writeDocument(const QString& path, const QVariantMap& values)
 {
+    // A store without a file keeps its values in memory only.
+    if (m_path.isEmpty()) {
+        fail(QString());
+        return true;
+    }
     if (!QDir().mkpath(QFileInfo(path).absolutePath()))
         return fail(tr("Cannot create the appearance settings directory."));
     QSaveFile file(path);
@@ -455,10 +475,11 @@ bool AppearanceStore::beginPreview()
 {
     if (m_editing)
         return true;
-    if (!QDir().mkpath(QFileInfo(m_path).absolutePath()) || !m_previewLock->tryLock())
+    if (m_previewLock && (!QDir().mkpath(QFileInfo(m_path).absolutePath()) || !m_previewLock->tryLock()))
         return fail(tr("Cannot start a preview. Another Appearance window may be using these settings."));
     if (!writeDocument(m_path + QStringLiteral(".preview"), m_values)) {
-        m_previewLock->unlock();
+        if (m_previewLock)
+            m_previewLock->unlock();
         return false;
     }
     m_saved = m_values;
@@ -484,8 +505,10 @@ void AppearanceStore::endPreview()
 {
     if (!m_editing)
         return;
-    QFile::remove(m_path + QStringLiteral(".preview"));
-    m_previewLock->unlock();
+    if (m_previewLock) {
+        QFile::remove(m_path + QStringLiteral(".preview"));
+        m_previewLock->unlock();
+    }
     publish(m_saved);
     m_editing = false;
     m_saved.clear();

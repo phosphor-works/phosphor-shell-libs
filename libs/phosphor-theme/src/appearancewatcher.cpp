@@ -5,23 +5,12 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QSettings>
-#include <QStandardPaths>
 
 namespace PhosphorTheme {
 
-AppearanceWatcher::AppearanceWatcher(QObject* parent)
-    : AppearanceWatcher(
-          QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-              + QStringLiteral("/lambent/appearance.json"),
-          QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QStringLiteral("/kwinrc"), parent)
-{
-}
-
-AppearanceWatcher::AppearanceWatcher(const QString& appearancePath, const QString& kwinPath, QObject* parent)
+AppearanceWatcher::AppearanceWatcher(const QString& appearancePath, QObject* parent)
     : QObject(parent)
     , m_appearancePath(appearancePath)
-    , m_kwinPath(kwinPath)
 {
     m_reload.setSingleShot(true);
     m_reload.setInterval(40);
@@ -40,21 +29,18 @@ AppearanceWatcher::AppearanceWatcher(const QString& appearancePath, const QStrin
 void AppearanceWatcher::watchPaths()
 {
     QStringList paths;
-    for (const auto& path : {m_appearancePath, m_kwinPath}) {
-        const QFileInfo info(path);
-        if (info.exists())
-            paths.append(info.absoluteFilePath());
-        QDir directory(info.absolutePath());
-        while (!directory.exists()) {
-            const QString parent = QFileInfo(directory.absolutePath()).absolutePath();
-            if (parent == directory.absolutePath())
-                break;
-            directory.setPath(parent);
-        }
-        if (directory.exists())
-            paths.append(directory.absolutePath());
+    const QFileInfo info(m_appearancePath);
+    if (info.exists())
+        paths.append(info.absoluteFilePath());
+    QDir directory(info.absolutePath());
+    while (!directory.exists()) {
+        const QString parent = QFileInfo(directory.absolutePath()).absolutePath();
+        if (parent == directory.absolutePath())
+            break;
+        directory.setPath(parent);
     }
-    paths.removeDuplicates();
+    if (directory.exists())
+        paths.append(directory.absolutePath());
     const auto watched = m_watcher.files() + m_watcher.directories();
     for (const auto& path : watched) {
         if (!paths.contains(path))
@@ -75,14 +61,9 @@ void AppearanceWatcher::reload()
         m_previewPoll.start();
     else if (!preview)
         m_previewPoll.stop();
-    QSettings kwin(m_kwinPath, QSettings::IniFormat);
-    const bool active = next.value(QStringLiteral("desktopStyle")).toBool()
-        && kwin.value(QStringLiteral("org.kde.kdecoration2/library")).toString()
-            == QLatin1String("org.phosphor_works.Lambent.Decoration");
-    if (next == m_values && active == m_desktopStyleActive)
+    if (next == m_values)
         return;
     m_values = next;
-    m_desktopStyleActive = active;
     Q_EMIT changed();
 }
 
