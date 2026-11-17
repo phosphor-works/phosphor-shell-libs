@@ -138,6 +138,8 @@ QVariantMap AppearanceLibrary::normalizeRecipe(const QVariantMap& value)
 }
 void AppearanceLibrary::loadPresets()
 {
+    if (m_directory.isEmpty())
+        return;
     QFile file(m_directory + QStringLiteral("/presets.json"));
     if (!file.exists())
         return;
@@ -173,7 +175,7 @@ bool AppearanceLibrary::writePresets(const QVariantList& presets)
 {
     if (presets.size() > 64)
         return fail(tr("You can save up to 64 looks. Remove one before adding another."));
-    if (!QDir().mkpath(m_directory)
+    if (m_directory.isEmpty() || !QDir().mkpath(m_directory)
         || !saveJson(
             m_directory + QStringLiteral("/presets.json"),
             {{QStringLiteral("version"), 1}, {QStringLiteral("presets"), QJsonArray::fromVariantList(presets)}},

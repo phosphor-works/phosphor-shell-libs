@@ -3,6 +3,7 @@
 #include <PhosphorShellPicker/AppearanceLibrary.h>
 #include <PhosphorTheme/AppearanceStore.h>
 #include <QColor>
+#include <QDir>
 #include <QFile>
 #include <QQmlEngine>
 #include <QImage>
@@ -422,6 +423,17 @@ private Q_SLOTS:
         file.write("{\"version\":1,\"kind\":42,\"settings\":{\"radius\":10}}");
         file.close();
         QVERIFY(!library.inspectImport(QUrl::fromLocalFile(file.fileName())));
+    }
+
+    void withoutADirectoryNothingIsWritten()
+    {
+        QTemporaryDir dir;
+        QVERIFY(QDir::setCurrent(dir.path()));
+        AppearanceStore store{QString()};
+        AppearanceLibrary library(&store, QString());
+        library.rescan();
+        QVERIFY(!library.savePreset(QStringLiteral("Evening look"), false, false));
+        QVERIFY(QDir(dir.path()).isEmpty(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot));
     }
 };
 QTEST_MAIN(TestAppearanceLibrary)
