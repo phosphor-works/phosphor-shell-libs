@@ -13,14 +13,11 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickTest)
 # cannot activate the INSTALLED daemon, which then holds the test's stdout pipe
 # open and hangs ctest after the test itself passed) plus a per-target XDG
 # sandbox (so nothing writes into the developer's real ~/.config/plasmazones).
-# Guarded so a standalone subtree configure of this library still works
-# without the top-level module, matching the launcher's sibling tests.
-# CMAKE_CURRENT_LIST_DIR, not CMAKE_SOURCE_DIR: the latter is the repo root
-# in-tree but this LIBRARY's directory in a standalone configure, so the guard
-# below was always FALSE there and the isolation was skipped even though the
-# module was reachable. The relative walk finds it from either.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
+# The module lives in phosphor-libs, whose top-level CMakeLists names its cmake/
+# directory PHOSPHOR_LIBS_CMAKE_DIR. Guarded so a configure of this library on
+# its own, where nothing has set it, still works without the isolation.
+if(PHOSPHOR_LIBS_CMAKE_DIR AND EXISTS "${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake")
+    include(${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake)
 endif()
 add_executable(test_phosphor_shell_control_center tst_controlcenter.cpp)
 

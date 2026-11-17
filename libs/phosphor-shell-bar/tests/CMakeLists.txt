@@ -23,8 +23,8 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 # environment below can route through phosphor_append_test_environment —
 # a bare `set_tests_properties(... ENVIRONMENT ...)` after the isolation
 # call would replace the whole list and drop the XDG sandbox.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
+if(PHOSPHOR_LIBS_CMAKE_DIR AND EXISTS "${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake")
+    include(${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake)
     set(_phosphorshellbar_have_isolation TRUE)
 else()
     set(_phosphorshellbar_have_isolation FALSE)

@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# The Arch packages CI installs to configure, build and test every shell
+# library and phosphor-libs under it. One package per line. A comment after `#`
+# is ignored.
+base-devel
+git
+ccache
+cmake
+ninja
+extra-cmake-modules
+qt6-base
+qt6-declarative
+qt6-shadertools
+qt6-svg
+qt6-wayland
+wayland
+wayland-protocols
+# Qt declares QVulkanInstance only when the Vulkan headers are present, and
+# phosphor-libs' phosphor-surfaces uses it wherever Qt was built with Vulkan.
+vulkan-headers
+# KF6: the libraries draw their icons through Kirigami, and phosphor-shell-lock
+# uses KGuiAddons. KGlobalAccel and PlasmaActivities are
+# optional lookups in phosphor-libs, installed so CI builds what they switch on.
+kirigami
+kguiaddons
+kglobalaccel
+plasma-activities
+# The service libraries' system interfaces: PipeWire (phosphor-service-pipewire),
+# polkit-qt6 (phosphor-service-polkit), PAM (phosphor-service-lock) and ddcutil
+# (phosphor-service-brightness's optional external-monitor backend).
+libpipewire
+polkit-qt6
+pam
+ddcutil
+# The offscreen and Wayland tests' runtime.
+mesa

@@ -18,7 +18,7 @@ Phase 4.2 deliverable per
 ## The contract
 
 `PhosphorRegistry::ILauncherProvider` (in
-[`phosphor-registry`](../../../phosphor-libs/libs/phosphor-registry/README.md)) is the seam. A
+[`phosphor-registry`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-registry/README.md)) is the seam. A
 provider is a pure data source: `setQuery()` pushes the text,
 `resultsChanged()` says `results()` would now answer differently, and
 `activate(id, Primary | Alternate)` performs a row's action. It owns no
@@ -101,7 +101,6 @@ Phase 4.2: in the tree. The core library, the five providers, the ranked
 model and the spotlight surface are all present, with nine Qt Test suites and
 a QtQuickTest harness.
 
-Built only with `-DBUILD_PHOSPHOR_SHELL=ON`, which is off by default.
 The acceptance demo is `../../examples/phosphor-launcher-demo/`, a plain window
 that hosts the surface over the real providers, so it lists the running
 session's applications, clipboard and PATH.

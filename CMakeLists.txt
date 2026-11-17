@@ -1,18 +1,160 @@
 # SPDX-FileCopyrightText: 2026 fuddlesworth
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# Phosphor shell libraries: the theme and popout foundation, the
-# Phosphor.* QML surfaces, and the per-domain system service libraries.
-# Entered from the root CMakeLists only when BUILD_PHOSPHOR_SHELL is ON, so
-# the per-subdirectory `if(BUILD_PHOSPHOR_SHELL)` blocks below are redundant
-# rather than load-bearing. They are kept as belt-and-braces so each entry
-# reads as declaring its own precondition; do not take their presence as
-# evidence that this file is reachable with the flag off.
+# Phosphor shell libraries: the theme and popout foundation, the Phosphor.* QML
+# surfaces, and the per-domain system service libraries a desktop shell is built
+# from. They build on phosphor-libs.
 #
-# Order matters: phosphor-shell links theme/popout, so they precede it.
-# phosphor-ipc is a tier-1 library in phosphor-libs, declared before this tier.
-# icontheme is consumed by sni and notifications, so it configures first
-# among the services.
+# Two ways in:
+#
+#   * On its own. cmake --workflow --preset dev configures, builds and tests
+#     every library here. phosphor-libs comes from the commit
+#     cmake/PhosphorShellLibsDependencies.cmake pins, fetched with CPM, or from
+#     a local checkout with -DCPM_phosphor-libs_SOURCE=<dir>.
+#   * As a subproject of an app. PlasmaZones pins one commit of this repository
+#     and adds it with CPM after phosphor-libs, so the app's phosphor-libs pin
+#     wins and this tree fetches nothing of its own. CPM's
+#     -DCPM_phosphor-shell-libs_SOURCE=<dir> builds a local checkout instead.
+#
+# As a subproject the app's top level has already set up ECM, the KDE settings,
+# Qt and the compile definitions below. Each of those steps here is either
+# idempotent or runs only at the top level, so the app's settings are the ones
+# in force.
+
+cmake_minimum_required(VERSION 3.16)
+
+project(PhosphorShellLibs VERSION 0.1.0 LANGUAGES C CXX)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(PHOSPHOR_SHELL_LIBS_TOP_LEVEL ON)
+else()
+    set(PHOSPHOR_SHELL_LIBS_TOP_LEVEL OFF)
+endif()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Top-level setup. Skipped as a subproject, where the app has done it.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if(PHOSPHOR_SHELL_LIBS_TOP_LEVEL)
+    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTOMOC_PARALLEL_ENABLED ON)
+
+    option(CMAKE_UNITY_BUILD "Enable unity builds for faster compilation" ON)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING "Number of sources per unity batch")
+    option(ENABLE_PCH "Share one precompiled header across the test targets" ON)
+
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    endif()
+
+    set(QT_MIN_VERSION "6.10.0")
+    set(KF_MIN_VERSION "6.26.0")
+
+    find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
+    set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+
+    # Must come before KDECMakeSettings, which includes CTest and locks
+    # BUILD_TESTING into the cache as ON.
+    option(BUILD_TESTING "Build the test suite" OFF)
+
+    include(KDEInstallDirs)
+    include(KDECMakeSettings)
+    include(KDECompilerSettings NO_POLICY_SCOPE)
+    include(FeatureSummary)
+
+    # Makes the Qt6 string-literal rule a compile error rather than a
+    # convention: no implicit const char* to QString.
+    add_compile_definitions(QT_NO_CAST_FROM_ASCII)
+
+    include(KDEClangFormat)
+    file(GLOB_RECURSE PHOSPHOR_SHELL_LIBS_CLANG_FORMAT_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.h
+    )
+    kde_clang_format(${PHOSPHOR_SHELL_LIBS_CLANG_FORMAT_FILES})
+
+    # The shell libraries draw their icons through Kirigami and have no Qt-only
+    # fallback, so the KDE frameworks are not optional here.
+    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami)
+endif()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Shared lookups. find_package is idempotent, so these also run as a subproject.
+# ═══════════════════════════════════════════════════════════════════════════════
+# At this scope, before phosphor-libs is added. An IMPORTED target belongs to the
+# directory that found it, and phosphor-libs' own top level, which repeats these
+# lookups, is a subdirectory here: the targets it found there (Qt's private
+# modules, XKB through GuiPrivate) would be invisible to the libraries below, and
+# Qt's QML plugin dependency walk warns for each one.
+
+if(NOT DEFINED QT_MIN_VERSION)
+    set(QT_MIN_VERSION "6.10.0")
+endif()
+
+find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS
+    Concurrent
+    Core
+    DBus
+    Gui
+    Qml
+    Quick
+    QuickControls2
+    ShaderTools
+    Svg
+    WaylandClient
+    Widgets
+)
+
+# CMake's if(POLICY) knows only CMP policies. Qt's existence test for its own
+# QTP policies is the QT_KNOWN_POLICY_<policy> variable.
+if(QT_KNOWN_POLICY_QTP0001)
+    qt_policy(SET QTP0001 NEW)
+endif()
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 NEW)
+endif()
+
+# The private Qt modules the libraries use (QRhi, QShaderBaker, the QML
+# animation module's QuickPrivate, the Wayland QPA plugin). Looked up here,
+# once, so each IMPORTED target is visible to every library and consumer.
+# Some distros (Fedora) create these targets inside the public module's
+# Config file instead of shipping standalone ones, hence the TARGET checks.
+foreach(_phosphor_private GuiPrivate ShaderToolsPrivate QuickPrivate WaylandClientPrivate)
+    if(NOT TARGET Qt6::${_phosphor_private})
+        find_package(Qt6${_phosphor_private} CONFIG REQUIRED)
+    endif()
+endforeach()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# phosphor-libs
+# ═══════════════════════════════════════════════════════════════════════════════
+# The libraries every shell library links. Added first, so each find_package
+# below resolves to its in-tree target. phosphor-libs' own top level does the Qt
+# lookups (private modules included) every library here shares.
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PhosphorShellLibsDependencies.cmake")
+phosphor_shell_libs_add_phosphor_libs()
+
+# The shared test helpers (PhosphorTestIsolation, PhosphorLibTesting,
+# PhosphorTestPch) live in phosphor-libs, reachable by name from here on.
+list(APPEND CMAKE_MODULE_PATH "${PHOSPHOR_LIBS_CMAKE_DIR}")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Libraries
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Order matters: phosphor-shell links theme and popout, so they precede it.
+# icontheme is consumed by sni and notifications, so it configures first among
+# the services.
 
 add_subdirectory(libs/phosphor-theme)   # M3 color-token store + Phosphor.Theme QML singletons
 add_subdirectory(libs/phosphor-popout)  # central popout coordinator (lifetime, focus, scope arbitration)
@@ -53,10 +195,7 @@ add_subdirectory(libs/phosphor-service-session)       # logind session/power act
 # (flake.nix removes this directory from the fileset), so only descend into
 # the example subdirectories when the directory is actually present.
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
-# Phosphor SDK groundwork demos. These link the gated Phase-1 libraries
-# (phosphor-theme / popout / ipc), so they are gated to match: with
-# BUILD_PHOSPHOR_SHELL OFF those targets do not exist and an unconditional
-# add_subdirectory would fail the CMake generate step.
+# Phosphor SDK groundwork demos:
 #   phosphor-theme-demo  — swatch-sheet viewer, hot-reloads the PaletteStore.
 #   phosphor-theme-cli   — headless wallpaper → matugen → palette → template.
 #   phosphor-popout-demo — popout arbitration harness (popout + theme).
@@ -69,135 +208,105 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
 #                            Registry<IOSDFactory>, driven by phosphorctl.
 #   phosphor-toast-demo — ToastHost overlay fed by a real NotificationServer
 #                            (notify-send) + buttons; DND exercises the rules seam.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-theme-demo)
-    add_subdirectory(examples/phosphor-theme-cli)
-    add_subdirectory(examples/phosphor-popout-demo)
-    add_subdirectory(examples/phosphor-registry-demo)
-    add_subdirectory(examples/phosphor-ipc-demo)
-    add_subdirectory(examples/phosphor-widgets-kitchen-sink)
-    add_subdirectory(examples/phosphor-osd-demo)
-    add_subdirectory(examples/phosphor-toast-demo)
-    add_subdirectory(examples/phosphor-control-center-demo)
-    add_subdirectory(examples/phosphor-launcher-demo)
-    add_subdirectory(examples/phosphor-authentication-preview)
-endif()
+add_subdirectory(examples/phosphor-theme-demo)
+add_subdirectory(examples/phosphor-theme-cli)
+add_subdirectory(examples/phosphor-popout-demo)
+add_subdirectory(examples/phosphor-registry-demo)
+add_subdirectory(examples/phosphor-ipc-demo)
+add_subdirectory(examples/phosphor-widgets-kitchen-sink)
+add_subdirectory(examples/phosphor-osd-demo)
+add_subdirectory(examples/phosphor-toast-demo)
+add_subdirectory(examples/phosphor-control-center-demo)
+add_subdirectory(examples/phosphor-launcher-demo)
+add_subdirectory(examples/phosphor-authentication-preview)
 
 # phosphor-perscreen-demo. Acceptance harness for the Phosphor.Shell
 # PerScreen helper (Phase 1.5). Opens a small window per monitor;
-# hot-plug a display → window appears. Unlike the foundation-lib demos
-# above, this one links the gated PhosphorShell::PhosphorShellQml target
-# (PerScreen lives in libs/phosphor-shell), so it must be gated too: when
-# BUILD_PHOSPHOR_SHELL is OFF that target does not exist and an
-# unconditional add_subdirectory fails the CMake generate step.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-perscreen-demo)
-endif()
+# hot-plug a display → window appears. Links PhosphorShell::PhosphorShellQml
+# (PerScreen lives in libs/phosphor-shell).
+add_subdirectory(examples/phosphor-perscreen-demo)
 
 # phosphor-service-pipewire-cli. Acceptance harness for the
 # phosphor-service-pipewire library (Phase 2.1). Headless driver
 # exercising the read paths (list sinks/sources/streams, default),
 # write paths (set-volume, mute/unmute), and metadata writes
 # (set-default-sink/source) against a live PipeWire + WirePlumber
-# daemon. Gated to match libs/phosphor-service-pipewire itself: when
-# BUILD_PHOSPHOR_SHELL is OFF the lib target does not exist, so the
-# CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-pipewire-cli)
-endif()
+# daemon.
+add_subdirectory(examples/phosphor-service-pipewire-cli)
 
 # phosphor-service-network-cli. Acceptance harness for the
 # phosphor-service-network library (Phase 2.2). Headless driver
 # exercising the read paths (status, list-devices, list-connections,
 # list-aps) and write paths (scan, connect) against a live
-# org.freedesktop.NetworkManager. Gated like the lib: when
-# BUILD_PHOSPHOR_SHELL is OFF the lib target does not exist, so the CLI
-# can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-network-cli)
-endif()
+# org.freedesktop.NetworkManager.
+add_subdirectory(examples/phosphor-service-network-cli)
 
 # phosphor-service-bluetooth-cli. Acceptance harness for the
 # phosphor-service-bluetooth library (Phase 2.3). Headless driver exercising
 # the read paths (status, list-adapters, list-devices) and write paths
 # (power, scan, pair, connect, trust, remove) against a live org.bluez, with
-# an interactive pairing agent. Gated like the lib: when BUILD_PHOSPHOR_SHELL
-# is OFF the lib target does not exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-bluetooth-cli)
-endif()
+# an interactive pairing agent.
+add_subdirectory(examples/phosphor-service-bluetooth-cli)
 
 # phosphor-service-brightness-cli. Acceptance harness for the
 # phosphor-service-brightness library (Phase 2.4). Headless driver exercising
 # the read path (list, get) and write path (set) against real sysfs backlights
-# and logind. Gated like the lib: when BUILD_PHOSPHOR_SHELL is OFF the lib
-# target does not exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-brightness-cli)
-endif()
+# and logind.
+add_subdirectory(examples/phosphor-service-brightness-cli)
 
 # phosphor-service-notifications-cli. Acceptance harness for the
 # phosphor-service-notifications library (Phase 2.5). Both a server (watch: own
 # org.freedesktop.Notifications and log incoming Notify + close events) and a
-# client (send / close / info via D-Bus). Gated like the lib: when
-# BUILD_PHOSPHOR_SHELL is OFF the lib target does not exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-notifications-cli)
-endif()
+# client (send / close / info via D-Bus).
+add_subdirectory(examples/phosphor-service-notifications-cli)
 
 # phosphor-service-polkit-cli. Acceptance harness for the phosphor-service-polkit
 # library (Phase 2.6). Runs as the session's PolicyKit authentication agent and
-# answers PAM prompts (trigger with `pkexec true`). Gated like the lib: when
-# BUILD_PHOSPHOR_SHELL is OFF the lib target does not exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-polkit-cli)
-endif()
+# answers PAM prompts (trigger with `pkexec true`).
+add_subdirectory(examples/phosphor-service-polkit-cli)
 
 # phosphor-service-idle-cli. Acceptance harness for the phosphor-service-idle
 # library (Phase 2.7). Reports idle support, logs each idle stage as it fires
 # with a wall-clock timestamp, and can hold an inhibition for a fixed duration
-# (--inhibit-for). Gated like the lib: when BUILD_PHOSPHOR_SHELL is OFF the lib
-# target does not exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-idle-cli)
-endif()
+# (--inhibit-for).
+add_subdirectory(examples/phosphor-service-idle-cli)
 
 # phosphor-service-clipboard-cli. Acceptance harness for the
 # phosphor-service-clipboard library (Phase 2.8). Watches the clipboard, lists
-# the history, and copies an entry back. Gated like the lib: when
-# BUILD_PHOSPHOR_SHELL is OFF the lib target does not exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-clipboard-cli)
-endif()
+# the history, and copies an entry back.
+add_subdirectory(examples/phosphor-service-clipboard-cli)
 
 # phosphor-service-lock-cli. Acceptance harness for the phosphor-service-lock
 # library (Phase 2.9). Authenticates the user (PAM) and drives the session lock.
-# Gated like the lib: when BUILD_PHOSPHOR_SHELL is OFF the lib target does not
-# exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-lock-cli)
-endif()
+add_subdirectory(examples/phosphor-service-lock-cli)
 
 # phosphor-service-session-cli. Acceptance harness for the
 # phosphor-service-session library (Phase 2.10). Drives the logind session
 # capabilities + actions (status / lock / logout / suspend / ... / power-off).
-# Gated like the lib: when BUILD_PHOSPHOR_SHELL is OFF the lib target does not
-# exist, so the CLI can't link.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-service-session-cli)
-endif()
+add_subdirectory(examples/phosphor-service-session-cli)
 
 # phosphor-registry-plugin-demo. Sibling of phosphor-registry-demo
 # that exercises PluginLoader and the live reload of added or removed
 # plugins. The third (CPU-meter) widget builds as a separate bar-widget
 # Qt plugin and is loaded by PluginLoader from the build tree's plugin
 # root, which it searches ahead of the standard plugin paths. Links
-# PhosphorTheme, so it is gated with the other SDK groundwork demos.
-if(BUILD_PHOSPHOR_SHELL)
-    add_subdirectory(examples/phosphor-registry-plugin-demo)
-endif()
+# PhosphorTheme.
+add_subdirectory(examples/phosphor-registry-plugin-demo)
 endif()
 
-# Aggregate target for the moon workspace: `cmake --build build --target phosphor-shell-libs-tier`.
-include(PhosphorTier)
-phosphor_tier_target(phosphor-shell-libs-tier)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Top-level finish
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if(PHOSPHOR_SHELL_LIBS_TOP_LEVEL)
+    # One precompiled header shared by every test target, phosphor-libs' as
+    # well. An app that adds this tree makes the same call itself.
+    if(BUILD_TESTING AND ENABLE_PCH)
+        include(PhosphorTestPch)
+        phosphor_share_test_pch()
+    endif()
+
+    feature_summary(WHAT REQUIRED_PACKAGES_FOUND REQUIRED_PACKAGES_NOT_FOUND
+                         OPTIONAL_PACKAGES_FOUND OPTIONAL_PACKAGES_NOT_FOUND
+                    FATAL_ON_MISSING_REQUIRED_PACKAGES)
+endif()

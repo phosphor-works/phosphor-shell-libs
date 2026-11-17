@@ -7,14 +7,11 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 # cannot activate the INSTALLED daemon, which then holds the test's stdout pipe
 # open and hangs ctest after the test itself passed) plus a per-target XDG
 # sandbox (so nothing writes into the developer's real ~/.config/plasmazones).
-# CMAKE_CURRENT_LIST_DIR, not CMAKE_SOURCE_DIR: the latter is the repo root
-# in-tree but this LIBRARY's directory in a standalone configure, so the include
-# looked for <tier>/libs/<lib>/cmake/PhosphorTestIsolation.cmake and hard-failed at
-# generate time. The relative walk reaches the repo root from either. The EXISTS
-# guard covers the remaining case, a genuine extracted `git subtree split` where
-# the repo-root module is not in the subtree at all.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
+# The module lives in phosphor-libs, whose top-level CMakeLists names its cmake/
+# directory PHOSPHOR_LIBS_CMAKE_DIR. The guard covers a configure of this
+# library on its own, where nothing has set it.
+if(PHOSPHOR_LIBS_CMAKE_DIR AND EXISTS "${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake")
+    include(${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake)
 else()
     # Stand-ins so the call sites below need no guard of their own.
     # phosphor_append_test_environment is reproduced EXACTLY, because it is

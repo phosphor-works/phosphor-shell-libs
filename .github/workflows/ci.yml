@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2026 fuddlesworth
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# Configures, builds and tests the shell libraries on their own, with the
+# phosphor-libs commit cmake/PhosphorShellLibsDependencies.cmake pins, from the
+# dev workflow preset, the same command as a local build. PlasmaZones, which
+# builds these libraries from a pinned commit, tests them again inside its own
+# build.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: archlinux:latest
+    steps:
+      # The image has no git, and actions/checkout needs it for a real clone.
+      - name: Bootstrap git
+        run: pacman -Syu --noconfirm --needed git
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install packages
+        run: |
+          set -euo pipefail
+          mapfile -t packages < <(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' .github/ci/arch-packages.txt)
+          for try in 1 2 3; do
+            pacman -S --noconfirm --needed "${packages[@]}" && exit 0
+            [ "$try" = 3 ] && exit 1
+            sleep 10
+          done
+
+      # phosphor-libs and the Luau and valijson it pins, which CPM downloads
+      # into .cache/cpm at configure time. Keyed on the pin file, which moves
+      # whenever any of them does.
+      - name: Restore the dependency archives
+        uses: actions/cache@v5
+        with:
+          path: .cache/cpm
+          key: cpm-${{ hashFiles('cmake/PhosphorShellLibsDependencies.cmake') }}
+
+      - name: Configure, build and test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: cmake --workflow --preset dev

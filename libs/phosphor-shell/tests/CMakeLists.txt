@@ -24,8 +24,8 @@ find_package(Qt6 6.10 REQUIRED COMPONENTS Test Qml Quick)
 # PhosphorLibTesting include in the sibling libraries. Included ONCE, at the
 # top, so every add_test below can isolate right where it registers; a second
 # include-and-apply block would double-append the XDG environment.
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake")
-    include(${CMAKE_CURRENT_LIST_DIR}/../../../../cmake/PhosphorTestIsolation.cmake)
+if(PHOSPHOR_LIBS_CMAKE_DIR AND EXISTS "${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake")
+    include(${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake)
     set(_phosphorshell_have_isolation TRUE)
 else()
     set(_phosphorshell_have_isolation FALSE)
@@ -283,6 +283,6 @@ foreach(_mock_consumer test_phosphorshell_persistentproperties_scan
                        test_phosphorshell_inputregion_rearm)
     if(TARGET ${_mock_consumer})
         target_include_directories(${_mock_consumer}
-            PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../../../phosphor-libs/libs/phosphor-layer/tests)
+            PRIVATE ${PHOSPHOR_LIBS_SOURCE_DIR}/libs/phosphor-layer/tests)
     endif()
 endforeach()
