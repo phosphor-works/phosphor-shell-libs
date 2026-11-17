@@ -117,15 +117,10 @@ qt_add_qml_module(PhosphorShellPickerQml
 )
 
 # The collection is materialized once into the user's durable image library.
-set_source_files_properties("${CMAKE_SOURCE_DIR}/phosphor-shell/shell/wallpapers/wallpaper.png" PROPERTIES QT_RESOURCE_ALIAS "alpine.png")
 qt_add_resources(PhosphorShellPickerQml appearance_wallpapers
     PREFIX "/phosphor/appearance/wallpapers"
     BASE "wallpapers"
-    FILES wallpapers/spectrum.svg wallpapers/iris.svg wallpapers/dunes.svg wallpapers/tide.svg wallpapers/moss.svg wallpapers/graphite.svg wallpapers/linen.svg
-)
-qt_add_resources(PhosphorShellPickerQml appearance_violet
-    PREFIX "/phosphor/appearance/wallpapers"
-    FILES "${CMAKE_SOURCE_DIR}/phosphor-shell/shell/wallpapers/wallpaper.png"
+    FILES wallpapers/spectrum.svg wallpapers/iris.svg wallpapers/dunes.svg wallpapers/tide.svg wallpapers/moss.svg wallpapers/graphite.svg wallpapers/linen.svg wallpapers/alpine.png
 )
 
 add_library(PhosphorShellPicker::PhosphorShellPickerQml ALIAS PhosphorShellPickerQml)

@@ -35,10 +35,8 @@ add_executable(test_phosphor_shell_bar tst_bar.cpp)
 target_compile_features(test_phosphor_shell_bar PRIVATE cxx_std_20)
 target_compile_definitions(test_phosphor_shell_bar PRIVATE
     PHOSPHOR_TRAY_FIXTURE_PYTHON="${Python3_EXECUTABLE}"
-    # The fixture is the nested-shell harness's own tray app, so it lives with
-    # that harness in the shell tier; phosphor-shell-libs/moon.yml records the
-    # read as a test input.
-    PHOSPHOR_TRAY_FIXTURE_PATH="${CMAKE_SOURCE_DIR}/phosphor-shell/scripts/nested-shell/tray-fixture.py"
+    # Real SNI/dbusmenu apps on the test's isolated session bus.
+    PHOSPHOR_TRAY_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tray-fixture.py"
 )
 
 target_link_libraries(test_phosphor_shell_bar
