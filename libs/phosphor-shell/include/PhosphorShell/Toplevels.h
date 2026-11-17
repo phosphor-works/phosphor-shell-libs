@@ -99,10 +99,11 @@ private:
  *     }
  *
  * The `supported` property is `false` on compositors that don't advertise
- * `zwlr_foreign_toplevel_manager_v1` (e.g. plain Mutter without extensions);
- * shells should hide their taskbar UI in that case rather than showing an
- * empty placeholder. KWin and the wlroots family (sway, Hyprland, Niri,
- * river, labwc) all support it.
+ * `zwlr_foreign_toplevel_manager_v1`; shells should hide their taskbar UI in
+ * that case rather than showing an empty placeholder. The wlroots family
+ * (sway, Hyprland, Niri, river, labwc) supports it. Mutter does not, and
+ * neither does KWin (6.8 offers org_kde_plasma_window_management instead),
+ * so on both `supported` stays false.
  */
 // Registered as a QML singleton imperatively in ShellEngine::load() via
 // `qmlRegisterSingletonType<Toplevels>(..., &Toplevels::create)`. The

@@ -47,8 +47,9 @@ bool isValidShellName(const QString& name)
 
 } // namespace
 
-ShellLoader::ShellLoader(const QString& shellName)
+ShellLoader::ShellLoader(const QString& shellName, const QUrl& bundledShell)
     : m_shellName(shellName)
+    , m_bundledShell(bundledShell)
 {
     if (!isValidShellName(m_shellName)) {
         qCWarning(lcShellLoader) << "Rejecting invalid shell name (path-like input):" << m_shellName;
@@ -71,7 +72,7 @@ QUrl ShellLoader::resolve() const
 
     for (const QString& basePath : std::as_const(searched)) {
         // QDir::filePath joins normally and collapses any trailing slash on
-        // basePath, avoiding `/foo//lambent/shell.qml`. The filesystem
+        // basePath, avoiding `/foo//<name>/shell.qml`. The filesystem
         // tolerates the doubled slash but it leaks into log output and
         // breaks symbolic comparisons of the resolved path.
         const QString shellDir = QDir(basePath).filePath(m_shellName);
@@ -81,21 +82,21 @@ QUrl ShellLoader::resolve() const
         }
     }
 
-    // Final fallback: a qrc-baked example shell linked into the binary at
-    // build time (see Lambent's shell/CMakeLists.txt, which registers
-    // a qt-qml-module under URI `Phosphor.Shell.Example`). Qt's
-    // qt_add_qml_module places module files at
-    // `:/qt/qml/<URI-with-slashes>/shell.qml`; QFile resolves the `:/`
-    // scheme via the static resource registry that the static plugin's
-    // initializer populates at link time. Lets the executable run on a
-    // fresh system that has no user config and skipped the optional
-    // DATADIR install.
-    const QString qrcPath = QStringLiteral(":/qt/qml/Phosphor/Shell/Example/shell.qml");
-    if (QFile::exists(qrcPath)) {
-        return QUrl(QStringLiteral("qrc") + qrcPath);
+    // The app's own fallback, typically a module linked into the binary, so
+    // a fresh system without a shell tree on disk still runs. Only when it
+    // is there: a missing bundle is the same "no shell" as no bundle.
+    if (m_bundledShell.isEmpty()) {
+        return {};
     }
-
-    return {};
+    const bool qrc = m_bundledShell.scheme() == QLatin1String("qrc");
+    if (qrc || m_bundledShell.isLocalFile()) {
+        const QString path = qrc ? QLatin1Char(':') + m_bundledShell.path() : m_bundledShell.toLocalFile();
+        if (!QFile::exists(path)) {
+            qCWarning(lcShellLoader) << "The bundled shell does not exist:" << m_bundledShell;
+            return {};
+        }
+    }
+    return m_bundledShell;
 }
 
 QString ShellLoader::shellConfigDir() const

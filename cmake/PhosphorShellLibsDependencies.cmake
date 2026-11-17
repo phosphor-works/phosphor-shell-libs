@@ -29,10 +29,12 @@
 #
 # Script mode, for packagers and CI:
 #
-#   cmake -DPHOSPHOR_DEPS_FETCH=<dir> -P cmake/PhosphorShellLibsDependencies.cmake
+#   cmake -DPHOSPHOR_DEPS_FETCH=<dir> [-DPHOSPHOR_DEPS_FETCH_TESTS=ON] -P cmake/PhosphorShellLibsDependencies.cmake
 #
 # downloads the phosphor-libs archive and every archive that tree pins into
-# <dir>, so <dir> can be handed to PHOSPHOR_DEPS_ARCHIVES.
+# <dir>, so <dir> can be handed to PHOSPHOR_DEPS_ARCHIVES. With
+# PHOSPHOR_DEPS_FETCH_TESTS it also downloads the archives only that tree's
+# test suite reads, for an offline build that runs the tests.
 #
 # Bumping the pin: change its VERSION, URL, FILE and SHA256 together, with the
 # hash taken from a download you checked.
@@ -45,10 +47,10 @@ set(PHOSPHOR_SHELL_LIBS_DEPS phosphor-libs)
 # The phosphor-libs commit (LGPL-2.1-or-later, phosphor-works/phosphor-libs)
 # the shell libraries build against. A commit, not a release, so VERSION is the
 # commit hash.
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_VERSION "c5d6ee8a24f803607b403f90b8625b94b8a25110")
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz")
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_FILE "phosphor-libs-c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz")
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_SHA256 "f072437c31f9b96e5ed43c32e55bc0e6e8c7ac7323262dbeaf871008c670e8e6")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_VERSION "793344a136af82d067e4a8b0e5abe0d57404f74a")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/793344a136af82d067e4a8b0e5abe0d57404f74a.tar.gz")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_FILE "phosphor-libs-793344a136af82d067e4a8b0e5abe0d57404f74a.tar.gz")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_SHA256 "a35b8fbdec56b8ed17368d5d4df149c9cd473f7a974aa815e7db78a0c19281fd")
 
 # CPM.cmake itself, the same release phosphor-libs pins, so that tree uses
 # this copy.
@@ -108,6 +110,7 @@ if(CMAKE_SCRIPT_MODE_FILE)
     _phosphor_shell_libs_extract("${_file}" "${_libs_tmp}" "${_libs_tmp}.stamp")
     execute_process(
         COMMAND "${CMAKE_COMMAND}" "-DPHOSPHOR_DEPS_FETCH=${_dir}"
+                "-DPHOSPHOR_DEPS_FETCH_TESTS=${PHOSPHOR_DEPS_FETCH_TESTS}"
                 -P "${_libs_tmp}/cmake/PhosphorDependencies.cmake"
         RESULT_VARIABLE _rc)
     file(REMOVE_RECURSE "${_libs_tmp}" "${_libs_tmp}.stamp")

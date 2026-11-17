@@ -26,6 +26,7 @@ class PHOSPHORTHEME_EXPORT AppearanceStore : public QObject
     Q_PROPERTY(bool editing READ editing NOTIFY changed)
     Q_PROPERTY(bool dirty READ dirty NOTIFY changed)
 public:
+    // An empty path keeps the settings in memory: nothing is read or written.
     explicit AppearanceStore(const QString& path, QObject* parent = nullptr);
     ~AppearanceStore() override;
     QVariantMap values() const
@@ -36,6 +37,12 @@ public:
     {
         return m_error;
     }
+    // The file the process-wide instance create() returns reads and writes,
+    // such as `<config>/<app>/appearance.json`. Set it once at startup,
+    // before the first create() (and so before QML loads). Empty, the
+    // default, keeps that instance's settings in memory only.
+    static void setSingletonPath(const QString& path);
+    static QString singletonPath();
     // Process-owned: a geometry reload must not destroy a live preview.
     static AppearanceStore* create(QQmlEngine* engine, QJSEngine* scriptEngine);
     static QVariantMap defaults();

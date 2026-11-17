@@ -3,7 +3,9 @@
 
 #include <PhosphorShell/ShellLoader.h>
 
+#include <QFile>
 #include <QStandardPaths>
+#include <QTemporaryDir>
 #include <QTest>
 
 using namespace PhosphorShell;
@@ -86,8 +88,8 @@ private Q_SLOTS:
         // shell.qml on the host. `setTestModeEnabled(true)` redirects
         // the user-config dir to a temp location, but it does NOT
         // redirect system data dirs (XDG_DATA_DIRS) — so a developer
-        // running this test on a machine where Lambent is
-        // installed system-wide would find /usr/share/lambent/
+        // running this test on a machine where a shell is
+        // installed system-wide would find /usr/share/<name>/
         // shell.qml. A unique sentinel name keeps the test environment-
         // independent.
         ShellLoader loader(QStringLiteral("phosphorshell-test-no-such-shell-xyz"));
@@ -98,10 +100,22 @@ private Q_SLOTS:
         QCOMPARE(loader.resolve(), QUrl());
     }
 
-    void testDefaultName()
+    /// With nothing on disk, the app's bundled shell is the answer, but only
+    /// when it exists. No bundle and a missing bundle both mean no shell.
+    void testBundledShellIsTheFallback()
     {
-        ShellLoader loader; // default = "lambent"
-        QVERIFY(loader.shellConfigDir().endsWith(QLatin1String("/lambent")));
+        const QString name = QStringLiteral("phosphorshell-test-no-such-shell-xyz");
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = dir.filePath(QStringLiteral("shell.qml"));
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.close();
+
+        QCOMPARE(ShellLoader(name, QUrl::fromLocalFile(path)).resolve(), QUrl::fromLocalFile(path));
+        QCOMPARE(ShellLoader(name, QUrl::fromLocalFile(dir.filePath(QStringLiteral("missing.qml")))).resolve(), QUrl());
+        QCOMPARE(ShellLoader(name, QUrl(QStringLiteral("qrc:/qt/qml/No/Such/Module/shell.qml"))).resolve(), QUrl());
+        QCOMPARE(ShellLoader(name).resolve(), QUrl());
     }
 };
 

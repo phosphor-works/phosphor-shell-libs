@@ -472,7 +472,6 @@ QVariantList toVariantList(const QList<Cell>& cells)
         map.insert(QStringLiteral("y"), cell.rect.y());
         map.insert(QStringLiteral("w"), cell.rect.width());
         map.insert(QStringLiteral("h"), cell.rect.height());
-        map.insert(QStringLiteral("nativeRect"), cell.nativeRect);
         map.insert(QStringLiteral("t"), cell.t);
         map.insert(QStringLiteral("occupied"), cell.occupied);
         map.insert(QStringLiteral("focused"), cell.focused);
@@ -487,7 +486,6 @@ QVariantList toVariantList(const QList<Cell>& cells)
         map.insert(QStringLiteral("urgent"), cell.urgent);
         map.insert(QStringLiteral("offscreen"), cell.offscreen);
         map.insert(QStringLiteral("minimized"), cell.minimized);
-        map.insert(QStringLiteral("colorIndex"), cell.colorIndex);
         list.append(map);
     }
     return list;
@@ -561,82 +559,6 @@ QString dropProxyJson(const QRect& rect, const QVariantList& cells)
     root[DropProxyKey::Rect] = rectArray(rect);
     root[DropProxyKey::Cells] = entries;
     return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
-}
-
-QList<Cell> parseNativeWindows(const QString& json, const QRect& workArea)
-{
-    QList<Cell> result;
-    if (workArea.isEmpty())
-        return result;
-    for (const auto& value : QJsonDocument::fromJson(json.toUtf8()).array()) {
-        const auto obj = value.toObject();
-        Cell cell;
-        cell.id = cell.windowId = obj.value(QStringLiteral("windowId")).toString();
-        const QRectF frame(obj.value(QStringLiteral("x")).toDouble(), obj.value(QStringLiteral("y")).toDouble(),
-                           obj.value(QStringLiteral("width")).toDouble(),
-                           obj.value(QStringLiteral("height")).toDouble());
-        if (cell.windowId.isEmpty() || frame.isEmpty())
-            continue;
-        cell.rect =
-            QRectF((frame.x() - workArea.x()) / workArea.width(), (frame.y() - workArea.y()) / workArea.height(),
-                   frame.width() / workArea.width(), frame.height() / workArea.height());
-        cell.t = hueFor(cell.rect);
-        cell.occupied = true;
-        cell.appId = obj.value(QStringLiteral("appId")).toString();
-        cell.nativeRect = cell.rect;
-        cell.title = obj.value(QStringLiteral("title")).toString();
-        cell.focused = obj.value(QStringLiteral("focused")).toBool();
-        cell.minimized = obj.value(QStringLiteral("minimized")).toBool();
-        cell.offscreen = !frame.intersects(workArea);
-        cell.colorIndex = obj.value(QStringLiteral("colorIndex")).toInt(-1);
-        result.append(cell);
-    }
-    return result;
-}
-
-QList<Cell> inactiveDesktopCells(const QList<Cell>& live, bool scrolling)
-{
-    QList<Cell> result = live;
-    for (qsizetype i = 0; i < result.size(); ++i) {
-        auto& cell = result[i];
-        cell.focused = false;
-        if (scrolling) {
-            const qreal width = 1.0 / result.size();
-            cell.rect = QRectF(i * width, 0, width, 1);
-            cell.t = hueFor(cell.rect);
-            cell.offscreen = false;
-        }
-    }
-    return result;
-}
-
-QList<Cell> mergeNavigationWindows(const QList<Cell>& placed, const QList<Cell>& live)
-{
-    QHash<QString, Cell> remaining;
-    for (const Cell& cell : live)
-        remaining.insert(cell.windowId, cell);
-    QList<Cell> result;
-    for (Cell cell : placed) {
-        const auto it = remaining.constFind(cell.windowId);
-        if (it == remaining.cend())
-            continue;
-        // Scrolling retains its unbounded strip geometry and hidden tabs.
-        if (cell.columnIndex < 0)
-            cell.rect = it->rect;
-        cell.nativeRect = it->nativeRect;
-        cell.focused = it->focused;
-        cell.colorIndex = it->colorIndex;
-        cell.minimized = it->minimized;
-        cell.appId = it->appId;
-        cell.title = it->title;
-        result.append(cell);
-        remaining.remove(cell.windowId);
-    }
-    for (const Cell& cell : live) {
-        if (remaining.remove(cell.windowId))
-            result.append(cell);
-    }
-    return result;
 }
 
 } // namespace PhosphorShell::PlacementMapParser

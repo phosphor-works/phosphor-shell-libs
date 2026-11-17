@@ -54,7 +54,7 @@ void PolkitSmokeTest::registerQmlTypesIsIdempotent()
 void PolkitSmokeTest::defaultObjectPath()
 {
     QCOMPARE(PolkitAgent::defaultObjectPath(),
-             QStringLiteral("/org/phosphor_works/Lambent/PolicyKit1/AuthenticationAgent"));
+             QStringLiteral("/org/phosphor_works/PhosphorServicePolkit/AuthenticationAgent"));
 }
 
 void PolkitSmokeTest::constructsInert()

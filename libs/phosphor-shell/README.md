@@ -32,7 +32,7 @@ configs port with minimal rework.
 | Type | Purpose |
 |------|---------|
 | `ShellEngine`            | Top-level lifecycle: QML engine, config discovery, hot reload. |
-| `ShellLoader`            | Discovers and loads the user's QML config from XDG paths. |
+| `ShellLoader`            | Discovers the app's `shell.qml` under `<shellName>/` in the XDG config and data paths, falling back to a bundled shell URL the app supplies. The app names itself. |
 | `PanelWindow`            | Layer-shell-backed panel window with edge anchoring and exclusive zone. |
 | `PopupWindow`            | xdg-popup positioned against an anchor item, with in-place reposition. |
 | `FloatingWindow`         | XDG-toplevel window for non-shell auxiliary UI. |
@@ -42,11 +42,11 @@ configs port with minimal rework.
 | `Process`                | Sandboxed subprocess runner exposed to QML. |
 | `FileView`               | Watched-file reader for QML config-driven panels (`/proc`, `/sys`, config files). |
 | `SystemClock`            | Timer-driven clock (hours/minutes/seconds/date) with configurable tick precision. |
-| `WallpaperService`       | Decodes the desktop wallpaper off the GUI thread. Reached from QML via `ShellGlobal.wallpaper`. |
+| `WallpaperService`       | The shell's per-screen wallpaper store, decoded off the GUI thread. Reached from QML via `ShellGlobal.wallpaper`; `ShellEngine` keeps it in `<config>/<shellName>/wallpaper.json`. |
 | `Environment`            | Cross-platform env-var, locale, and runtime-dir helpers. |
 | `ShellGlobal`            | QML context object (`PhosphorShell`) with shell-wide config and runtime state. |
 | `ScreenModel`            | Reactive list of physical screens for per-screen `Variants`. |
-| `Toplevels`              | `ext-foreign-toplevel-list-v1` consumer (window list for taskbars). |
+| `Toplevels`              | `zwlr-foreign-toplevel-management-v1` consumer (window list for taskbars). |
 
 ## QML module
 
@@ -65,9 +65,9 @@ single import:
 - `Qt6::Core`, `Qt6::Gui`, `Qt6::Quick`, `Qt6::Qml`
 - [`phosphor-layer`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-layer/README.md), [`phosphor-rendering`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-rendering/README.md), [`phosphor-shaders`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-shaders/README.md), [`phosphor-wayland`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-wayland/README.md)
 
-The shell binary lives in PlasmaZones' `phosphor-shell/` tier, and its
-bundled shell QML tree at `phosphor-shell/shell/` is the working reference
-for consumers.
+An app passes its own name to `ShellLoader` and to `ShellEngine::Deps::shellName`;
+nothing here assumes a particular shell. [Lambent](https://github.com/phosphor-works/Lambent)
+is one, and its `shell/` tree is a working reference for consumers.
 
 ## See also
 

@@ -25,7 +25,13 @@ class AppearanceLibrary : public QObject
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
     Q_PROPERTY(QStringList fonts READ fonts CONSTANT)
 public:
+    // `directory` holds the library's own files: the bundled artwork, imported
+    // images and saved looks. Empty keeps none, so nothing can be saved.
     AppearanceLibrary(PhosphorTheme::AppearanceStore* store, const QString& directory, QObject* parent = nullptr);
+    // The directory of the process-wide instance create() returns, such as
+    // `<data>/<app>/appearance`. Set it once at startup, before QML loads.
+    static void setSingletonDirectory(const QString& directory);
+    static QString singletonDirectory();
     static AppearanceLibrary* create(QQmlEngine*, QJSEngine*);
     QVariantList wallpapers() const
     {

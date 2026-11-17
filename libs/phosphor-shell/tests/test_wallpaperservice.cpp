@@ -4,8 +4,8 @@
 // WallpaperService as the shell's own wallpaper store: the per-screen map
 // and its all-screens entry, the transient preview layered over it, the
 // persistence across instances, and the one-time seed from the previous
-// desktop that happens only while the store is empty. Runs against a
-// fixture XDG_CONFIG_HOME so nothing touches the developer's config.
+// desktop that happens only while the store is empty. The store is a file
+// in a temporary directory, so nothing touches the developer's config.
 
 #include <PhosphorShell/WallpaperService.h>
 
@@ -76,12 +76,14 @@ private Q_SLOTS:
     void rejectsWhatItCannotDraw();
     void pathIsDeterministicWithOnlyPerScreenEntries();
     void loadsTheImage();
+    void withoutAStorePathNothingIsSaved();
 
 private:
     std::unique_ptr<WallpaperService> make(const QString& seed);
     QJsonObject storedWallpapers() const;
 
     std::unique_ptr<QTemporaryDir> m_dir;
+    QString m_store;
     QString m_alpha;
     QString m_beta;
     QString m_notes;
@@ -92,9 +94,7 @@ void TestWallpaperService::init()
 {
     m_dir = std::make_unique<QTemporaryDir>();
     QVERIFY(m_dir->isValid());
-    // QStandardPaths reads the environment on every call, so pointing it
-    // at the fixture here scopes the store to this test.
-    qputenv("XDG_CONFIG_HOME", QDir(m_dir->path()).filePath(QStringLiteral("config")).toUtf8());
+    m_store = QDir(m_dir->path()).filePath(QStringLiteral("config/shell/wallpaper.json"));
     m_seedCalls = 0;
 
     QImage image(4, 4, QImage::Format_RGBA8888);
@@ -113,12 +113,12 @@ void TestWallpaperService::init()
 
 std::unique_ptr<WallpaperService> TestWallpaperService::make(const QString& seed)
 {
-    return std::make_unique<WallpaperService>(std::make_unique<FakeProvider>(seed, &m_seedCalls));
+    return std::make_unique<WallpaperService>(m_store, std::make_unique<FakeProvider>(seed, &m_seedCalls));
 }
 
 QJsonObject TestWallpaperService::storedWallpapers() const
 {
-    QFile file(WallpaperService::storePath());
+    QFile file(m_store);
     if (!file.open(QIODevice::ReadOnly)) {
         return {};
     }
@@ -127,16 +127,15 @@ QJsonObject TestWallpaperService::storedWallpapers() const
 
 void TestWallpaperService::seedsFromTheDesktopOnlyWhileEmpty()
 {
-    QVERIFY(!QFile::exists(WallpaperService::storePath()));
+    QVERIFY(!QFile::exists(m_store));
     {
         auto service = make(m_alpha);
         QCOMPARE(m_seedCalls, 1);
         QCOMPARE(service->path(), m_alpha);
         QCOMPARE(service->configuredPath(QStringLiteral("DP-1")), m_alpha);
     }
-    // The seed is persisted, under the all-screens key, in the store
-    // beside the shell file.
-    QVERIFY(WallpaperService::storePath().endsWith(QStringLiteral("/lambent/wallpaper.json")));
+    // The seed is persisted, under the all-screens key, in the store the
+    // service was given, its directory created on the way.
     QCOMPARE(storedWallpapers().value(QString()).toString(), m_alpha);
 
     // A populated store is authoritative: the desktop is never asked again,
@@ -149,11 +148,11 @@ void TestWallpaperService::seedsFromTheDesktopOnlyWhileEmpty()
 
     // A seed that points at nothing drawable leaves the store empty rather
     // than persisting a path the surface cannot load.
-    QVERIFY(QFile::remove(WallpaperService::storePath()));
+    QVERIFY(QFile::remove(m_store));
     {
         auto service = make(m_notes);
         QVERIFY(service->path().isEmpty());
-        QVERIFY(!QFile::exists(WallpaperService::storePath()));
+        QVERIFY(!QFile::exists(m_store));
     }
 }
 
@@ -274,6 +273,16 @@ void TestWallpaperService::loadsTheImage()
     QVERIFY(service->setPath(m_beta, QString()));
     QTRY_COMPARE(image.count(), 1);
     QCOMPARE(service->image().pixelColor(0, 0), QColor(Qt::blue));
+}
+
+void TestWallpaperService::withoutAStorePathNothingIsSaved()
+{
+    WallpaperService service(QString(), std::make_unique<FakeProvider>(m_alpha, &m_seedCalls));
+    QVERIFY(service.storePath().isEmpty());
+    QCOMPARE(service.path(), m_alpha);
+    QVERIFY(service.setPath(m_beta, QStringLiteral("DP-1")));
+    QCOMPARE(service.effectivePath(QStringLiteral("DP-1")), m_beta);
+    QVERIFY(QDir(m_dir->path()).entryList(QDir::Dirs | QDir::NoDotAndDotDot).isEmpty());
 }
 
 QTEST_MAIN(TestWallpaperService)

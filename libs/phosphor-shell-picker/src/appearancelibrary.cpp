@@ -15,21 +15,28 @@
 #include <QQmlEngine>
 #include <QRegularExpression>
 #include <QSaveFile>
-#include <QStandardPaths>
 #include <QThreadPool>
 #include <algorithm>
 
 namespace PhosphorShellPicker {
 namespace {
 const QString Path = QStringLiteral("path"), Colors = QStringLiteral("colors"), Name = QStringLiteral("name");
-QString defaultDirectory()
+QString& singletonDirectoryStorage()
 {
-    return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
-        + QStringLiteral("/lambent/appearance");
+    static QString directory;
+    return directory;
 }
+}
+void AppearanceLibrary::setSingletonDirectory(const QString& directory)
+{
+    singletonDirectoryStorage() = directory;
+}
+QString AppearanceLibrary::singletonDirectory()
+{
+    return singletonDirectoryStorage();
 }
 AppearanceLibrary::AppearanceLibrary(QObject* parent)
-    : AppearanceLibrary(PhosphorTheme::AppearanceStore::create(nullptr, nullptr), defaultDirectory(), parent)
+    : AppearanceLibrary(PhosphorTheme::AppearanceStore::create(nullptr, nullptr), singletonDirectory(), parent)
 {
 }
 AppearanceLibrary::AppearanceLibrary(PhosphorTheme::AppearanceStore* store, const QString& directory, QObject* parent)
@@ -79,7 +86,7 @@ void AppearanceLibrary::rescan()
 {
     QVariantList next;
     const QString bundled = m_directory + QStringLiteral("/collection");
-    if (!QDir().mkpath(bundled)) {
+    if (!m_directory.isEmpty() && !QDir().mkpath(bundled)) {
         fail(tr("Cannot create the wallpaper library."));
         return;
     }
@@ -108,7 +115,9 @@ void AppearanceLibrary::rescan()
                              {"linen", QT_TR_NOOP("First light"), QT_TR_NOOP("A pale canvas for your day."),
                               "#96afa9,#9eaec4,#c2a6b0,#d4bb98", false}};
     QSet<QString> seen;
-    for (const auto& entry : art) {
+    // The bundled artwork is copied into the library folder, so the store
+    // holds real files. Without a folder only the system's images are listed.
+    for (const auto& entry : m_directory.isEmpty() ? QList<Artwork>() : art) {
         const QString filename = QString::fromLatin1(entry.id)
             + (qstrcmp(entry.id, "alpine") == 0 ? QStringLiteral(".png") : QStringLiteral(".svg"));
         const QString path = bundled + u'/' + filename;
@@ -135,7 +144,8 @@ void AppearanceLibrary::rescan()
     }
     WallpaperCandidates candidates;
     auto directories = WallpaperCandidates::defaultDirectories();
-    directories.prepend(m_directory + QStringLiteral("/images"));
+    if (!m_directory.isEmpty())
+        directories.prepend(m_directory + QStringLiteral("/images"));
     candidates.setDirectories(directories);
     candidates.rescan();
     auto discovered = candidates.candidates();
@@ -152,7 +162,8 @@ void AppearanceLibrary::rescan()
         seen.insert(file.canonicalFilePath());
         // Managed filenames carry a content hash for collision-free imports;
         // keep the original filename as the visible library label.
-        if (file.absolutePath() == QDir(m_directory).absoluteFilePath(QStringLiteral("images"))) {
+        if (!m_directory.isEmpty()
+            && file.absolutePath() == QDir(m_directory).absoluteFilePath(QStringLiteral("images"))) {
             static const QRegularExpression prefix(QStringLiteral("^[0-9a-f]{12}-"));
             candidate[Name] = file.completeBaseName().remove(prefix);
         }
@@ -324,7 +335,7 @@ void AppearanceLibrary::importImages(const QList<QUrl>& urls)
         return;
     }
     const QString directory = m_directory + QStringLiteral("/images");
-    if (!QDir().mkpath(directory)) {
+    if (m_directory.isEmpty() || !QDir().mkpath(directory)) {
         fail(tr("Cannot create the wallpaper library."));
         return;
     }

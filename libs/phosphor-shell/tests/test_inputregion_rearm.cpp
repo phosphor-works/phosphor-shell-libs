@@ -89,6 +89,7 @@ void TestInputRegionRearm::aChangeToInteractiveThicknessReappliesTheMask()
     ShellEngine::Deps deps;
     deps.surfaceFactory = &factory;
     deps.screenProvider = &screens;
+    deps.shellName = QStringLiteral("phosphorshell-test");
     ShellEngine engine(deps);
     QVERIFY(engine.load(QUrl::fromLocalFile(path)));
 

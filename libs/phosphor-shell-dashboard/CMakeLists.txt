@@ -118,8 +118,6 @@ qt_add_qml_module(PhosphorShellDashboardQml
         src/shortcutcatalog.cpp
         src/shortcutreferencemodel.h
         src/shortcutreferencemodel.cpp
-        src/desktopstage.h
-        src/desktopstage.cpp
     QML_FILES ${_phosphor_dashboard_qml_files} ${_phosphor_dashboard_js_files}
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml/Phosphor/Dashboard
 )

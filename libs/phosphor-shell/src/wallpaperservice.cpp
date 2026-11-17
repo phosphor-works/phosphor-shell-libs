@@ -16,7 +16,6 @@
 #include <QMetaObject>
 #include <QPointer>
 #include <QSaveFile>
-#include <QStandardPaths>
 #include <QThreadPool>
 
 #include <algorithm>
@@ -40,16 +39,6 @@ QString versionKey()
 QString wallpapersKey()
 {
     return QStringLiteral("wallpapers");
-}
-
-QString storeDirectoryName()
-{
-    return QStringLiteral("lambent");
-}
-
-QString storeFileName()
-{
-    return QStringLiteral("wallpaper.json");
 }
 
 // The absolute path of `path` when it is a readable image, else empty.
@@ -82,13 +71,15 @@ QString resolve(const QHash<QString, QString>& map, const QString& screenName)
 
 } // namespace
 
-WallpaperService::WallpaperService(QObject* parent)
-    : WallpaperService(PhosphorShaders::createWallpaperProvider(), parent)
+WallpaperService::WallpaperService(const QString& storePath, QObject* parent)
+    : WallpaperService(storePath, PhosphorShaders::createWallpaperProvider(), parent)
 {
 }
 
-WallpaperService::WallpaperService(std::unique_ptr<PhosphorShaders::IWallpaperProvider> seedProvider, QObject* parent)
+WallpaperService::WallpaperService(const QString& storePath,
+                                   std::unique_ptr<PhosphorShaders::IWallpaperProvider> seedProvider, QObject* parent)
     : QObject(parent)
+    , m_storePath(storePath)
     , m_seedProvider(std::move(seedProvider))
 {
     load();
@@ -107,10 +98,9 @@ WallpaperService::WallpaperService(std::unique_ptr<PhosphorShaders::IWallpaperPr
 
 WallpaperService::~WallpaperService() = default;
 
-QString WallpaperService::storePath()
+QString WallpaperService::storePath() const
 {
-    return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QLatin1Char('/')
-        + storeDirectoryName() + QLatin1Char('/') + storeFileName();
+    return m_storePath;
 }
 
 QImage WallpaperService::image() const
@@ -271,7 +261,10 @@ void WallpaperService::refresh()
 void WallpaperService::load()
 {
     m_configured.clear();
-    QFile file(storePath());
+    if (m_storePath.isEmpty()) {
+        return;
+    }
+    QFile file(m_storePath);
     if (!file.exists()) {
         return;
     }
@@ -297,7 +290,10 @@ void WallpaperService::load()
 
 void WallpaperService::save() const
 {
-    const QString target = storePath();
+    if (m_storePath.isEmpty()) {
+        return;
+    }
+    const QString& target = m_storePath;
     if (!QDir().mkpath(QFileInfo(target).absolutePath())) {
         qCWarning(lcWallpaperService) << "Cannot create the wallpaper store directory for" << target;
         return;

@@ -99,23 +99,6 @@ TestCase {
         compare(findChild(stage, "stage-workspace-0").map, first);
         compare(findChild(stage, "stage-workspace-1").map, live);
     }
-    function test_nativePreviewGeometryDoesNotUseStripCoordinates() {
-        const map = createTemporaryObject(mapComponent, testCase);
-        const stage = createTemporaryObject(stageComponent, testCase, {
-            mapFor: () => map
-        });
-        const native = Qt.rect(0.03, 0.025, 0.46, 0.9);
-        const strip = {
-            x: 0,
-            y: 0,
-            w: 0.5,
-            h: 1,
-            nativeRect: native
-        };
-        const frame = stage.windowRect(strip);
-        fuzzyCompare(frame.x, stage.previewRect.x + (native.x * stage.workArea.width - stage.canvasLeft) * stage.previewRect.width / stage.canvas.width, 0.001);
-        fuzzyCompare(frame.height, native.height * stage.workArea.height * stage.previewRect.height / stage.canvas.height, 0.001);
-    }
     function test_selectionIsSeparateFromActivation() {
         const map = createTemporaryObject(mapComponent, testCase);
         const stage = createTemporaryObject(stageComponent, testCase, {
@@ -139,16 +122,25 @@ TestCase {
         map.windows = [
             {
                 windowId: "top",
-                nativeRect: Qt.rect(44 / 1908, -76 / 1532, 1820 / 1908, 552 / 1532)
+                x: 44 / 1908,
+                y: -76 / 1532,
+                w: 1820 / 1908,
+                h: 552 / 1532
             },
             {
                 windowId: "bottom",
-                nativeRect: Qt.rect(44 / 1908, 492 / 1532, 1820 / 1908, 924 / 1532)
+                x: 44 / 1908,
+                y: 492 / 1532,
+                w: 1820 / 1908,
+                h: 924 / 1532
             },
             {
                 windowId: "parked",
                 offscreen: true,
-                nativeRect: Qt.rect(0, 20, 1, 1)
+                x: 0,
+                y: 20,
+                w: 1,
+                h: 1
             }
         ];
         const stage = createTemporaryObject(stageComponent, testCase, {
@@ -164,17 +156,21 @@ TestCase {
         fuzzyCompare(top.width / 1820, top.height / 552, 0.001);
         fuzzyCompare(bottom.width / 1820, bottom.height / 924, 0.001);
         verify(top.height > 100);
-        fuzzyCompare(stage.nativeRect.x + 44 * stage.previewScale, top.x, 0.001);
-        fuzzyCompare(stage.nativeRect.y, top.y, 0.001);
         // The same edge condition on a horizontal strip retains both headers.
         map.windows = [
             {
                 windowId: "left",
-                nativeRect: Qt.rect(-0.1, 0, 0.6, 1)
+                x: -0.1,
+                y: 0,
+                w: 0.6,
+                h: 1
             },
             {
                 windowId: "right",
-                nativeRect: Qt.rect(0.51, 0, 0.6, 1)
+                x: 0.51,
+                y: 0,
+                w: 0.6,
+                h: 1
             }
         ];
         const left = stage.windowRect(map.windows[0]), right = stage.windowRect(map.windows[1]);
@@ -188,7 +184,7 @@ TestCase {
             {
                 windowId: "long-title",
                 appId: "org.kde.konsole",
-                title: "~/Projects/PlasmaZones/.claude/worktrees/shell-design - fish — Konsole"
+                title: "~/Projects/phosphor-works/.worktrees/shell-design/libs/phosphor-shell-dashboard - fish — Konsole"
             }
         ];
         const stage = createTemporaryObject(stageComponent, testCase, {
@@ -215,7 +211,10 @@ TestCase {
                 windowId: "window-" + i,
                 appId: "org.kde.konsole",
                 title: "Window " + i,
-                nativeRect: Qt.rect(i / 12, 0, 0.2, 1)
+                x: i / 12,
+                y: 0,
+                w: 0.2,
+                h: 1
             });
         }
         const stage = createTemporaryObject(stageComponent, testCase, {
@@ -283,11 +282,18 @@ TestCase {
             verify(stage.previewRect.y > 0);
             verify(stage.previewRect.x + stage.previewRect.width < stage.width);
             verify(stage.previewRect.y + stage.previewRect.height < stage.height - 80);
-            const sx = stage.nativeRect.width / stage.width, sy = stage.nativeRect.height / stage.height;
-            fuzzyCompare(stage.nativeRect.x + stage.canvas.x * sx, stage.previewRect.x, 0.001);
-            fuzzyCompare(stage.nativeRect.y + stage.canvas.y * sy, stage.previewRect.y, 0.001);
-            fuzzyCompare(stage.canvas.width * sx, stage.previewRect.width, 0.001);
-            fuzzyCompare(stage.canvas.height * sy, stage.previewRect.height, 0.001);
+            // A window covering the whole canvas fills the whole preview.
+            const area = stage.workArea, canvas = stage.canvas;
+            const frame = stage.windowRect({
+                x: (canvas.x - area.x) / area.width,
+                y: (canvas.y - area.y) / area.height,
+                w: canvas.width / area.width,
+                h: canvas.height / area.height
+            });
+            fuzzyCompare(frame.x, stage.previewRect.x, 0.001);
+            fuzzyCompare(frame.y, stage.previewRect.y, 0.001);
+            fuzzyCompare(frame.width, stage.previewRect.width, 0.001);
+            fuzzyCompare(frame.height, stage.previewRect.height, 0.001);
         }
     }
 }

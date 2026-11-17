@@ -11,6 +11,7 @@
 #include <QPointer>
 #include <QScreen>
 #include <QSize>
+#include <QString>
 #include <QUrl>
 #include <QVariantMap>
 
@@ -45,6 +46,10 @@ public:
     {
         PhosphorLayer::SurfaceFactory* surfaceFactory = nullptr;
         PhosphorLayer::IScreenProvider* screenProvider = nullptr;
+        /// The app's name, the one its ShellLoader takes: the layer-shell
+        /// scope prefix of every panel and the directory of the wallpaper
+        /// store, `<config>/<shellName>/wallpaper.json`. Required.
+        QString shellName;
     };
 
     explicit ShellEngine(Deps deps, QObject* parent = nullptr);
