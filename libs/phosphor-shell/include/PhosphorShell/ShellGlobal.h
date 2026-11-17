@@ -42,7 +42,9 @@ class PHOSPHORSHELL_EXPORT ShellGlobal : public QObject
     Q_PROPERTY(WallpaperService* wallpaper READ wallpaper CONSTANT)
 
 public:
-    explicit ShellGlobal(QObject* parent = nullptr);
+    /// `wallpaperStorePath` is the file the wallpaper service persists its
+    /// map to (WallpaperService's constructor). Empty keeps it in memory.
+    explicit ShellGlobal(const QString& wallpaperStorePath, QObject* parent = nullptr);
     ~ShellGlobal() override;
 
     [[nodiscard]] ScreenModel* screens() const;

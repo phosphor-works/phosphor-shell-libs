@@ -104,6 +104,7 @@ void TestPersistentPropertiesScan::nestedStateIsRegisteredAsASingleton()
     ShellEngine::Deps deps;
     deps.surfaceFactory = &factory;
     deps.screenProvider = &screens;
+    deps.shellName = QStringLiteral("phosphorshell-test");
     ShellEngine engine(deps);
 
     QVERIFY2(engine.load(QUrl::fromLocalFile(path)), "the shell builds against the mock transport");
@@ -133,6 +134,7 @@ void TestPersistentPropertiesScan::nestedStateSurvivesAReload()
     ShellEngine::Deps deps;
     deps.surfaceFactory = &factory;
     deps.screenProvider = &screens;
+    deps.shellName = QStringLiteral("phosphorshell-test");
     ShellEngine engine(deps);
     QVERIFY(engine.load(QUrl::fromLocalFile(path)));
 
@@ -192,6 +194,7 @@ void TestPersistentPropertiesScan::aRootPanelWithNoScreenFailsTheLoad()
     ShellEngine::Deps deps;
     deps.surfaceFactory = &factory;
     deps.screenProvider = &screens;
+    deps.shellName = QStringLiteral("phosphorshell-test");
     ShellEngine engine(deps);
 
     QSignalSpy failed(&engine, &ShellEngine::failed);
@@ -213,7 +216,7 @@ void TestPersistentPropertiesScan::watcherIgnoresSettingsAndRearmsIdenticalAtomi
     PhosphorLayer::Testing::MockTransport transport;
     PhosphorLayer::Testing::MockScreenProvider screens;
     PhosphorLayer::SurfaceFactory factory(PhosphorLayer::Testing::makeDeps(&transport, &screens));
-    ShellEngine engine({&factory, &screens});
+    ShellEngine engine({&factory, &screens, QStringLiteral("phosphorshell-test")});
     QVERIFY(engine.load(QUrl::fromLocalFile(path)));
     QSignalSpy reloaded(&engine, &ShellEngine::reloaded);
     QSaveFile settings(dir.filePath(QStringLiteral("appearance.json")));

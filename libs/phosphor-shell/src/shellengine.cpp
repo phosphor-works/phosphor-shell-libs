@@ -21,6 +21,7 @@
 #include <QRect>
 #include <QRegion>
 #include <QCoreApplication>
+#include <QDir>
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
@@ -30,6 +31,7 @@
 #include <QQmlEngine>
 #include <QQuickWindow>
 #include <QScreen>
+#include <QStandardPaths>
 #include <QSize>
 #include <QTimer>
 
@@ -90,6 +92,10 @@ bool ShellEngine::load(const QUrl& shellUrl)
         Q_EMIT failed(QStringLiteral("ShellEngine: surfaceFactory must be non-null"));
         return false;
     }
+    if (m_deps.shellName.trimmed().isEmpty() || m_deps.shellName.contains(QLatin1Char('/'))) {
+        Q_EMIT failed(QStringLiteral("ShellEngine: shellName must be a directory name"));
+        return false;
+    }
 
     // Single-shot. A second load() would construct a second ScreenModel and
     // ShellGlobal parented to `this`, leaking the first pair for this object's
@@ -104,7 +110,9 @@ bool ShellEngine::load(const QUrl& shellUrl)
     m_shellUrl = shellUrl;
 
     m_screenModel = new ScreenModel(m_deps.screenProvider, this);
-    m_shellGlobal = new ShellGlobal(this);
+    m_shellGlobal = new ShellGlobal(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
+                                        .filePath(m_deps.shellName + QStringLiteral("/wallpaper.json")),
+                                    this);
     m_shellGlobal->setScreenModel(m_screenModel);
 
     // Screen-topology changes drive a hot reload. The notifier is
@@ -543,7 +551,7 @@ bool ShellEngine::materializePanels(QString* failureReason)
         }
 
         PhosphorLayer::Role role;
-        role = role.withAnchors(anchors).withScopePrefix(QStringLiteral("lambent"));
+        role = role.withAnchors(anchors).withScopePrefix(m_deps.shellName);
         const auto panelKeyboard = [panel] {
             return panel->keyboardFocus() == PanelWindow::Exclusive ? PhosphorLayer::KeyboardInteractivity::Exclusive
                 : panel->keyboardFocus() == PanelWindow::OnDemand   ? PhosphorLayer::KeyboardInteractivity::OnDemand
@@ -618,7 +626,7 @@ bool ShellEngine::materializePanels(QString* failureReason)
         cfg.screen = targetScreen;
         cfg.initialSize = panelSize;
         cfg.marginsOverride = layerMargins;
-        cfg.debugName = QStringLiteral("lambent-panel");
+        cfg.debugName = m_deps.shellName + QStringLiteral("-panel");
 
         // Hand off rootPanel ownership in one noexcept step:
         // unique_ptr::release returns a raw pointer and clears its source;

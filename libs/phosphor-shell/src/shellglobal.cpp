@@ -12,9 +12,9 @@ Q_LOGGING_CATEGORY(lcShellGlobal, "phosphorshell.shellglobal")
 
 namespace PhosphorShell {
 
-ShellGlobal::ShellGlobal(QObject* parent)
+ShellGlobal::ShellGlobal(const QString& wallpaperStorePath, QObject* parent)
     : QObject(parent)
-    , m_wallpaper(new WallpaperService(this))
+    , m_wallpaper(new WallpaperService(wallpaperStorePath, this))
 {
 }
 

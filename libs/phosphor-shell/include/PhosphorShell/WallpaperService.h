@@ -26,9 +26,9 @@ namespace PhosphorShell {
  * surface reads and the picker writes. It is not a view onto another
  * desktop's configuration. The store is a per-screen map keyed by output
  * name, where the empty key is the wallpaper every output without an
- * entry of its own shows, persisted at `storePath()`
- * (`$XDG_CONFIG_HOME/lambent/wallpaper.json`, beside the shell
- * file the loader discovers).
+ * entry of its own shows, persisted at the store path the app hands the
+ * constructor (ShellEngine passes `<config>/<shellName>/wallpaper.json`,
+ * beside the shell file the loader discovers).
  *
  * Two layers sit on top of the configured map, both per screen and both
  * keyed the same way:
@@ -77,16 +77,19 @@ class PHOSPHORSHELL_EXPORT WallpaperService : public QObject
     Q_PROPERTY(bool available READ isAvailable NOTIFY imageChanged)
 
 public:
-    explicit WallpaperService(QObject* parent = nullptr);
+    /// `storePath` is the JSON file the configured map is read from and
+    /// saved to. Empty keeps the map in memory only.
+    explicit WallpaperService(const QString& storePath, QObject* parent = nullptr);
     /// Same, with the first-run seed source injected. Tests hand in a
-    /// fake so the seed can be asserted without a desktop; the default
+    /// fake so the seed can be asserted without a desktop; the other
     /// constructor uses `PhosphorShaders::createWallpaperProvider()`.
     /// Null means no seed source.
-    WallpaperService(std::unique_ptr<PhosphorShaders::IWallpaperProvider> seedProvider, QObject* parent = nullptr);
+    WallpaperService(const QString& storePath, std::unique_ptr<PhosphorShaders::IWallpaperProvider> seedProvider,
+                     QObject* parent = nullptr);
     ~WallpaperService() override;
 
-    /// Where the store lives: `$XDG_CONFIG_HOME/lambent/wallpaper.json`.
-    [[nodiscard]] static QString storePath();
+    /// Where the store lives, as the constructor was given it.
+    [[nodiscard]] QString storePath() const;
 
     [[nodiscard]] QImage image() const;
     [[nodiscard]] QString path() const;
@@ -148,6 +151,7 @@ private:
     // image with huge declared dimensions can't make it to allocation.
     static constexpr qint64 kMaxPixelCount = qint64(16384) * 16384;
 
+    const QString m_storePath;
     std::unique_ptr<PhosphorShaders::IWallpaperProvider> m_seedProvider;
     // Output name → absolute path. The empty key is the all-screens entry.
     QHash<QString, QString> m_configured;

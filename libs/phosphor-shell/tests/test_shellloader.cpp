@@ -86,8 +86,8 @@ private Q_SLOTS:
         // shell.qml on the host. `setTestModeEnabled(true)` redirects
         // the user-config dir to a temp location, but it does NOT
         // redirect system data dirs (XDG_DATA_DIRS) — so a developer
-        // running this test on a machine where Lambent is
-        // installed system-wide would find /usr/share/lambent/
+        // running this test on a machine where a shell is
+        // installed system-wide would find /usr/share/<name>/
         // shell.qml. A unique sentinel name keeps the test environment-
         // independent.
         ShellLoader loader(QStringLiteral("phosphorshell-test-no-such-shell-xyz"));
@@ -96,12 +96,6 @@ private Q_SLOTS:
         QVERIFY(configDir.endsWith(QLatin1String("/phosphorshell-test-no-such-shell-xyz")));
         // resolve() returns empty when no shell.qml exists at the path.
         QCOMPARE(loader.resolve(), QUrl());
-    }
-
-    void testDefaultName()
-    {
-        ShellLoader loader; // default = "lambent"
-        QVERIFY(loader.shellConfigDir().endsWith(QLatin1String("/lambent")));
     }
 };
 

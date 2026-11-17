@@ -71,7 +71,7 @@ QUrl ShellLoader::resolve() const
 
     for (const QString& basePath : std::as_const(searched)) {
         // QDir::filePath joins normally and collapses any trailing slash on
-        // basePath, avoiding `/foo//lambent/shell.qml`. The filesystem
+        // basePath, avoiding `/foo//<name>/shell.qml`. The filesystem
         // tolerates the doubled slash but it leaks into log output and
         // breaks symbolic comparisons of the resolved path.
         const QString shellDir = QDir(basePath).filePath(m_shellName);
