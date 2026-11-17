@@ -37,37 +37,50 @@
 let
   # The pinned phosphor-libs commit (cmake/PhosphorShellLibsDependencies.cmake)
   # and the Luau and valijson archives that commit pins in its
-  # cmake/PhosphorDependencies.cmake. The sandbox has no network, so they are
+  # cmake/PhosphorDependencies.cmake, with its test data (the surface packs)
+  # when the tests are built. The sandbox has no network, so they are
   # fetched here as fixed-output derivations and handed to CMake as one
   # directory (PHOSPHOR_DEPS_ARCHIVES), each under the FILE name its pin gives
   # it. CMake checks each against the pin's hash again before unpacking it.
   # fetchurl, not fetchFromGitHub: the pin hashes the archive file itself.
-  depsArchives = linkFarm "phosphor-shell-libs-deps-archives" [
-    {
-      name = "phosphor-libs-c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz";
-      path = fetchurl {
-        url = "https://github.com/phosphor-works/phosphor-libs/archive/c5d6ee8a24f803607b403f90b8625b94b8a25110.tar.gz";
-        # sha256 f072437c31f9b96e5ed43c32e55bc0e6e8c7ac7323262dbeaf871008c670e8e6
-        hash = "sha256-8HJDfDH5uW5e1Dwy5VvA5ujHrHMjJi2+r4cQCMZw6OY=";
-      };
-    }
-    {
-      name = "luau-0.745.tar.gz";
-      path = fetchurl {
-        url = "https://github.com/luau-lang/luau/archive/refs/tags/0.745.tar.gz";
-        # sha256 53c22773bace6cabbabaead576fbc08d11a0317fce11a3dbf9d027dda6849248
-        hash = "sha256-U8Inc7rObKu6uurVdvvAjRGgMX/OEaPb+dAn3aaEkkg=";
-      };
-    }
-    {
-      name = "valijson-1.1.3.tar.gz";
-      path = fetchurl {
-        url = "https://github.com/tristanpenman/valijson/archive/refs/tags/v1.1.3.tar.gz";
-        # sha256 887b53b1a924f6fe0b35fa3bbc9bbbe5ae8c72097b7f0f7c17b45f4cfa646029
-        hash = "sha256-iHtTsakk9v4LNfo7vJu75a6Mcgl7fw98F7RfTPpkYCk=";
-      };
-    }
-  ];
+  depsArchives = linkFarm "phosphor-shell-libs-deps-archives" (
+    [
+      {
+        name = "phosphor-libs-793344a136af82d067e4a8b0e5abe0d57404f74a.tar.gz";
+        path = fetchurl {
+          url = "https://github.com/phosphor-works/phosphor-libs/archive/793344a136af82d067e4a8b0e5abe0d57404f74a.tar.gz";
+          # sha256 a35b8fbdec56b8ed17368d5d4df149c9cd473f7a974aa815e7db78a0c19281fd
+          hash = "sha256-o1uPvexWuO0XNo1dTfFJyc1HP3qXSqgV59t4oMGSgf0=";
+        };
+      }
+      {
+        name = "luau-0.745.tar.gz";
+        path = fetchurl {
+          url = "https://github.com/luau-lang/luau/archive/refs/tags/0.745.tar.gz";
+          # sha256 53c22773bace6cabbabaead576fbc08d11a0317fce11a3dbf9d027dda6849248
+          hash = "sha256-U8Inc7rObKu6uurVdvvAjRGgMX/OEaPb+dAn3aaEkkg=";
+        };
+      }
+      {
+        name = "valijson-1.1.3.tar.gz";
+        path = fetchurl {
+          url = "https://github.com/tristanpenman/valijson/archive/refs/tags/v1.1.3.tar.gz";
+          # sha256 887b53b1a924f6fe0b35fa3bbc9bbbe5ae8c72097b7f0f7c17b45f4cfa646029
+          hash = "sha256-iHtTsakk9v4LNfo7vJu75a6Mcgl7fw98F7RfTPpkYCk=";
+        };
+      }
+    ]
+    ++ lib.optionals withTests [
+      {
+        name = "phosphor-surface-packs-e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3.tar.gz";
+        path = fetchurl {
+          url = "https://github.com/phosphor-works/phosphor-surface-packs/archive/e89d9f7bb6320eab8b6a0b3325858d2ca5356ce3.tar.gz";
+          # sha256 fbbf0b9849d83396029bc4e310c3dcac49c08758e73d560538888e685f0a5e30
+          hash = "sha256-+78LmEnYM5YCm8TjEMPcrEnAh1jnPVYFOIiOaF8KXjA=";
+        };
+      }
+    ]
+  );
   trayFixturePython = python3.withPackages (ps: [
     ps.dbus-python
     ps.pygobject3
