@@ -3,7 +3,9 @@
 
 #include <PhosphorShell/ShellLoader.h>
 
+#include <QFile>
 #include <QStandardPaths>
+#include <QTemporaryDir>
 #include <QTest>
 
 using namespace PhosphorShell;
@@ -96,6 +98,24 @@ private Q_SLOTS:
         QVERIFY(configDir.endsWith(QLatin1String("/phosphorshell-test-no-such-shell-xyz")));
         // resolve() returns empty when no shell.qml exists at the path.
         QCOMPARE(loader.resolve(), QUrl());
+    }
+
+    /// With nothing on disk, the app's bundled shell is the answer, but only
+    /// when it exists. No bundle and a missing bundle both mean no shell.
+    void testBundledShellIsTheFallback()
+    {
+        const QString name = QStringLiteral("phosphorshell-test-no-such-shell-xyz");
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = dir.filePath(QStringLiteral("shell.qml"));
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.close();
+
+        QCOMPARE(ShellLoader(name, QUrl::fromLocalFile(path)).resolve(), QUrl::fromLocalFile(path));
+        QCOMPARE(ShellLoader(name, QUrl::fromLocalFile(dir.filePath(QStringLiteral("missing.qml")))).resolve(), QUrl());
+        QCOMPARE(ShellLoader(name, QUrl(QStringLiteral("qrc:/qt/qml/No/Such/Module/shell.qml"))).resolve(), QUrl());
+        QCOMPARE(ShellLoader(name).resolve(), QUrl());
     }
 };
 

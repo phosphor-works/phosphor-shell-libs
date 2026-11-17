@@ -32,7 +32,7 @@ configs port with minimal rework.
 | Type | Purpose |
 |------|---------|
 | `ShellEngine`            | Top-level lifecycle: QML engine, config discovery, hot reload. |
-| `ShellLoader`            | Discovers the app's `shell.qml` under `<shellName>/` in the XDG config and data paths. The app names itself. |
+| `ShellLoader`            | Discovers the app's `shell.qml` under `<shellName>/` in the XDG config and data paths, falling back to a bundled shell URL the app supplies. The app names itself. |
 | `PanelWindow`            | Layer-shell-backed panel window with edge anchoring and exclusive zone. |
 | `PopupWindow`            | xdg-popup positioned against an anchor item, with in-place reposition. |
 | `FloatingWindow`         | XDG-toplevel window for non-shell auxiliary UI. |
