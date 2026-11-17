@@ -5,7 +5,7 @@
 
 The launcher: a spotlight-style search over installed applications, open
 windows, clipboard history, arithmetic and shell commands, per
-[`docs/phosphor-shell-design/mockups-v2/launcher.svg`](../../../docs/phosphor-shell-design/mockups-v2/launcher.svg).
+[Lambent's `docs/design/mockups-v2/launcher.svg`](https://github.com/phosphor-works/Lambent/blob/main/docs/design/mockups-v2/launcher.svg).
 Two targets in one directory: a C++ core library
 (`PhosphorShellLauncher`) any host can link without the UI, and the
 `Phosphor.Launcher` QML module that draws it, themed through
@@ -13,7 +13,7 @@ Two targets in one directory: a C++ core library
 [`phosphor-shell-widgets`](../phosphor-shell-widgets/README.md) atoms.
 
 Phase 4.2 deliverable per
-[`docs/phosphor-shell-design/04-implementation-plan.md`](../../../docs/phosphor-shell-design/04-implementation-plan.md).
+[Lambent's `docs/design/04-implementation-plan.md`](https://github.com/phosphor-works/Lambent/blob/main/docs/design/04-implementation-plan.md).
 
 ## The contract
 
