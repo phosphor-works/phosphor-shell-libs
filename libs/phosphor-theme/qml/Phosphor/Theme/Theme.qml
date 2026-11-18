@@ -5,7 +5,7 @@
 // of poking at the underlying PaletteStore by string key. Names mirror
 // the canonical Phosphor palette tokens exactly (snake_case verbatim,
 // matching the palette JSON wire format published at
-// https://phosphor-works.github.io/palette/).
+// https://phosphor-works.org/palette/).
 // Binding-tracking note. Every named accessor below indexes into the
 // `palette` QVariantMap rather than calling PaletteStore.token(). The
 // QML engine tracks property reads, not method calls. This binding reads
