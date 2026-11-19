@@ -7,6 +7,7 @@
 // PaletteStore singleton at the default palette JSON path (if one
 // exists), and loads Main.qml.
 
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorTheme/PaletteStore.h>
 
 #include <QDebug>
@@ -15,7 +16,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
-#include <QStandardPaths>
 #include <QString>
 
 namespace {
@@ -25,14 +25,16 @@ namespace {
 // Phase 1.1 hot-reload.
 QString defaultPalettePath()
 {
-    const auto base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    return QDir(base).filePath(QStringLiteral("palettes/current.json"));
+    return QDir(PhosphorPaths::appDataDir()).filePath(QStringLiteral("palettes/current.json"));
 }
 
 } // namespace
 
 int main(int argc, char* argv[])
 {
+    // The CLI and the demo share one folder of the suite, so --apply drives a
+    // running demo.
+    PhosphorPaths::setAppDirectoryName(QStringLiteral("phosphor-theme"));
     QGuiApplication app(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral("Phosphor"));
     QCoreApplication::setApplicationName(QStringLiteral("phosphor"));

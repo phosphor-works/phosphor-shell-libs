@@ -16,12 +16,12 @@
 #include <PhosphorLayer/Surface.h>
 #include <PhosphorLayer/SurfaceConfig.h>
 #include <PhosphorLayer/SurfaceFactory.h>
+#include <PhosphorPaths/SuiteDirectories.h>
 
 #include <QPointer>
 #include <QRect>
 #include <QRegion>
 #include <QCoreApplication>
-#include <QDir>
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
@@ -31,7 +31,6 @@
 #include <QQmlEngine>
 #include <QQuickWindow>
 #include <QScreen>
-#include <QStandardPaths>
 #include <QSize>
 #include <QTimer>
 
@@ -92,8 +91,8 @@ bool ShellEngine::load(const QUrl& shellUrl)
         Q_EMIT failed(QStringLiteral("ShellEngine: surfaceFactory must be non-null"));
         return false;
     }
-    if (m_deps.shellName.trimmed().isEmpty() || m_deps.shellName.contains(QLatin1Char('/'))) {
-        Q_EMIT failed(QStringLiteral("ShellEngine: shellName must be a directory name"));
+    if (!PhosphorPaths::isValidDirectoryName(m_deps.shellName)) {
+        Q_EMIT failed(QStringLiteral("ShellEngine: shellName must be a single name"));
         return false;
     }
 
@@ -110,9 +109,7 @@ bool ShellEngine::load(const QUrl& shellUrl)
     m_shellUrl = shellUrl;
 
     m_screenModel = new ScreenModel(m_deps.screenProvider, this);
-    m_shellGlobal = new ShellGlobal(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation))
-                                        .filePath(m_deps.shellName + QStringLiteral("/wallpaper.json")),
-                                    this);
+    m_shellGlobal = new ShellGlobal(PhosphorPaths::appConfigDir() + QStringLiteral("/wallpaper.json"), this);
     m_shellGlobal->setScreenModel(m_screenModel);
 
     // Screen-topology changes drive a hot reload. The notifier is

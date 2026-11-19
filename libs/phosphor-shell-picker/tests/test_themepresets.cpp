@@ -6,6 +6,8 @@
 
 #include <PhosphorShellPicker/ThemePresets.h>
 
+#include <PhosphorPaths/SuiteDirectories.h>
+
 #include <PhosphorTheme/IThemeService.h>
 
 #include <QColor>
@@ -41,6 +43,13 @@ class TestThemePresets : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    // The presets sit in the app's data folder, which a process names before
+    // anything reads a path.
+    void initTestCase()
+    {
+        PhosphorPaths::setAppDirectoryName(QStringLiteral("phosphorshellpicker-test"));
+    }
+
     void builtInsLeadThenFilesByName()
     {
         ThemePresets presets;

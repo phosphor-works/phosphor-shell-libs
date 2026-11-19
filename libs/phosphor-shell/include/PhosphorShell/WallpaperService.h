@@ -27,7 +27,7 @@ namespace PhosphorShell {
  * desktop's configuration. The store is a per-screen map keyed by output
  * name, where the empty key is the wallpaper every output without an
  * entry of its own shows, persisted at the store path the app hands the
- * constructor (ShellEngine passes `<config>/<shellName>/wallpaper.json`,
+ * constructor (ShellEngine passes `wallpaper.json` in PhosphorPaths::appConfigDir(),
  * beside the shell file the loader discovers).
  *
  * Two layers sit on top of the configured map, both per screen and both

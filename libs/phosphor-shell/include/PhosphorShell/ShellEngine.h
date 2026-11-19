@@ -46,9 +46,9 @@ public:
     {
         PhosphorLayer::SurfaceFactory* surfaceFactory = nullptr;
         PhosphorLayer::IScreenProvider* screenProvider = nullptr;
-        /// The app's name, the one its ShellLoader takes: the layer-shell
-        /// scope prefix of every panel and the directory of the wallpaper
-        /// store, `<config>/<shellName>/wallpaper.json`. Required.
+        /// The app's name for its surfaces: the layer-shell scope prefix of
+        /// every panel and their debug names. Required. The wallpaper store
+        /// is in the app's config folder, PhosphorPaths::appConfigDir().
         QString shellName;
     };
 

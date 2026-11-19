@@ -48,6 +48,9 @@ find_package(Qt6 ${PHOSPHORSERVICECLIPBOARD_QT_MIN} REQUIRED COMPONENTS Core Qml
 
 # phosphor-wayland is an in-tree sibling under BUILD_PHOSPHOR_SHELL; only
 # find_package it when building this lib stand-alone.
+if(NOT TARGET PhosphorPaths::PhosphorPaths)
+    find_package(PhosphorPaths CONFIG REQUIRED)
+endif()
 if(NOT TARGET PhosphorWayland::PhosphorWayland)
     find_package(PhosphorWayland REQUIRED)
 endif()
@@ -114,6 +117,8 @@ target_link_libraries(PhosphorServiceClipboard
         Qt6::Core
         Qt6::Qml
     PRIVATE
+        # The history's directory, a shared tree of the suite (ClipboardStore).
+        PhosphorPaths::PhosphorPaths
         PhosphorWayland::PhosphorWayland
 )
 

@@ -3,6 +3,8 @@
 
 #include <PhosphorShellPicker/ThemePresets.h>
 
+#include <PhosphorPaths/SuiteDirectories.h>
+
 #include <PhosphorTheme/IThemeService.h>
 #include <PhosphorTheme/PaletteStore.h>
 
@@ -14,7 +16,6 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 #include <QRegularExpression>
-#include <QStandardPaths>
 
 #include <algorithm>
 
@@ -79,8 +80,7 @@ int ThemePresets::count() const
 
 QString ThemePresets::defaultDirectory()
 {
-    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    return QDir(base).filePath(QStringLiteral("palettes"));
+    return QDir(PhosphorPaths::appDataDir()).filePath(QStringLiteral("palettes"));
 }
 
 QVariantMap ThemePresets::darkPalette()

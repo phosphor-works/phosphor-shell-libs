@@ -46,7 +46,8 @@ public:
     [[nodiscard]] QVariantList presets() const;
     [[nodiscard]] int count() const;
 
-    /// `<AppLocalDataLocation>/palettes`, beside the committed palette.
+    /// `palettes` in the app's data folder, PhosphorPaths::appDataDir(),
+    /// beside the committed palette.
     [[nodiscard]] static QString defaultDirectory();
 
     /// The canonical dark palette.

@@ -90,7 +90,7 @@ phosphor-service-clipboard-cli copy 2
   defence, mirroring `phosphor-service-polkit`'s never-store-the-secret stance.
 - **On-disk history.** A JSON index plus per-entry content blobs (named by
   SHA-256, so identical content shares a blob) under
-  `~/.local/share/phosphor-clipboard`. Writes are atomic and orphaned blobs are
+  `~/.local/share/phosphor-works/clipboard`. Writes are atomic and orphaned blobs are
   pruned. The history loads on startup and saves on every change.
 - **A model, not a single host.** Clipboard is inherently a list, so the facade
   exposes a `QAbstractItemModel` (the `phosphor-service-notifications`
@@ -112,7 +112,7 @@ phosphor-service-clipboard-cli copy 2
 Shipped. `ClipboardService` watches the session clipboard through
 `PhosphorWayland::ClipboardDevice` (`wlr-data-control`), de-duplicates and caps a
 history (default 100 entries, most-recent first), persists it as a JSON index +
-SHA-256 content blobs under `~/.local/share/phosphor-clipboard`, and re-applies an
+SHA-256 content blobs under `~/.local/share/phosphor-works/clipboard`, and re-applies an
 entry via `copy()`. Sensitive selections (the `x-kde-passwordManagerHint`) are
 dropped before they are ever read. The `examples/phosphor-service-clipboard-cli`
 demo provides `watch` / `list` / `copy` against a live session. Four test

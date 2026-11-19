@@ -45,6 +45,8 @@ endfunction()
 add_executable(test_phosphorshell_shellloader test_shellloader.cpp)
 target_link_libraries(test_phosphorshell_shellloader
     PRIVATE
+        # The test names the app's folder (ShellLoader and the wallpaper store).
+        PhosphorPaths::PhosphorPaths
         Qt6::Test
         PhosphorShell::PhosphorShell
 )
@@ -235,6 +237,8 @@ set_tests_properties(test_phosphorshell_perscreen PROPERTIES
 add_executable(test_phosphorshell_persistentproperties_scan test_persistentproperties_scan.cpp)
 target_link_libraries(test_phosphorshell_persistentproperties_scan
     PRIVATE
+        # The test names the app's folder (ShellLoader and the wallpaper store).
+        PhosphorPaths::PhosphorPaths
         Qt6::Test
         Qt6::Qml
         Qt6::Quick
@@ -255,6 +259,8 @@ set_tests_properties(test_phosphorshell_persistentproperties_scan PROPERTIES
 add_executable(test_phosphorshell_inputregion_rearm test_inputregion_rearm.cpp)
 target_link_libraries(test_phosphorshell_inputregion_rearm
     PRIVATE
+        # The test names the app's folder (ShellLoader and the wallpaper store).
+        PhosphorPaths::PhosphorPaths
         Qt6::Test
         Qt6::Qml
         Qt6::Quick

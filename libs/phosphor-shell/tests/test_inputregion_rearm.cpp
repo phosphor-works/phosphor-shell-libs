@@ -16,6 +16,7 @@
 // Built against the mock layer-shell transport, so no compositor is needed.
 
 #include <PhosphorLayer/SurfaceFactory.h>
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorShell/PanelWindow.h>
 #include <PhosphorShell/ShellEngine.h>
 
@@ -69,6 +70,12 @@ class TestInputRegionRearm : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    // ShellEngine keeps its wallpaper store in the app's folder, which a
+    // process names before anything reads a path.
+    void initTestCase()
+    {
+        PhosphorPaths::setAppDirectoryName(QStringLiteral("phosphorshell-test"));
+    }
     void aChangeToInteractiveThicknessReappliesTheMask();
 };
 

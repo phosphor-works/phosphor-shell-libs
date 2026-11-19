@@ -4,7 +4,7 @@
 # phosphor-theme-demo, swatch sheet for the PhosphorTheme tokens.
 #
 # Renders every M3 token as a labelled card. Hot-reloads when
-# ~/.local/share/phosphor/palettes/current.json changes. Acts as the
+# ~/.local/share/phosphor-works/phosphor-theme/palettes/current.json changes. Acts as the
 # acceptance test for libs/phosphor-theme, if the demo doesn't update
 # live, the library isn't wired right.
 
@@ -67,6 +67,7 @@ target_compile_features(phosphor-theme-demo PRIVATE cxx_std_20)
 
 target_link_libraries(phosphor-theme-demo
     PRIVATE
+        PhosphorPaths::PhosphorPaths
         Qt6::Core
         Qt6::Gui
         Qt6::Qml
