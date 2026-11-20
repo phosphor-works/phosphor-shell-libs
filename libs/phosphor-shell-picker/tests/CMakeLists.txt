@@ -50,10 +50,12 @@ phosphorshellpicker_add_test(test_appearancelibrary)
 phosphorshellpicker_add_test(test_wallpapercandidates)
 phosphorshellpicker_add_test(test_retintcontroller)
 phosphorshellpicker_add_test(test_themepresets)
+# The test names the app's folder, where the presets sit.
+target_link_libraries(test_themepresets PRIVATE PhosphorPaths::PhosphorPaths)
 # The QML half: Picker's preview and apply call sequence against a fake
 # wallpaper service, and WallpaperSurface's crossfade against the same
 # fake. Loads the real files through `import Phosphor.Picker`, so it
 # links the module's registrar (already in the function above) and the
 # shell library whose PanelWindow the surface is built on.
 phosphorshellpicker_add_test(test_pickerwallpaper)
-target_link_libraries(test_pickerwallpaper PRIVATE Qt6::Qml Qt6::Quick PhosphorShell::PhosphorShell)
+target_link_libraries(test_pickerwallpaper PRIVATE Qt6::Qml Qt6::Quick PhosphorShell::PhosphorShell PhosphorPaths::PhosphorPaths)

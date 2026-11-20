@@ -32,7 +32,7 @@ configs port with minimal rework.
 | Type | Purpose |
 |------|---------|
 | `ShellEngine`            | Top-level lifecycle: QML engine, config discovery, hot reload. |
-| `ShellLoader`            | Discovers the app's `shell.qml` under `<shellName>/` in the XDG config and data paths, falling back to a bundled shell URL the app supplies. The app names itself. |
+| `ShellLoader`            | Discovers the app's `shell.qml` in its folder of the suite, `phosphor-works/<app>/` (PhosphorPaths), in the XDG config and data paths, falling back to a bundled shell URL the app supplies. |
 | `PanelWindow`            | Layer-shell-backed panel window with edge anchoring and exclusive zone. |
 | `PopupWindow`            | xdg-popup positioned against an anchor item, with in-place reposition. |
 | `FloatingWindow`         | XDG-toplevel window for non-shell auxiliary UI. |
@@ -64,10 +64,12 @@ single import:
 ## Dependencies
 
 - `Qt6::Core`, `Qt6::Gui`, `Qt6::Quick`, `Qt6::Qml`
+- [`phosphor-paths`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-paths/README.md): where the app's shell tree and wallpaper store live
 - [`phosphor-layer`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-layer/README.md), [`phosphor-rendering`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-rendering/README.md), [`phosphor-shaders`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-shaders/README.md), [`phosphor-wayland`](https://github.com/phosphor-works/phosphor-libs/blob/main/libs/phosphor-wayland/README.md)
 
-An app passes its own name to `ShellLoader` and to `ShellEngine::Deps::shellName`;
-nothing here assumes a particular shell. [Lambent](https://github.com/phosphor-works/Lambent)
+An app names its folder with `PhosphorPaths::setAppDirectoryName()` at the top of `main()`, which `ShellLoader` and
+the wallpaper store read, and names its surfaces with `ShellEngine::Deps::shellName`; nothing here assumes a particular
+shell. [Lambent](https://github.com/phosphor-works/Lambent)
 is one, and its `shell/` tree is a working reference for consumers.
 
 ## See also

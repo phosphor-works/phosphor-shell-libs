@@ -7,6 +7,7 @@
 // round-trip and template renderer can be exercised without launching
 // the shell. This is the Phase 1.1 example-CLI acceptance test.
 
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorTheme/MatugenRunner.h>
 #include <PhosphorTheme/PaletteStore.h>
 #include <PhosphorTheme/TemplateEngine.h>
@@ -22,7 +23,6 @@
 #include <QLatin1String>
 #include <QObject>
 #include <QSaveFile>
-#include <QStandardPaths>
 #include <QTimer>
 
 #include <iostream>
@@ -31,8 +31,7 @@ namespace {
 
 QString defaultPaletteDir()
 {
-    const auto base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    return QDir(base).filePath(QStringLiteral("palettes"));
+    return QDir(PhosphorPaths::appDataDir()).filePath(QStringLiteral("palettes"));
 }
 
 QString defaultPalettePath()
@@ -367,6 +366,9 @@ void printUsage()
 
 int main(int argc, char* argv[])
 {
+    // The CLI and the demo share one folder of the suite, so --apply drives a
+    // running demo.
+    PhosphorPaths::setAppDirectoryName(QStringLiteral("phosphor-theme"));
     // MatugenRunner uses QProcess. QCoreApplication is enough for that
     // and for QColor parsing; QGuiApplication isn't needed here since
     // there's no UI thread.

@@ -102,8 +102,9 @@ public:
     Q_INVOKABLE void commit();
 
     /// The palette file the shell reads at startup and `commit()` writes:
-    /// `<AppLocalDataLocation>/palettes/current.json`, the layout
-    /// phosphor-theme-cli's `--apply` uses.
+    /// `palettes/current.json` in the app's data folder,
+    /// PhosphorPaths::appDataDir(), the layout phosphor-theme-cli's `--apply`
+    /// uses in its own.
     [[nodiscard]] static QString defaultPersistPath();
 
     /// `tokens` without the four brand stops. Pure, for the tests.

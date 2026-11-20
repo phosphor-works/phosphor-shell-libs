@@ -11,6 +11,7 @@
 
 #include <PhosphorShell/PanelWindow.h>
 #include <PhosphorShellPicker/ThemePresets.h>
+#include <PhosphorPaths/SuiteDirectories.h>
 
 #include <QDir>
 #include <QGuiApplication>
@@ -170,6 +171,9 @@ private Q_SLOTS:
 
     void initTestCase()
     {
+        // The picker's presets and committed palette sit in the app's data
+        // folder, which a process names before anything reads a path.
+        PhosphorPaths::setAppDirectoryName(QStringLiteral("phosphorshellpicker-test"));
         // ShellEngine registers PanelWindow into Phosphor.Shell at
         // construction; there is no engine here, so the surface's base
         // type is registered by hand under the same name.

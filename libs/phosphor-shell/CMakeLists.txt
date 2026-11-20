@@ -48,6 +48,9 @@ if(NOT TARGET Qt6::WaylandClientPrivate)
     find_package(Qt6WaylandClientPrivate REQUIRED)
 endif()
 
+if(NOT TARGET PhosphorPaths::PhosphorPaths)
+    find_package(PhosphorPaths CONFIG REQUIRED)
+endif()
 if(NOT TARGET PhosphorLayer::PhosphorLayer)
     find_package(PhosphorLayer CONFIG REQUIRED)
 endif()
@@ -246,6 +249,9 @@ target_link_libraries(PhosphorShell
         # libwayland-client, which the ext-workspace-v1 client binds with.
         Qt6::WaylandClient
         Qt6::WaylandClientPrivate
+        # Where the app's shell tree and wallpaper store live (ShellLoader,
+        # ShellEngine); no public header names it.
+        PhosphorPaths::PhosphorPaths
 )
 
 set_target_properties(PhosphorShell PROPERTIES

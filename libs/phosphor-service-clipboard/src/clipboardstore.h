@@ -30,7 +30,7 @@ public:
     /// orphaned content blobs are pruned. Returns false on a write failure.
     bool save(const QList<ClipboardEntry>& entries) const;
 
-    /// The default user data directory, `~/.local/share/phosphor-clipboard`.
+    /// The default user data directory, `~/.local/share/phosphor-works/clipboard`.
     [[nodiscard]] static QString defaultDirectory();
 
 private:

@@ -3,6 +3,8 @@
 
 #include <PhosphorShellPicker/RetintController.h>
 
+#include <PhosphorPaths/SuiteDirectories.h>
+
 #include <PhosphorTheme/IThemeService.h>
 
 #include <QColor>
@@ -13,7 +15,6 @@
 #include <QLoggingCategory>
 #include <QMetaObject>
 #include <QSaveFile>
-#include <QStandardPaths>
 #include <QTimer>
 
 Q_LOGGING_CATEGORY(lcRetint, "phosphorshellpicker.retint")
@@ -146,8 +147,7 @@ QString RetintController::lastError() const
 
 QString RetintController::defaultPersistPath()
 {
-    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    return QDir(base).filePath(QStringLiteral("palettes/current.json"));
+    return QDir(PhosphorPaths::appDataDir()).filePath(QStringLiteral("palettes/current.json"));
 }
 
 QVariantMap RetintController::withoutBrandStops(const QVariantMap& tokens)

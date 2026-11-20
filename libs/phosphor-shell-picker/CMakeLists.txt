@@ -39,6 +39,11 @@ endif()
 if(NOT TARGET PhosphorShellWidgets::PhosphorShellWidgetsQml)
     find_package(PhosphorShellWidgets CONFIG QUIET)
 endif()
+# The palette store sits in the app's data folder (RetintController,
+# ThemePresets).
+if(NOT TARGET PhosphorPaths::PhosphorPaths)
+    find_package(PhosphorPaths CONFIG REQUIRED)
+endif()
 
 if(COMMAND qt_policy)
     qt_policy(SET QTP0001 NEW)
@@ -145,6 +150,8 @@ target_link_libraries(PhosphorShellPickerQml
         Qt6::Qml
         Qt6::Quick
         PhosphorTheme::PhosphorTheme
+    PRIVATE
+        PhosphorPaths::PhosphorPaths
 )
 
 if(TARGET PhosphorShellWidgets::PhosphorShellWidgetsQml)

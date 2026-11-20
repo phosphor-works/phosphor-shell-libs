@@ -3,6 +3,8 @@
 
 #include "clipboardstore.h"
 
+#include <PhosphorPaths/SuiteDirectories.h>
+
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>
@@ -71,8 +73,10 @@ ClipboardStore::ClipboardStore(QString directory)
 
 QString ClipboardStore::defaultDirectory()
 {
+    // The user's history, whichever shell keeps it: a tree every Phosphor app
+    // shares, not one app's.
     return QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-        .filePath(QStringLiteral("phosphor-clipboard"));
+        .filePath(PhosphorPaths::commonDataSubdir(QStringLiteral("clipboard")));
 }
 
 QString ClipboardStore::indexPath() const

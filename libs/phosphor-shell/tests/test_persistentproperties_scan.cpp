@@ -14,6 +14,7 @@
 // The shell is built against a mock layer-shell transport, so no compositor
 // is involved and the panels materialize under the offscreen QPA.
 
+#include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorLayer/SurfaceFactory.h>
 #include <PhosphorShell/ShellEngine.h>
 
@@ -61,6 +62,12 @@ class TestPersistentPropertiesScan : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    // ShellEngine keeps its wallpaper store in the app's folder, which a
+    // process names before anything reads a path.
+    void initTestCase()
+    {
+        PhosphorPaths::setAppDirectoryName(QStringLiteral("phosphorshell-test"));
+    }
     void nestedStateIsRegisteredAsASingleton();
     void nestedStateSurvivesAReload();
     void aRootPanelWithNoScreenFailsTheLoad();

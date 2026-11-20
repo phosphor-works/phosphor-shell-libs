@@ -6,7 +6,7 @@
 # Subcommands:
 #   set-wallpaper <path> [--mode dark|light] [--apply]
 #       Spawn matugen on the wallpaper, parse its output, optionally
-#       persist to ~/.local/share/phosphor/palettes/current.json.
+#       persist to ~/.local/share/phosphor-works/phosphor-theme/palettes/current.json.
 #   dump [--source <path>]
 #       Print the active palette as JSON to stdout.
 #   render-template <template> <out> [--palette <path>]
@@ -24,6 +24,7 @@ add_executable(phosphor-theme-cli
 
 target_link_libraries(phosphor-theme-cli
     PRIVATE
+        PhosphorPaths::PhosphorPaths
         Qt6::Core
         Qt6::Gui
         PhosphorTheme::PhosphorTheme

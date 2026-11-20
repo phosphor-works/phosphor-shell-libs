@@ -19,7 +19,7 @@ namespace PhosphorThemeDemo {
 // uses when a wallpaper changes.
 //
 // Demo-only. Not part of the phosphor-theme public API: real themes
-// ship as JSON under `~/.local/share/phosphor/palettes/` (or similar)
+// ship as JSON under `~/.local/share/phosphor-works/phosphor-theme/palettes/` (or similar)
 // and load through PaletteStore directly. Hardcoded named palettes
 // don't belong in a library third-party shells consume.
 class PresetPalettes : public QObject

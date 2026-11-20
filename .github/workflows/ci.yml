@@ -170,7 +170,11 @@ jobs:
 
   nix:
     name: Nix (${{ matrix.system }})
-    timeout-minutes: 60
+    # The tests build compiles phosphor-libs' whole suite as well as this
+    # tree's, then the package compiles the libraries again. Since the
+    # libraries hold the engine runtime, that runs past an hour on the x86_64
+    # runner; the aarch64 one is faster.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
