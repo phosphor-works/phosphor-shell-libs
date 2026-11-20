@@ -89,7 +89,8 @@ set_tests_properties(test_phosphorserviceclipboard_historymodel PROPERTIES
 )
 
 # Store unit test: round-trips entries through a temp directory (no real user
-# data). Compiles clipboardstore.cpp directly; no lib link, no compositor.
+# data). Compiles clipboardstore.cpp directly, with no compositor; it links
+# only PhosphorPaths, through which the store names its default directory.
 add_executable(test_phosphorserviceclipboard_store
     test_store.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/clipboardstore.cpp
@@ -97,7 +98,7 @@ add_executable(test_phosphorserviceclipboard_store
 target_include_directories(test_phosphorserviceclipboard_store
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
 )
-target_link_libraries(test_phosphorserviceclipboard_store PRIVATE Qt6::Test)
+target_link_libraries(test_phosphorserviceclipboard_store PRIVATE Qt6::Test PhosphorPaths::PhosphorPaths)
 add_test(NAME test_phosphorserviceclipboard_store COMMAND test_phosphorserviceclipboard_store)
 phosphor_apply_test_isolation(test_phosphorserviceclipboard_store)
 # APPEND, never a bare SET: `set_tests_properties(... PROPERTIES
