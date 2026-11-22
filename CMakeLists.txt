@@ -21,7 +21,9 @@
 # idempotent or runs only at the top level, so the app's settings are the ones
 # in force.
 
-cmake_minimum_required(VERSION 3.16)
+# 3.23: the phosphor-libs tree added below asks for it (target_sources with
+# FILE_SET). The presets (CMakePresets.json) need 3.25.
+cmake_minimum_required(VERSION 3.23)
 
 project(PhosphorShellLibs VERSION 0.1.0 LANGUAGES C CXX)
 

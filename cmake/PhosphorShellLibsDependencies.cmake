@@ -4,7 +4,7 @@
 # What the shell libraries build from that is not in this repository: the
 # phosphor-libs commit they build against, pinned to its archive by version,
 # URL and SHA-256. This file is the only place the pin lives. The phosphor-libs
-# tree pins its own third-party sources (Luau, valijson) in its
+# tree pins its own third-party sources (Luau, jsoncons) in its
 # cmake/PhosphorDependencies.cmake, at the commit pinned here.
 #
 # An app that adds this tree as a subproject (PlasmaZones) has added
@@ -47,10 +47,10 @@ set(PHOSPHOR_SHELL_LIBS_DEPS phosphor-libs)
 # The phosphor-libs commit (LGPL-2.1-or-later, phosphor-works/phosphor-libs)
 # the shell libraries build against. A commit, not a release, so VERSION is the
 # commit hash.
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_VERSION "435beef0470229525bd0675c11422f262d4c9582")
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/435beef0470229525bd0675c11422f262d4c9582.tar.gz")
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_FILE "phosphor-libs-435beef0470229525bd0675c11422f262d4c9582.tar.gz")
-set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_SHA256 "7655c619c6721b42db7d5424f47aad94daa5ce40e9e021349b74cd21c1677e31")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_VERSION "e6e4322929b103b3dd08febd51a2a616c477187b")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_URL "https://github.com/phosphor-works/phosphor-libs/archive/e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_FILE "phosphor-libs-e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz")
+set(PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_SHA256 "508b16cb46a133b9bc1d9d3c48c7793df78441a1bbcf19dda68274a2823d9ae6")
 
 # CPM.cmake itself, the same release phosphor-libs pins, so that tree uses
 # this copy.

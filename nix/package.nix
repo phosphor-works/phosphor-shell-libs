@@ -37,7 +37,7 @@
 
 let
   # The pinned phosphor-libs commit (cmake/PhosphorShellLibsDependencies.cmake)
-  # and the Luau and valijson archives that commit pins in its
+  # and the Luau and jsoncons archives that commit pins in its
   # cmake/PhosphorDependencies.cmake, with its test data (the surface packs)
   # when the tests are built. The sandbox has no network, so they are
   # fetched here as fixed-output derivations and handed to CMake as one
@@ -47,11 +47,11 @@ let
   depsArchives = linkFarm "phosphor-shell-libs-deps-archives" (
     [
       {
-        name = "phosphor-libs-435beef0470229525bd0675c11422f262d4c9582.tar.gz";
+        name = "phosphor-libs-e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz";
         path = fetchurl {
-          url = "https://github.com/phosphor-works/phosphor-libs/archive/435beef0470229525bd0675c11422f262d4c9582.tar.gz";
-          # sha256 7655c619c6721b42db7d5424f47aad94daa5ce40e9e021349b74cd21c1677e31
-          hash = "sha256-dlXGGcZyG0LbfVQk9HqtlNqlzkDp4CE0m3TNIcFnfjE=";
+          url = "https://github.com/phosphor-works/phosphor-libs/archive/e6e4322929b103b3dd08febd51a2a616c477187b.tar.gz";
+          # sha256 508b16cb46a133b9bc1d9d3c48c7793df78441a1bbcf19dda68274a2823d9ae6
+          hash = "sha256-UIsWy0ahM7m8HZ08SMd5PfeEQaG7zxndpoJ0ooI9muY=";
         };
       }
       {
@@ -63,11 +63,11 @@ let
         };
       }
       {
-        name = "valijson-1.1.3.tar.gz";
+        name = "jsoncons-1.10.0.tar.gz";
         path = fetchurl {
-          url = "https://github.com/tristanpenman/valijson/archive/refs/tags/v1.1.3.tar.gz";
-          # sha256 887b53b1a924f6fe0b35fa3bbc9bbbe5ae8c72097b7f0f7c17b45f4cfa646029
-          hash = "sha256-iHtTsakk9v4LNfo7vJu75a6Mcgl7fw98F7RfTPpkYCk=";
+          url = "https://github.com/danielaparker/jsoncons/archive/refs/tags/v1.10.0.tar.gz";
+          # sha256 c829350a2eece662beb378143e2ab1c1cbb07d703687bf168626665a8a7d8bc1
+          hash = "sha256-yCk1Ci7s5mK+s3gUPiqxwcuwfXA2h78WhiZmWop9i8E=";
         };
       }
     ]
@@ -191,7 +191,7 @@ stdenv.mkDerivation {
     license = with lib.licenses; [
       lgpl21Plus
       mit
-      bsd2
+      boost
       # The vendored wlr-gamma-control protocol of phosphor-service-nightlight.
       hpndSellVariant
     ];
