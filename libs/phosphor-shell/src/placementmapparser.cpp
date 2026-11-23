@@ -4,8 +4,8 @@
 #include <PhosphorShell/PlacementMapParser.h>
 
 #include <PhosphorProtocol/ServiceConstants.h>
-#include <PhosphorZones/Zone.h>
-#include <PhosphorZones/ZoneJsonKeys.h>
+#include <PhosphorLayoutApi/FixedGeometry.h>
+#include <PhosphorLayoutApi/ZoneJsonKeys.h>
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -59,7 +59,7 @@ constexpr QLatin1String Floating("floating");
 
 QRectF readRect(const QJsonObject& obj)
 {
-    using namespace PhosphorZones::ZoneJsonKeys;
+    using namespace PhosphorLayout::ZoneJsonKeys;
     return QRectF(obj[X].toDouble(), obj[Y].toDouble(), obj[Width].toDouble(), obj[Height].toDouble());
 }
 
@@ -91,7 +91,7 @@ qreal hueFor(const QRectF& rect)
 
 QList<Cell> parseSnappingLayout(const QString& layoutJson, const QSize& workAreaSize, qreal deviceScale)
 {
-    using namespace PhosphorZones::ZoneJsonKeys;
+    using namespace PhosphorLayout::ZoneJsonKeys;
     QList<Cell> cells;
     const QJsonDocument doc = QJsonDocument::fromJson(layoutJson.toUtf8());
     if (!doc.isObject()) {
@@ -121,7 +121,7 @@ QList<Cell> parseSnappingLayout(const QString& layoutJson, const QSize& workArea
             }
             const qreal divisor = devicePixels ? deviceScale : 1.0;
             const QRectF logical =
-                PhosphorZones::Zone::fixedGeometryToLogical(readRect(zone[FixedGeometry].toObject()), divisor);
+                PhosphorLayout::fixedGeometryToLogical(readRect(zone[FixedGeometry].toObject()), divisor);
             rect = QRectF(logical.x() / workAreaSize.width(), logical.y() / workAreaSize.height(),
                           logical.width() / workAreaSize.width(), logical.height() / workAreaSize.height());
         } else {
@@ -133,7 +133,7 @@ QList<Cell> parseSnappingLayout(const QString& layoutJson, const QSize& workArea
         }
         Cell cell = makeCell(id, rect);
         cell.zoneNumber = zone[ZoneNumber].toInt(0);
-        cell.label = zone[PhosphorZones::ZoneJsonKeys::Name].toString();
+        cell.label = zone[PhosphorLayout::ZoneJsonKeys::Name].toString();
         cells.append(cell);
     }
     return cells;
@@ -176,7 +176,7 @@ QList<Cell> parseTileBatch(const QList<TileRect>& tiles, const QString& screenId
 
 StripParse parseVisibleStrip(const QString& stripJson)
 {
-    using namespace PhosphorZones::ZoneJsonKeys;
+    using namespace PhosphorLayout::ZoneJsonKeys;
     StripParse parse;
     const QJsonDocument doc = QJsonDocument::fromJson(stripJson.toUtf8());
     if (!doc.isArray()) {
