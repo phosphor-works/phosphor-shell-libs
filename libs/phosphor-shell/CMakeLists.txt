@@ -94,9 +94,9 @@ if(NOT TARGET PhosphorProtocol::PhosphorProtocol)
     find_package(PhosphorProtocol CONFIG REQUIRED)
 endif()
 
-# the zone and layout model
-if(NOT TARGET PhosphorZones::PhosphorZones)
-    find_package(PhosphorZones CONFIG REQUIRED)
+# the layout-file contract (zone JSON keys, fixed-geometry units)
+if(NOT TARGET PhosphorLayoutApi::PhosphorLayoutApi)
+    find_package(PhosphorLayoutApi CONFIG REQUIRED)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -239,7 +239,7 @@ target_link_libraries(PhosphorShell
     PRIVATE
         # PlacementMap: JSON zone keys and D-Bus for the placement engine's
         # geometry feed.
-        PhosphorZones::PhosphorZones
+        PhosphorLayoutApi::PhosphorLayoutApi
         Qt6::DBus
         # WaylandClient + private headers needed by popupwindow.cpp to call
         # xdg_popup.reposition directly. Qt's xdg-shell client plugin owns
