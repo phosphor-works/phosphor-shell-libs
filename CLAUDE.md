@@ -27,8 +27,9 @@ phosphor-shell-libs' own. The shared Claude Code tooling (the command guard, `ph
 - A QML module is a STATIC `<Namespace>Qml` target (alias `<Namespace>::<Namespace>Qml`) with QML in
   `libs/<name>/qml/Phosphor/<Module>/`. The surfaces (`phosphor-shell-bar` and the other `phosphor-shell-*`
   surface libraries) are QML modules only, with no shared library and no install rules.
-- `examples/` holds demos and command-line acceptance harnesses, built only when the folder exists. The Nix flake
-  strips it from its source tree. Its files are `GPL-3.0-or-later`.
+- `examples/` holds demos and command-line acceptance harnesses, built only with
+  `-DPHOSPHOR_SHELL_LIBS_BUILD_EXAMPLES=ON` (off by default, so CI does not build them). The Nix flake strips it from
+  its source tree. Its files are `GPL-3.0-or-later`.
 - `cmake/PhosphorShellLibsDependencies.cmake` pins phosphor-libs. `nix/package.nix` repeats that pin.
 
 ## Layers
