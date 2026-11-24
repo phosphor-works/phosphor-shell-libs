@@ -109,6 +109,7 @@ FocusScope {
         height: implicitHeight
         sourceComponent: Component {
             TrayMenu {
+                objectName: "trayMenu"
                 entry: root.selectedEntry
                 railT: root.railT
                 maximumHeight: root.maximumHeight
