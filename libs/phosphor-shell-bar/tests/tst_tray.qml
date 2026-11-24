@@ -120,14 +120,27 @@ Item {
             return item;
         }
 
+        // Waits until a menu that just loaded is ready for input. When its rows
+        // load, TrayMenu moves focus to the first row from a timer, and its rows
+        // are placed by layouts that run when the window draws a frame. A key
+        // or click before both happen acts on the wrong row or where a row was:
+        // on a loaded runner the timer moved focus back after the test had moved
+        // it, and a click landed while the panel was 175 of its 345 px.
+        function menuSettled(panel) {
+            tryCompare(control(panel, "trayMenu"), "pendingFocus", false, busTimeout);
+            rendered(panel);
+        }
+
         function panelFor(id) {
             const panel = createTemporaryObject(panelComponent, root, id ? {
                 initialMenuKey: entry(id).instanceKey
             } : {});
             verify(!!panel, "Component exists");
             rendered(panel);
-            if (id)
+            if (id) {
                 tryVerify(() => !!findChild(panel, "trayMenuItem-1"), busTimeout);
+                menuSettled(panel);
+            }
             return panel;
         }
 
@@ -273,6 +286,7 @@ Item {
             tryCompare(model, "rootId", 20, busTimeout);
             tryCompare(model, "count", 4, busTimeout);
             tryVerify(() => !!findChild(panel, "trayMenuItem-22"), busTimeout);
+            menuSettled(panel);
             const online = control(panel, "trayMenuItem-21");
             const away = control(panel, "trayMenuItem-22");
             online.forceActiveFocus();
@@ -303,6 +317,7 @@ Item {
             tryCompare(model, "rootId", 20, busTimeout);
             tryCompare(model, "count", 2, busTimeout);
             tryVerify(() => !!findChild(panel, "trayMenuItem-21"), busTimeout);
+            menuSettled(panel);
             const display = control(panel, "trayMenuItem-21");
             display.forceActiveFocus();
             keyClick(Qt.Key_Return);
