@@ -11,7 +11,7 @@
 #     every library here. phosphor-libs comes from the commit
 #     cmake/PhosphorShellLibsDependencies.cmake pins, fetched with CPM, or from
 #     a local checkout with -DCPM_phosphor-libs_SOURCE=<dir>.
-#   * As a subproject of an app. PlasmaZones pins one commit of this repository
+#   * As a subproject of an app. Lambent pins one commit of this repository
 #     and adds it with CPM after phosphor-libs, so the app's phosphor-libs pin
 #     wins and this tree fetches nothing of its own. CPM's
 #     -DCPM_phosphor-shell-libs_SOURCE=<dir> builds a local checkout instead.
