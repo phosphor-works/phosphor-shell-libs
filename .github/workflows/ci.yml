@@ -10,7 +10,7 @@
 #     sandbox), the package itself and the dev shell, on x86_64 and aarch64.
 #
 # phosphor-libs comes from the commit cmake/PhosphorShellLibsDependencies.cmake
-# pins, so its tests run here too. PlasmaZones, which builds this tree from a
+# pins, so its tests run here too. Lambent, which builds this tree from a
 # pinned commit, tests it again inside its own build.
 
 name: CI
