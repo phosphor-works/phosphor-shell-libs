@@ -100,7 +100,8 @@ ctest --test-dir build -R <name>         # one test
 `phosphor-works:build` has the rest: the memory cap, the non-unity and no-PCH gate, the warning check and the offline
 archives. The first configure downloads the pinned phosphor-libs into `.cache/cpm`. CI runs the `dev` workflow on
 Arch with `QT_QPA_PLATFORM=offscreen`, a clang-format and qmlformat lint over the changed files, and the Nix flake.
-This repository has no lefthook setup, so run `clang-format -i` and `qmlformat -i` on the files you change.
+The shared git hooks (`lefthook.yml`, set up by `lefthook install` or `workspace/tools/setup`) run clang-format and
+qmlformat on the staged files and check the commit message.
 
 ## QML
 
