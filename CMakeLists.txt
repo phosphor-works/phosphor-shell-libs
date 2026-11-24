@@ -194,10 +194,12 @@ add_subdirectory(libs/phosphor-service-session)       # logind session/power act
 add_subdirectory(libs/phosphor-service-nightlight)    # night light over wlr-gamma-control (compositor-neutral)
 
 # Example demos and CLI acceptance harnesses are not part of the installed
-# product. The Nix flake builds from a source tree with examples/ stripped
-# (flake.nix removes this directory from the fileset), so only descend into
-# the example subdirectories when the directory is actually present.
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
+# product, and no test uses them. They are built only when asked for, so CI
+# and the apps that add this tree never build them. The Nix flake builds from
+# a source tree with examples/ stripped (flake.nix removes it from the
+# fileset), so the directory must also exist.
+option(PHOSPHOR_SHELL_LIBS_BUILD_EXAMPLES "Build the demos and acceptance harnesses in examples/" OFF)
+if(PHOSPHOR_SHELL_LIBS_BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
 # Phosphor SDK groundwork demos:
 #   phosphor-theme-demo  — swatch-sheet viewer, hot-reloads the PaletteStore.
 #   phosphor-theme-cli   — headless wallpaper → matugen → palette → template.
