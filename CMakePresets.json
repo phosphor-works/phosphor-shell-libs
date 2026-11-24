@@ -54,19 +54,28 @@
     ],
     "buildPresets": [
         {
+            "name": "base",
+            "hidden": true,
+            "jobs": 3
+        },
+        {
             "name": "dev",
+            "inherits": "base",
             "configurePreset": "dev"
         },
         {
             "name": "release",
+            "inherits": "base",
             "configurePreset": "release"
         },
         {
             "name": "relwithdebinfo",
+            "inherits": "base",
             "configurePreset": "relwithdebinfo"
         },
         {
             "name": "asan",
+            "inherits": "base",
             "configurePreset": "asan"
         }
     ],
@@ -78,7 +87,8 @@
                 "outputOnFailure": true
             },
             "execution": {
-                "noTestsAction": "error"
+                "noTestsAction": "error",
+                "jobs": 3
             }
         },
         {
