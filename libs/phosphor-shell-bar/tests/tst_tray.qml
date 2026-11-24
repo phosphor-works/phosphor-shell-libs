@@ -61,6 +61,11 @@ Item {
         name: "TrayInteractions"
         when: windowShown
 
+        // Every wait here crosses D-Bus to the Python tray fixture and back. On a
+        // loaded CI runner (aarch64 under Nix) a round trip took longer than
+        // QtTest's 5 s default, so one wait timed out while the fixture worked.
+        readonly property int busTimeout: 20000
+
         function initTestCase() {
             root.savedSettings = JSON.parse(JSON.stringify(AppearanceStore.values));
             verify(trayFixture.start());
@@ -94,7 +99,7 @@ Item {
             verify(!!trayFixture.call("SetScenario", [scenario]));
             const expected = trayFixture.status().apps;
             compare(expected.length, count);
-            tryVerify(() => TrayModel.items.length === count && expected.every(app => TrayModel.items.some(entry => entry.dbusService === app.unique && entry.title === app.title)));
+            tryVerify(() => TrayModel.items.length === count && expected.every(app => TrayModel.items.some(entry => entry.dbusService === app.unique && entry.title === app.title)), busTimeout);
         }
 
         function entry(id) {
@@ -122,7 +127,7 @@ Item {
             verify(!!panel, "Component exists");
             rendered(panel);
             if (id)
-                tryVerify(() => !!findChild(panel, "trayMenuItem-1"));
+                tryVerify(() => !!findChild(panel, "trayMenuItem-1"), busTimeout);
             return panel;
         }
 
@@ -141,32 +146,32 @@ Item {
             verify(fitsHorizontally(close, panel));
             const phone = control(panel, "trayApp-" + entry("kdeconnect").preferenceKey);
             mouseClick(phone);
-            tryCompare(panel, "hasMenu", true);
-            tryCompare(panel, "singlePane", true);
-            tryCompare(close, "visible", false);
-            tryVerify(() => !!findChild(panel, "trayMenuItem-2"));
+            tryCompare(panel, "hasMenu", true, busTimeout);
+            tryCompare(panel, "singlePane", true, busTimeout);
+            tryCompare(close, "visible", false, busTimeout);
+            tryVerify(() => !!findChild(panel, "trayMenuItem-2"), busTimeout);
             const action = control(panel, "trayMenuItem-2");
-            tryVerify(() => action.visible && fitsHorizontally(action, panel));
+            tryVerify(() => action.visible && fitsHorizontally(action, panel), busTimeout);
 
             panel.width = 720;
-            tryCompare(panel, "singlePane", false);
-            tryCompare(close, "visible", true);
+            tryCompare(panel, "singlePane", false, busTimeout);
+            tryCompare(close, "visible", true, busTimeout);
             verify(fitsHorizontally(close, panel));
             panel.width = 340;
-            tryCompare(panel, "singlePane", true);
-            tryCompare(close, "visible", false);
+            tryCompare(panel, "singlePane", true, busTimeout);
+            tryCompare(close, "visible", false, busTimeout);
             action.forceActiveFocus();
             keyClick(Qt.Key_Escape);
-            tryCompare(panel, "hasMenu", false);
-            tryCompare(close, "visible", true);
-            tryCompare(phone, "activeFocus", true);
+            tryCompare(panel, "hasMenu", false, busTimeout);
+            tryCompare(close, "visible", true, busTimeout);
+            tryCompare(phone, "activeFocus", true, busTimeout);
 
             mouseClick(control(panel, "traySettings"));
-            tryCompare(panel, "settingsOpen", true);
-            tryVerify(() => fitsHorizontally(close, panel));
+            tryCompare(panel, "settingsOpen", true, busTimeout);
+            tryVerify(() => fitsHorizontally(close, panel), busTimeout);
             const limit = control(panel, "trayLimit");
-            tryVerify(() => limit.visible && fitsHorizontally(limit, panel));
-            tryCompare(panel, "width", 340);
+            tryVerify(() => limit.visible && fitsHorizontally(limit, panel), busTimeout);
+            tryCompare(panel, "width", 340, busTimeout);
         }
 
         function test_trayPreferenceChangesPreserveTheBoundedBarSource() {
@@ -179,30 +184,30 @@ Item {
             const pins = ["nextcloud", "steam", "discord"];
             for (const id of pins)
                 TrayModel.setVisibility(entry(id).preferenceKey, "pinned");
-            tryVerify(() => TrayModel.barItems.length === 3);
+            tryVerify(() => TrayModel.barItems.length === 3, busTimeout);
             const host = createTemporaryObject(barHostComponent, root);
             verify(!!host, "Component exists");
             const region = createTemporaryObject(trayRegionComponent, root, {
                 host: host
             });
             verify(!!region, "Component exists");
-            tryCompare(region, "mountedCount", 1);
+            tryCompare(region, "mountedCount", 1, busTimeout);
             const source = region.cellFor("tray").widget;
             verify(!!source, "Object exists");
-            tryCompare(source, "capacity", 1);
+            tryCompare(source, "capacity", 1, busTimeout);
             const panel = createTemporaryObject(panelComponent, root, {
                 sourceWidget: source
             });
             verify(!!panel, "Component exists");
-            tryVerify(() => panel.shownItems.length === 1 && panel.overflowItems.length === 7);
+            tryVerify(() => panel.shownItems.length === 1 && panel.overflowItems.length === 7, busTimeout);
             panel.showSettings(true);
             const settings = control(panel, "traySettingsPage");
-            tryVerify(() => settings.shownItems.length === 1);
+            tryVerify(() => settings.shownItems.length === 1, busTimeout);
             const originalGroups = host.rightGroups;
 
             for (const change of [["trayIcons", "color"], ["trayAttention", false], ["trayLimit", 3]]) {
                 verify(AppearanceStore.setValue(change[0], change[1]));
-                tryVerify(() => Appearance.settings[change[0]] === change[1]);
+                tryVerify(() => Appearance.settings[change[0]] === change[1], busTimeout);
                 compare(host.rightGroups, originalGroups);
                 verify(host.rightGroups === originalGroups);
                 compare(region.cellFor("tray").widget, source);
@@ -213,9 +218,9 @@ Item {
                     verify(panel.overflowItems.some(overflow => overflow.instanceKey === item.instanceKey));
             }
             region.maximumWidth = 160;
-            tryCompare(source, "capacity", 3);
-            tryVerify(() => panel.shownItems.length === 3 && panel.overflowItems.length === 5);
-            tryVerify(() => settings.shownItems.length === 3);
+            tryCompare(source, "capacity", 3, busTimeout);
+            tryVerify(() => panel.shownItems.length === 3 && panel.overflowItems.length === 5, busTimeout);
+            tryVerify(() => settings.shownItems.length === 3, busTimeout);
             compare(region.cellFor("tray").widget, source);
         }
 
@@ -223,24 +228,24 @@ Item {
             const panel = panelFor();
             compare(panel.overflowItems.length, 8);
             mouseClick(control(panel, "traySettings"));
-            tryCompare(panel, "settingsOpen", true);
+            tryCompare(panel, "settingsOpen", true, busTimeout);
             const attention = control(panel, "trayAttention");
             rendered(attention);
             mouseClick(attention);
-            tryVerify(() => Appearance.settings.trayAttention === false);
+            tryVerify(() => Appearance.settings.trayAttention === false, busTimeout);
             const limit = control(panel, "trayLimit");
             limit.forceActiveFocus();
             keyClick(Qt.Key_End);
-            tryVerify(() => Appearance.settings.trayLimit === 4);
+            tryVerify(() => Appearance.settings.trayLimit === 4, busTimeout);
             const visibility = control(panel, "trayVisibility-" + entry("nextcloud").preferenceKey);
             visibility.forceActiveFocus();
             keyClick(Qt.Key_Home);
-            tryVerify(() => entry("nextcloud").visibility === "pinned");
+            tryVerify(() => entry("nextcloud").visibility === "pinned", busTimeout);
             panel.showSettings(false);
-            tryCompare(panel, "settingsOpen", false);
-            tryVerify(() => panel.shownItems.some(item => item.itemId === "nextcloud"));
+            tryCompare(panel, "settingsOpen", false, busTimeout);
+            tryVerify(() => panel.shownItems.some(item => item.itemId === "nextcloud"), busTimeout);
             seed("empty", 0);
-            tryCompare(panel, "overflowItems", []);
+            tryCompare(panel, "overflowItems", [], busTimeout);
             compare(panel.shownItems.length, 0);
         }
 
@@ -249,13 +254,13 @@ Item {
             const mute = control(panel, "trayMenuItem-10");
             compare(mute.Accessible.checked, false);
             mouseClick(mute);
-            tryVerify(() => recorded("action", "discord", "mute").length === 1);
-            tryCompare(mute.Accessible, "checked", true);
+            tryVerify(() => recorded("action", "discord", "mute").length === 1, busTimeout);
+            tryCompare(mute.Accessible, "checked", true, busTimeout);
             compare(fixtureApp("discord").tooltip, "Notifications muted");
             compare(panel.closeCount, 0);
             mouseClick(mute);
-            tryCompare(mute.Accessible, "checked", false);
-            tryVerify(() => recorded("action", "discord", "mute").length === 2);
+            tryCompare(mute.Accessible, "checked", false, busTimeout);
+            tryVerify(() => recorded("action", "discord", "mute").length === 2, busTimeout);
             compare(panel.closeCount, 0);
         }
 
@@ -265,44 +270,44 @@ Item {
             submenu.forceActiveFocus();
             keyClick(Qt.Key_Right);
             const model = control(panel, "trayMenuModel");
-            tryCompare(model, "rootId", 20);
-            tryCompare(model, "count", 4);
-            tryVerify(() => !!findChild(panel, "trayMenuItem-22"));
+            tryCompare(model, "rootId", 20, busTimeout);
+            tryCompare(model, "count", 4, busTimeout);
+            tryVerify(() => !!findChild(panel, "trayMenuItem-22"), busTimeout);
             const online = control(panel, "trayMenuItem-21");
             const away = control(panel, "trayMenuItem-22");
             online.forceActiveFocus();
             keyClick(Qt.Key_Down);
-            tryCompare(away, "activeFocus", true);
+            tryCompare(away, "activeFocus", true, busTimeout);
             keyClick(Qt.Key_Return);
-            tryVerify(() => fixtureApp("steam").tooltip === "Away");
-            tryCompare(away.Accessible, "checked", true);
-            tryCompare(online.Accessible, "checked", false);
+            tryVerify(() => fixtureApp("steam").tooltip === "Away", busTimeout);
+            tryCompare(away.Accessible, "checked", true, busTimeout);
+            tryCompare(online.Accessible, "checked", false, busTimeout);
             compare(panel.closeCount, 0);
             keyClick(Qt.Key_Left);
-            tryCompare(model, "rootId", 0);
+            tryCompare(model, "rootId", 0, busTimeout);
             keyClick(Qt.Key_Escape);
-            tryCompare(panel, "closeCount", 1);
+            tryCompare(panel, "closeCount", 1, busTimeout);
         }
 
         function test_disabledActionsAndLazyProjectorSubmenu() {
             verify(trayFixture.call("SetRecording", [true]));
-            tryVerify(() => entry("obs").toolTipBody === "Recording · 02:18");
+            tryVerify(() => entry("obs").toolTipBody === "Recording · 02:18", busTimeout);
             const panel = panelFor("obs");
             const quit = control(panel, "trayMenuItem-99");
             compare(quit.enabled, false);
             mouseClick(quit);
-            tryCompare(quit, "enabled", false);
+            tryCompare(quit, "enabled", false, busTimeout);
             compare(recorded("action", "obs", "quit").length, 0);
             mouseClick(control(panel, "trayMenuItem-20"));
             const model = control(panel, "trayMenuModel");
-            tryCompare(model, "rootId", 20);
-            tryCompare(model, "count", 2);
-            tryVerify(() => !!findChild(panel, "trayMenuItem-21"));
+            tryCompare(model, "rootId", 20, busTimeout);
+            tryCompare(model, "count", 2, busTimeout);
+            tryVerify(() => !!findChild(panel, "trayMenuItem-21"), busTimeout);
             const display = control(panel, "trayMenuItem-21");
             display.forceActiveFocus();
             keyClick(Qt.Key_Return);
-            tryVerify(() => recorded("action", "obs", "display-1").length === 1);
-            tryCompare(panel, "closeCount", 1);
+            tryVerify(() => recorded("action", "obs", "display-1").length === 1, busTimeout);
+            tryCompare(panel, "closeCount", 1, busTimeout);
             compare(fixtureApp("obs").recording, true);
         }
 
@@ -310,21 +315,21 @@ Item {
             const panel = panelFor();
             const phone = control(panel, "trayApp-" + entry("kdeconnect").preferenceKey);
             mouseClick(phone);
-            tryCompare(panel, "hasMenu", true);
-            tryVerify(() => panel.selectedEntry.itemId === "kdeconnect");
-            tryVerify(() => !!findChild(panel, "trayMenuItem-2"));
+            tryCompare(panel, "hasMenu", true, busTimeout);
+            tryVerify(() => panel.selectedEntry.itemId === "kdeconnect", busTimeout);
+            tryVerify(() => !!findChild(panel, "trayMenuItem-2"), busTimeout);
             compare(recorded("activate", "kdeconnect").length, 0);
             compare(panel.closeCount, 0);
             panel.closeMenu();
-            tryCompare(panel, "hasMenu", false);
+            tryCompare(panel, "hasMenu", false, busTimeout);
             rendered(phone);
-            tryCompare(phone, "activeFocus", true);
+            tryCompare(phone, "activeFocus", true, busTimeout);
             const discord = control(panel, "trayApp-" + entry("discord").preferenceKey);
             discord.forceActiveFocus();
-            tryCompare(discord, "activeFocus", true);
+            tryCompare(discord, "activeFocus", true, busTimeout);
             keyClick(Qt.Key_F10, Qt.ShiftModifier);
-            tryCompare(panel, "hasMenu", true);
-            tryVerify(() => panel.selectedEntry.itemId === "discord");
+            tryCompare(panel, "hasMenu", true, busTimeout);
+            tryVerify(() => panel.selectedEntry.itemId === "discord", busTimeout);
             compare(recorded("activate", "discord").length, 0);
         }
 
@@ -332,8 +337,8 @@ Item {
             const panel = panelFor();
             const discord = control(panel, "trayApp-" + entry("discord").preferenceKey);
             mouseClick(discord);
-            tryCompare(panel, "closeCount", 1);
-            tryVerify(() => recorded("activate", "discord").length === 1);
+            tryCompare(panel, "closeCount", 1, busTimeout);
+            tryVerify(() => recorded("activate", "discord").length === 1, busTimeout);
             compare(recorded("activate", "discord")[0].menuOnly, false);
             compare(panel.hasMenu, false);
         }
@@ -344,16 +349,16 @@ Item {
             const drawer = createTemporaryObject(drawerComponent, root);
             verify(!!drawer, "Component exists");
             verify(trayFixture.call("SetStatus", ["nextcloud", "NeedsAttention"]));
-            tryVerify(() => entry("nextcloud").attention);
+            tryVerify(() => entry("nextcloud").attention, busTimeout);
             compare(TrayModel.barItems.some(item => item.itemId === "nextcloud"), false);
             compare(drawer.entries.some(item => item.itemId === "nextcloud"), false);
             compare(!!drawer.attention, false);
             compare(findChild(drawer, "trayApp-" + nextcloud), null);
             TrayModel.setVisibility(nextcloud, "auto");
-            tryVerify(() => TrayModel.barItems.some(item => item.itemId === "nextcloud"));
-            tryVerify(() => drawer.attention && drawer.attention.itemId === "nextcloud");
+            tryVerify(() => TrayModel.barItems.some(item => item.itemId === "nextcloud"), busTimeout);
+            tryVerify(() => drawer.attention && drawer.attention.itemId === "nextcloud", busTimeout);
             TrayModel.setVisibility(nextcloud, "hidden");
-            tryVerify(() => !drawer.attention);
+            tryVerify(() => !drawer.attention, busTimeout);
             compare(TrayModel.barItems.some(item => item.itemId === "nextcloud"), false);
         }
 
@@ -364,52 +369,52 @@ Item {
             compare(panel.overflowItems.length, 20);
             verify(panel.implicitHeight <= panel.maximumHeight);
             verify(panel.implicitHeight < 800);
-            tryVerify(() => scroll.contentHeight > scroll.height);
+            tryVerify(() => scroll.contentHeight > scroll.height, busTimeout);
             const firstButton = control(panel, "trayApp-" + panel.overflowItems[0].preferenceKey);
             mouseWheel(firstButton, firstButton.width / 2, firstButton.height / 2, 0, -240);
-            tryVerify(() => scroll.contentY > 0);
+            tryVerify(() => scroll.contentY > 0, busTimeout);
             compare(recorded("scroll", panel.overflowItems[0].itemId).length, 0);
             const last = panel.overflowItems[19];
             const lastButton = control(panel, "trayApp-" + last.preferenceKey);
             lastButton.forceActiveFocus();
-            tryVerify(() => scroll.contentY > 0);
+            tryVerify(() => scroll.contentY > 0, busTimeout);
             const point = lastButton.mapToItem(scroll, 0, 0);
             verify(point.y >= 0 && point.y + lastButton.height <= scroll.height + 1);
             keyClick(Qt.Key_Left);
             const previous = control(panel, "trayApp-" + panel.overflowItems[18].preferenceKey);
-            tryCompare(previous, "activeFocus", true);
+            tryCompare(previous, "activeFocus", true, busTimeout);
         }
 
         function test_removingTheAppClosesItsDirectMenu() {
             const panel = panelFor("steam");
             const key = entry("steam").instanceKey;
             verify(trayFixture.call("Remove", ["steam"]));
-            tryVerify(() => !TrayModel.lookup(key).instanceKey);
-            tryCompare(panel, "hasMenu", false);
-            tryCompare(panel, "closeCount", 1);
+            tryVerify(() => !TrayModel.lookup(key).instanceKey, busTimeout);
+            tryCompare(panel, "hasMenu", false, busTimeout);
+            tryCompare(panel, "closeCount", 1, busTimeout);
             // Loader releases its menu through deferred QObject destruction.
-            tryVerify(() => findChild(panel, "trayMenuModel") === null);
+            tryVerify(() => findChild(panel, "trayMenuModel") === null, busTimeout);
         }
 
         function test_switchingAppsResetsNestedMenuState() {
             const panel = panelFor();
             panel.openMenu(entry("steam"), panel);
-            tryVerify(() => !!findChild(panel, "trayMenuItem-20"));
+            tryVerify(() => !!findChild(panel, "trayMenuItem-20"), busTimeout);
             const submenu = control(panel, "trayMenuItem-20");
             rendered(submenu);
             compare(panel.selectedEntry.itemId, "steam");
             mouseClick(submenu);
-            tryCompare(control(panel, "trayMenuModel"), "rootId", 20);
+            tryCompare(control(panel, "trayMenuModel"), "rootId", 20, busTimeout);
             panel.openMenu(entry("nextcloud"), panel);
-            tryVerify(() => panel.selectedEntry.itemId === "nextcloud");
+            tryVerify(() => panel.selectedEntry.itemId === "nextcloud", busTimeout);
             tryVerify(() => {
                 const model = findChild(panel, "trayMenuModel");
                 return model && model.valid && model.rootId === 0 && model.service === entry("nextcloud").dbusService;
-            });
-            tryVerify(() => !!findChild(panel, "trayMenuItem-11"));
+            }, busTimeout);
+            tryVerify(() => !!findChild(panel, "trayMenuItem-11"), busTimeout);
             compare(control(panel, "trayMenuItem-11").enabled, true);
-            tryVerify(() => trayFixture.events().some(event => event.kind === "menu-event" && event.app === "steam" && event.menu === 20 && event.event === "closed"));
-            tryVerify(() => trayFixture.events().some(event => event.kind === "menu-event" && event.app === "nextcloud" && event.menu === 0 && event.event === "opened"));
+            tryVerify(() => trayFixture.events().some(event => event.kind === "menu-event" && event.app === "steam" && event.menu === 20 && event.event === "closed"), busTimeout);
+            tryVerify(() => trayFixture.events().some(event => event.kind === "menu-event" && event.app === "nextcloud" && event.menu === 0 && event.event === "opened"), busTimeout);
             compare(panel.closeCount, 0);
         }
     }
