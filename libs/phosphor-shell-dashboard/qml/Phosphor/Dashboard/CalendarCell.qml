@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Dashboard.CalendarCell, the month grid in the dashboard's
 // last row (A3 §7 b).

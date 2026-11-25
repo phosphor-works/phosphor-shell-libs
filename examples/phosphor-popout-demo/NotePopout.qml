@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Doubles as cooperative-B and detached. The transport sets `pinned`
 // via PopoutRequest.props so the two instances render with distinct

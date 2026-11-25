@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Popout.PopoutHost. Transport-agnostic wrapper for a
 // popout's content. The transport instantiates this host wrapping

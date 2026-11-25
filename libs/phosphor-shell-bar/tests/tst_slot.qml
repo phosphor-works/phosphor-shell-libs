@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Behaviour tests for Slot: it mounts every widget id across its groups
 // through the injected registry, skips an unresolvable id (the registry

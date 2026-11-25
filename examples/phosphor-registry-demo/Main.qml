@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 // phosphor-registry-demo entry QML. Window with a single horizontal
 // bar at the top. The bar is built by enumerating the registry's

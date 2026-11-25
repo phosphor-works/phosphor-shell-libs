@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Smoke + contract tests for the Phosphor.Widgets atoms. These pin each
 // atom's default property surface and the small amount of pure logic the
