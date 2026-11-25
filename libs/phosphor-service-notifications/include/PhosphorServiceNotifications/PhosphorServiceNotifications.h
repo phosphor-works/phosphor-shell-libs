@@ -13,8 +13,8 @@
  * client of one. The interface is exported through a generated adaptor
  * (`qt6_add_dbus_adaptor`) that forwards to `NotificationServer`. The library
  * has no UI of its own: it stores and lifecycles notifications and surfaces
- * them as Qt/QML types; toast / notification-center rendering is Phase 3.4 /
- * 4.3.
+ * them as Qt/QML types. phosphor-shell-notifications draws the toasts and
+ * the notification center.
  *
  * Shells consume:
  *   - `NotificationServer`: owns the bus name, ingest, id allocation, expiry,

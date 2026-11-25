@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# phosphor-control-center-demo, the Phase 4.4 acceptance demo for the
+# phosphor-control-center-demo, the demo for the
 # Phosphor.ControlCenter surface. A tile grid driven by real services
 # (NetworkManager, BlueZ, PipeWire, logind, the idle ladder), supplied by
 # ControlCenterController's Registry<IControlCenterTileFactory>.

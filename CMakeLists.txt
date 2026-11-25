@@ -161,36 +161,34 @@ list(APPEND CMAKE_MODULE_PATH "${PHOSPHOR_LIBS_CMAKE_DIR}")
 add_subdirectory(libs/phosphor-theme)   # M3 color-token store + Phosphor.Theme QML singletons
 add_subdirectory(libs/phosphor-popout)  # central popout coordinator (lifetime, focus, scope arbitration)
 add_subdirectory(libs/phosphor-shell)   # shell infrastructure and QML types
-add_subdirectory(libs/phosphor-shell-widgets)  # Phosphor.Widgets M3 atom library (Phase 3.1); depends on phosphor-theme
-add_subdirectory(libs/phosphor-shell-osd)      # Phosphor.OSD on-screen-display framework (Phase 3.3); depends on theme + widgets
-add_subdirectory(libs/phosphor-shell-notifications) # Phosphor.Notifications toast framework (Phase 3.4); depends on theme + widgets
-add_subdirectory(libs/phosphor-shell-control-center) # Phosphor.ControlCenter tile surface (Phase 4.4); depends on theme + widgets + Kirigami
-add_subdirectory(libs/phosphor-shell-launcher)       # Launcher core: ILauncherProvider implementations, fzf-style matcher, .desktop scanner (Phase 4.2); depends on registry
-add_subdirectory(libs/phosphor-shell-bar)      # Phosphor.Bar connected-corner bar surface (Phase 4.1). Depends on theme + widgets, and is one of the shell-tier libs that also require KF6 Kirigami (bar, power, control-center, launcher and lock)
-add_subdirectory(libs/phosphor-shell-power)    # Phosphor.Power session menu (Phase 4.6); depends on theme + widgets + Kirigami
-add_subdirectory(libs/phosphor-shell-dashboard) # Phosphor.Dashboard: dashboard grid + keybind cheatsheet on the placement map (Phase 4); depends on theme + widgets + protocol
-add_subdirectory(libs/phosphor-shell-picker)   # Phosphor.Picker wallpaper and theme strip (Phase 4); depends on theme + widgets
-add_subdirectory(libs/phosphor-shell-polkit)   # Phosphor.Polkit authentication prompt (Phase 4); depends on theme + widgets
-add_subdirectory(libs/phosphor-shell-lock)     # Phosphor.Lock lockscreen surface (Phase 4); depends on theme + widgets + Kirigami + phosphor-wayland (lock surfaces)
+add_subdirectory(libs/phosphor-shell-widgets)  # Phosphor.Widgets M3 atom library; depends on phosphor-theme
+add_subdirectory(libs/phosphor-shell-osd)      # Phosphor.OSD on-screen-display framework; depends on theme + widgets
+add_subdirectory(libs/phosphor-shell-notifications) # Phosphor.Notifications toast framework; depends on theme + widgets
+add_subdirectory(libs/phosphor-shell-control-center) # Phosphor.ControlCenter tile surface; depends on theme + widgets + Kirigami
+add_subdirectory(libs/phosphor-shell-launcher)       # Launcher core: ILauncherProvider implementations, fzf-style matcher, .desktop scanner; depends on registry
+add_subdirectory(libs/phosphor-shell-bar)      # Phosphor.Bar connected-corner bar surface. Depends on theme + widgets, and is one of the shell-tier libs that also require KF6 Kirigami (bar, power, control-center, launcher and lock)
+add_subdirectory(libs/phosphor-shell-power)    # Phosphor.Power session menu; depends on theme + widgets + Kirigami
+add_subdirectory(libs/phosphor-shell-dashboard) # Phosphor.Dashboard: dashboard grid + keybind cheatsheet on the placement map; depends on theme + widgets + protocol
+add_subdirectory(libs/phosphor-shell-picker)   # Phosphor.Picker wallpaper and theme strip; depends on theme + widgets
+add_subdirectory(libs/phosphor-shell-polkit)   # Phosphor.Polkit authentication prompt; depends on theme + widgets
+add_subdirectory(libs/phosphor-shell-lock)     # Phosphor.Lock lockscreen surface; depends on theme + widgets + Kirigami + phosphor-wayland (lock surfaces)
 
 # Order: icontheme is consumed by sni (SNI publisher uses the
 # image provider + theme resolver), so configure it first. The
-# other Phase 2.0 siblings are independent. Phase 2.0 is complete:
-# the phosphor-services umbrella has been dissolved into these
-# per-domain libraries.
+# other service libraries are independent.
 add_subdirectory(libs/phosphor-service-icontheme) # XDG icon-theme resolver + Qt image provider
 add_subdirectory(libs/phosphor-service-sni)       # StatusNotifierItem host + watcher + dbusmenu
 add_subdirectory(libs/phosphor-service-upower)    # UPower battery / power-supply readouts
 add_subdirectory(libs/phosphor-service-mpris)     # MPRIS2 media-player discovery + control
-add_subdirectory(libs/phosphor-service-pipewire)  # PipeWire mixer (Phase 2.1, shipped)
-add_subdirectory(libs/phosphor-service-network)   # NetworkManager devices / connectivity (Phase 2.2)
-add_subdirectory(libs/phosphor-service-bluetooth) # BlueZ adapters / devices / pairing (Phase 2.3)
-add_subdirectory(libs/phosphor-service-brightness) # display / keyboard backlight brightness (Phase 2.4)
-add_subdirectory(libs/phosphor-service-notifications) # org.freedesktop.Notifications server (Phase 2.5)
-add_subdirectory(libs/phosphor-service-polkit)        # PolicyKit authentication agent (Phase 2.6)
-add_subdirectory(libs/phosphor-service-clipboard)     # Wayland clipboard history (data-control) (Phase 2.8)
-add_subdirectory(libs/phosphor-service-lock)          # PAM auth + ext-session-lock-v1 coordination (Phase 2.9)
-add_subdirectory(libs/phosphor-service-session)       # logind session/power actions + inhibitors (Phase 2.10)
+add_subdirectory(libs/phosphor-service-pipewire)  # PipeWire mixer
+add_subdirectory(libs/phosphor-service-network)   # NetworkManager devices / connectivity
+add_subdirectory(libs/phosphor-service-bluetooth) # BlueZ adapters / devices / pairing
+add_subdirectory(libs/phosphor-service-brightness) # display / keyboard backlight brightness
+add_subdirectory(libs/phosphor-service-notifications) # org.freedesktop.Notifications server
+add_subdirectory(libs/phosphor-service-polkit)        # PolicyKit authentication agent
+add_subdirectory(libs/phosphor-service-clipboard)     # Wayland clipboard history (data-control)
+add_subdirectory(libs/phosphor-service-lock)          # PAM auth + ext-session-lock-v1 coordination
+add_subdirectory(libs/phosphor-service-session)       # logind session/power actions + inhibitors
 add_subdirectory(libs/phosphor-service-nightlight)    # night light over wlr-gamma-control (compositor-neutral)
 
 # Example demos and CLI acceptance harnesses are not part of the installed
@@ -226,13 +224,13 @@ add_subdirectory(examples/phosphor-launcher-demo)
 add_subdirectory(examples/phosphor-authentication-preview)
 
 # phosphor-perscreen-demo. Acceptance harness for the Phosphor.Shell
-# PerScreen helper (Phase 1.5). Opens a small window per monitor;
+# PerScreen helper. Opens a small window per monitor;
 # hot-plug a display → window appears. Links PhosphorShell::PhosphorShellQml
 # (PerScreen lives in libs/phosphor-shell).
 add_subdirectory(examples/phosphor-perscreen-demo)
 
 # phosphor-service-pipewire-cli. Acceptance harness for the
-# phosphor-service-pipewire library (Phase 2.1). Headless driver
+# phosphor-service-pipewire library. Headless driver
 # exercising the read paths (list sinks/sources/streams, default),
 # write paths (set-volume, mute/unmute), and metadata writes
 # (set-default-sink/source) against a live PipeWire + WirePlumber
@@ -240,53 +238,53 @@ add_subdirectory(examples/phosphor-perscreen-demo)
 add_subdirectory(examples/phosphor-service-pipewire-cli)
 
 # phosphor-service-network-cli. Acceptance harness for the
-# phosphor-service-network library (Phase 2.2). Headless driver
+# phosphor-service-network library. Headless driver
 # exercising the read paths (status, list-devices, list-connections,
 # list-aps) and write paths (scan, connect) against a live
 # org.freedesktop.NetworkManager.
 add_subdirectory(examples/phosphor-service-network-cli)
 
 # phosphor-service-bluetooth-cli. Acceptance harness for the
-# phosphor-service-bluetooth library (Phase 2.3). Headless driver exercising
+# phosphor-service-bluetooth library. Headless driver exercising
 # the read paths (status, list-adapters, list-devices) and write paths
 # (power, scan, pair, connect, trust, remove) against a live org.bluez, with
 # an interactive pairing agent.
 add_subdirectory(examples/phosphor-service-bluetooth-cli)
 
 # phosphor-service-brightness-cli. Acceptance harness for the
-# phosphor-service-brightness library (Phase 2.4). Headless driver exercising
+# phosphor-service-brightness library. Headless driver exercising
 # the read path (list, get) and write path (set) against real sysfs backlights
 # and logind.
 add_subdirectory(examples/phosphor-service-brightness-cli)
 
 # phosphor-service-notifications-cli. Acceptance harness for the
-# phosphor-service-notifications library (Phase 2.5). Both a server (watch: own
+# phosphor-service-notifications library. Both a server (watch: own
 # org.freedesktop.Notifications and log incoming Notify + close events) and a
 # client (send / close / info via D-Bus).
 add_subdirectory(examples/phosphor-service-notifications-cli)
 
 # phosphor-service-polkit-cli. Acceptance harness for the phosphor-service-polkit
-# library (Phase 2.6). Runs as the session's PolicyKit authentication agent and
+# library. Runs as the session's PolicyKit authentication agent and
 # answers PAM prompts (trigger with `pkexec true`).
 add_subdirectory(examples/phosphor-service-polkit-cli)
 
 # phosphor-service-idle-cli. Acceptance harness for the phosphor-service-idle
-# library (Phase 2.7). Reports idle support, logs each idle stage as it fires
+# library. Reports idle support, logs each idle stage as it fires
 # with a wall-clock timestamp, and can hold an inhibition for a fixed duration
 # (--inhibit-for).
 add_subdirectory(examples/phosphor-service-idle-cli)
 
 # phosphor-service-clipboard-cli. Acceptance harness for the
-# phosphor-service-clipboard library (Phase 2.8). Watches the clipboard, lists
+# phosphor-service-clipboard library. Watches the clipboard, lists
 # the history, and copies an entry back.
 add_subdirectory(examples/phosphor-service-clipboard-cli)
 
 # phosphor-service-lock-cli. Acceptance harness for the phosphor-service-lock
-# library (Phase 2.9). Authenticates the user (PAM) and drives the session lock.
+# library. Authenticates the user (PAM) and drives the session lock.
 add_subdirectory(examples/phosphor-service-lock-cli)
 
 # phosphor-service-session-cli. Acceptance harness for the
-# phosphor-service-session library (Phase 2.10). Drives the logind session
+# phosphor-service-session library. Drives the logind session
 # capabilities + actions (status / lock / logout / suspend / ... / power-off).
 add_subdirectory(examples/phosphor-service-session-cli)
 

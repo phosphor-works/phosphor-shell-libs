@@ -41,8 +41,8 @@ include(GenerateExportHeader)
 # (the public PolkitAgent header is a plain QObject with no polkit-qt types), so
 # consumers neither include nor link polkit-qt. No Qt Gui type is used, and
 # PolkitQt6-1::Agent does not pull Qt6::Gui transitively, so Gui is not a
-# dependency. The polkit-qt6 GUI action-button widgets (PolkitQt6-1::Gui) are a
-# Phase 3/4 UI concern and are NOT linked.
+# dependency. The polkit-qt6 GUI action-button widgets (PolkitQt6-1::Gui) are
+# UI, and are NOT linked.
 find_package(Qt6 ${PHOSPHORSERVICEPOLKIT_QT_MIN} REQUIRED COMPONENTS Core Qml)
 if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServicePolkit")
     qt_standard_project_setup()

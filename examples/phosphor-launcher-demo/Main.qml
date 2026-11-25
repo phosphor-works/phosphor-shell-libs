@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
-// phosphor-launcher-demo, the Phase 4.2 acceptance demo.
+// phosphor-launcher-demo, the demo.
 //
 // The spotlight launcher over this machine's real applications,
 // clipboard history and PATH: Enter on an app row launches it. Escape

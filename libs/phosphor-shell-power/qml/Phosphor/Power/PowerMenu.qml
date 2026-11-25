@@ -4,7 +4,7 @@
 //
 // A column of words over your dimmed desktop. No dialog box and
 // no tiles: the surface is a full-screen layer with a void ground at
-// 60 % (phase 1's stand-in for the compositor dim, which is phase 2), and
+// 60 % (a stand-in for a compositor dim, which no compositor gives yet), and
 // the six session actions are 24 px words down the left edge, coloured
 // on the state axis by how destructive they are (Lock cyan through Shut
 // down rose), each with its one-letter shortcut underlined. A 3 px
@@ -242,8 +242,9 @@ FocusScope {
         root._invoke(hit);
     }
 
-    // Phase 1 ground: void at 60 %. The compositor dim (35 % brightness,
-    // 40 % saturation on every window) is phase 2.
+    // The ground: void at 60 %. It stands in for a compositor dim (35 %
+    // brightness, 40 % saturation on every window), which no compositor
+    // gives yet.
     Rectangle {
         anchors.fill: parent
         color: Appearance.recess

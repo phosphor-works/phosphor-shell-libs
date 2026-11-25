@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # phosphor-perscreen-demo. Acceptance harness for the Phosphor.Shell
-# QML module's PerScreen helper (Phase 1.5). Opens one small floating
+# QML module's PerScreen helper. Opens one small floating
 # window per monitor; hot-plug add/remove correctly mirrors in the
 # instantiated delegates.
 

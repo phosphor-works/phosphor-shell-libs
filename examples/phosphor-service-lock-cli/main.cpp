@@ -12,10 +12,10 @@
 //                         ext-session-lock-v1, queried under the live
 //                         phosphorwayland QPA.
 //
-// There is deliberately no interactive "lock" command yet: locking the session
-// without the per-output lock surfaces (a Phase 4 shell concern) would blank the
-// outputs with no visible password prompt. Until the surfaces land, the lock
-// lifecycle is exercised by the unit tests; this CLI covers the authentication
+// There is deliberately no interactive "lock" command: this CLI draws no lock
+// surfaces, so a lock from it would blank the outputs with no visible password
+// prompt. The shell draws them (phosphor-shell-lock). The unit tests exercise
+// the lock lifecycle; this CLI covers the authentication
 // path the plan's acceptance criterion calls for.
 
 #include <PhosphorServiceLock/LockService.h>

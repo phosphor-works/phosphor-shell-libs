@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
-// phosphor-widgets-kitchen-sink, the Phase 3.1 acceptance demo.
+// phosphor-widgets-kitchen-sink, the demo.
 //
 // One scrollable window listing the interactive Phosphor.Widgets atoms in
 // their enabled and disabled states: PhosphorButton, PhosphorTextField,

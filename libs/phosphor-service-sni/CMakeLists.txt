@@ -36,8 +36,8 @@ if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceSni")
     qt_standard_project_setup()
 endif()
 
-# The icon-theme resolver + image provider live in their own library
-# post Phase 2.0. SNI hands raw IconPixmap blobs to the image
+# The icon-theme resolver + image provider live in their own library.
+# SNI hands raw IconPixmap blobs to the image
 # provider's static registry (so QML's Image.source can route a QImage
 # through a QUrl) and walks XDG icon themes for IconName /
 # IconThemePath payloads. Both live in phosphor-service-icontheme.

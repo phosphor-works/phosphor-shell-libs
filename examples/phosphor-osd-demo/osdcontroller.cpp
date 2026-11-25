@@ -25,7 +25,7 @@ OSDController::OSDController(QObject* parent)
 {
     // Register the four built-in OSDs as IOSDFactory instances. Each
     // wraps a delegate type from the Phosphor.OSD module. Capabilities
-    // are advisory (Phase 5).
+    // are advisory.
     const auto reg = [this](const QString& id, const QString& name, const QString& type) {
         m_registry.registerFactory(
             std::make_shared<QmlComponentOSDFactory>(id, name, kModule, type, QStringList{QStringLiteral("osd")}));

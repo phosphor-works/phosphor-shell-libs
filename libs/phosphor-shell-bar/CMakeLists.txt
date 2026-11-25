@@ -130,7 +130,7 @@ set(_phosphor_bar_qml_files
     # The click affordance a status chip overlays on itself to become a
     # panel trigger.
     qml/Phosphor/Bar/Widgets/ChipTrigger.qml
-    # The panels the status chips open (Phase 4.3). Shared chrome plus one
+    # The panels the status chips open. Shared chrome plus one
     # per domain; each binds its own service host, the same way the chips
     # do. Registered as flat types in Phosphor.Bar by the alias loop below,
     # so shell.qml instantiates them by bare name.
@@ -260,8 +260,7 @@ endif()
 
 # No install rules: PhosphorShellBarQml is a STATIC, in-tree-only QML
 # module (like PhosphorShellWidgetsQml / PhosphorShellOsdQml). It is linked
-# directly by the shell binary; a standalone installed deployment lands
-# with the shell in Phase 4.
+# directly by the shell binary. Nothing installs the module on its own.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tests

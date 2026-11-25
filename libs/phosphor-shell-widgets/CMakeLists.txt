@@ -197,8 +197,7 @@ target_link_libraries(PhosphorShellWidgetsQml
 # links it. There is no C++ core library to install either (the atoms are
 # pure QML). Installing the static module would also drag its Qt-generated
 # resource targets + the PhosphorTheme targets it links into an export
-# set they don't belong to. A standalone installed deployment lands
-# alongside the layer-shell-hosted shell binary in Phase 4.
+# set they don't belong to. Nothing installs the module on its own.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tests

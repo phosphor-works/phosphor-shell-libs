@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
-// phosphor-osd-demo, the Phase 3.3 acceptance demo.
+// phosphor-osd-demo, the demo.
 //
 // An OSDHost overlay driven two ways: in-window buttons, and
 // `phosphorctl call osd.show <kind> <value>` over IPC. The four built-in

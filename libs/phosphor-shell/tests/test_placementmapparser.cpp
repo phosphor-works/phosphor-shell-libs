@@ -135,7 +135,7 @@ private Q_SLOTS:
         QCOMPARE(parse.cells[0].id, QStringLiteral("strip:1"));
         QCOMPARE(parse.cells[1].stack, 3);
         QVERIFY(parse.cells[1].occupied);
-        // Phase 1: the lens is the whole visible cut.
+        // The lens is the whole visible cut.
         QCOMPARE(parse.lens, QRectF(0, 0, 1, 1));
         QCOMPARE(parse.overflowLeft, 0);
         QCOMPARE(lensToVariant(parse.lens).value(QStringLiteral("w")).toDouble(), 1.0);

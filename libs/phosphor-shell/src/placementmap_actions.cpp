@@ -4,8 +4,8 @@
 // PlacementMapScreen's verbs: everything the miniature can ask
 // the engine to do, plus the drop proxy and the right-click menu. Every
 // action routes through the daemon so it behaves exactly as the keyboard
-// verbs do; nothing here bypasses the mode router. Phase-3 surfaces are
-// probed once and latched off on UnknownMethod, like phase 2.
+// verbs do; nothing here bypasses the mode router. Each optional daemon
+// verb is probed once and latched off on UnknownMethod.
 
 #include <PhosphorShell/PlacementMap.h>
 
@@ -137,8 +137,7 @@ void PlacementMapScreen::activateNavigationWindow(const QString& windowId)
 void PlacementMapScreen::activateWindow(const QString& windowId)
 {
     // Without the verb (older daemon) a click on an occupied cell does
-    // nothing, as in phase 2; there is no focus-by-id surface to fall
-    // back on.
+    // nothing. There is no focus-by-id surface to fall back on.
     if (windowId.isEmpty() || !m_map->m_caps.activateWindow) {
         return;
     }

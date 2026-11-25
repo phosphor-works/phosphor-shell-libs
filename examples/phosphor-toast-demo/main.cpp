@@ -4,7 +4,7 @@
 // phosphor-toast-demo entry point.
 //
 // QGuiApplication + QQmlApplicationEngine + a NotificationServer
-// (phosphor-service-notifications, Phase 2.5). When this process owns the
+// (phosphor-service-notifications). When this process owns the
 // org.freedesktop.Notifications name, `notify-send` raises a toast; when
 // another daemon owns it, the in-window buttons still drive the toast
 // stack. The server is exposed to QML so Main.qml binds its
