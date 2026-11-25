@@ -3,69 +3,34 @@
 
 # PhosphorShellControlCenter
 
-The `Phosphor.ControlCenter` tile surface: the quick-settings panel a
-shell opens from the bar, holding toggles for network, bluetooth, audio,
-brightness and the rest. Pure QML, themed through
+The `Phosphor.ControlCenter` tile surface: the quick-settings panel that a shell opens from the bar. It holds
+toggles for network, bluetooth, audio, brightness and other settings. It is pure QML, themed through
 [`phosphor-theme`](../phosphor-theme/README.md) and built on the
 [`phosphor-shell-widgets`](../phosphor-shell-widgets/README.md) atoms.
 
-Phase 4.4 deliverable per
-[Lambent's `docs/design/04-implementation-plan.md`](https://github.com/phosphor-works/Lambent/blob/main/docs/design/04-implementation-plan.md).
-
 ## Responsibility
 
-Own the rail list, the drill-in detail view, and the routing between
-them. The surface knows how a control tile *behaves*; it does not know
-what any particular tile controls.
+The surface owns the rail list, the drill-in detail view and the routing between them. It knows how a control tile
+*behaves*. It does not know what a given tile controls.
 
-Tiles are supplied through a `provider` backed by a
-`Registry<IControlCenterTileFactory>`. Per the factory contract a null
-return means "unavailable in this environment" (no service, no hardware)
-and is not an error.
+A `provider` backed by a `Registry<IControlCenterTileFactory>` supplies the tiles. In the factory contract, a null
+return means "unavailable in this environment" (no service, no hardware). It is not an error.
 
-The built-in tiles ship here, and they import `Phosphor.Service.*`
-modules, but the library still **links** no service: those modules are
-registered by the host process before it loads any QML (each service
-exposes a hand-rolled `registerQmlTypes()`; see `phosphor-shell/src/main.cpp`), so
-they resolve at runtime. That is the same arrangement the bar's
-service-bound widgets use. A host that registers only some services gets
-working tiles for those and inert ones for the rest.
-
-## Presentation is the host's choice
-
-Like `OSDHost` and `ToastHost`, `ControlCenter` renders into whatever
-item it is parented to and owns no surface of its own. The shell decides
-how it appears:
-
-- opened as an engine-placed pane: a real toplevel the placement engine
-  positions, tethered to the bar's chip (the spectrum design, A2 §4), or
-- painted into the bar's own surface as the floating fallback on an
-  output with no placement engine, or
-- parented into a standalone layer-shell popout opened through
-  `PopoutController`.
-
-Neither choice reaches into this module, so switching is a wiring change
-in the shell rather than a rewrite here.
-
-The choice does decide whether the keyboard works, though. In the bar
-socket this surface has no window of its own, and the bar asks for no
-keyboard interactivity (`keyboardFocus: PanelWindow.None`, which is
-ordinary panel behaviour), so the compositor routes no key to it: the
-tiles' Tab order, the detail panel's Escape and every key handler in this
-module are inert there. All of it works in a standalone popout. Pointer
-interaction is the same either way, and nothing here is reachable only by
-keyboard. See the control-center section of
-Lambent's `docs/design/04-implementation-plan.md` for what closing
-that would cost.
+The built-in tiles are in this library, and they import `Phosphor.Service.*` modules. But the library **links** no
+service. The host process registers those modules before it loads QML, so they resolve at runtime. Each service
+has a hand-written `registerQmlTypes()`. Lambent's
+[`lambent/src/main.cpp`](https://github.com/phosphor-works/Lambent/blob/main/lambent/src/main.cpp) is an example.
+The service-bound widgets of the bar use the same arrangement. If a host registers only some services, the tiles
+for those services work and the other tiles are inert.
 
 ## Key types
 
 | Component       | Role                                                                                          |
 |-----------------|-----------------------------------------------------------------------------------------------|
-| `ControlCenter` | Rail list + detail routing. Materialises tiles from a provider, owns their teardown, applies each tile's layout hint, and arbitrates the one-detail-view-at-a-time rule. |
-| `Tile`          | Chrome for a **toggle**: a 52 px rail with icon, label, live readout, a 2 px state-axis underline, and an optional detail chevron. Spans the pane. |
-| `SliderTile`    | Chrome for a **range** (volume, brightness): the same rail, where the underline itself is the slider, with a tappable icon for mute. Spans the pane. |
-| `DetailPanel`   | The drill-in view: titled surface with a back affordance that slides over the rails. Content comes from the tile. |
+| `ControlCenter` | Rail list and detail routing. Makes tiles from a provider, owns their teardown, applies the layout hint of each tile, and enforces the rule of one detail view at a time. |
+| `Tile`          | Chrome for a **toggle**: a 52 px rail with an icon, a label, a live readout, a 2 px state-axis underline and an optional detail chevron. Spans the pane. |
+| `SliderTile`    | Chrome for a **range** (volume, brightness): the same rail. The underline is the slider, and a tap on the icon mutes. Spans the pane. |
+| `DetailPanel`   | The drill-in view: a titled surface with a back control that slides over the rails. The content comes from the tile. |
 
 ### Built-in tiles
 
@@ -77,19 +42,14 @@ that would cost.
 | `AudioTile`      | the default `PwNode` sink's volume and mute                         | slider |
 | `BrightnessTile` | the first Display-kind `BrightnessDevice`                           | slider |
 
-Layout is the host's job: a tile declares `spansRow` and `ControlCenter`
-stretches it to the pane, so a tile never has to know the pane's width.
-Every shipped control is a rail that spans, and a provider-supplied tile
-that declares otherwise is honoured.
+The host does the layout. A tile declares `spansRow`, and `ControlCenter` stretches it to the pane. Thus a tile
+does not need the width of the pane. Each built-in control is a rail that spans. If a tile from a provider declares
+a different value, `ControlCenter` uses that value.
 
-## Tiles do not self-latch
+No built-in tile supplies a detail view (`detailTitle` and `detailContent`). `hasDetail` comes from whether that
+content exists, so these tiles show no chevron.
 
-`Tile.active` is driven by the service the tile binds to, and `toggled`
-only *asks* the service to change. A tile that latched locally would show
-a state the system never reached whenever a request failed or something
-else changed it, so `active` follows the service's echo instead.
-
-## Typical use
+## Use
 
 ```qml
 import Phosphor.ControlCenter
@@ -101,7 +61,8 @@ ControlCenter {
 }
 ```
 
-A tile is authored against the shared chrome:
+A tile uses the shared chrome. In this example, `NetworkList` is a view that the tile author supplies. The library
+does not have it.
 
 ```qml
 Tile {
@@ -131,42 +92,46 @@ Tile {
 }
 ```
 
+## Presentation is the host's choice
+
+Like `OSDHost` and `ToastHost`, `ControlCenter` draws into the item that is its parent and owns no surface. The
+shell decides how it appears:
+
+- As an engine-placed pane: a real toplevel that the placement engine positions, tethered to the chip of the bar
+  (the spectrum design, A2 §4).
+- Painted into the surface of the bar, as the floating fallback on an output with no placement engine.
+- In a standalone layer-shell popout that `PopoutController` opens.
+
+No choice changes this module. To change the presentation, change the wiring in the shell.
+
+The choice does decide whether the keyboard works. In the bar socket, this surface has no window. The bar asks for
+no keyboard interactivity (`keyboardFocus: PanelWindow.None`, which is normal for a panel). Thus the compositor
+sends no key to it. The Tab order of the tiles, the Escape of the detail panel and all key handlers of this module
+are inert there. In a standalone popout, all of them work. Pointer interaction is the same in each case, and the
+keyboard is not the only path to any function here.
+
+## Tiles do not self-latch
+
+The service that the tile binds to drives `Tile.active`. `toggled` only *asks* the service to change. A tile that
+latched locally would show a state that the system never reached when a request failed or another client changed
+the state. Thus `active` follows the echo of the service.
+
 ## Tests
 
-`tests/` is a QtQuickTest harness covering the host's registry-agnostic
-contract: tile materialisation order, a provider returning null, the
-detail-view routing, and the rebuild path. The provider in those tests is
-a plain QML object with `createTile(id, parent)`, which is exactly the
-seam the shell fills with a registry-backed controller.
+`tests/` is a QtQuickTest harness for the registry-agnostic contract of the host: the order in which tiles are made,
+a provider that returns null, the detail-view routing and the rebuild path. The provider in those tests is a plain
+QML object with `createTile(id, parent)`. This is the same seam that the shell fills with a registry-backed
+controller.
+
+The acceptance demo is `../../examples/phosphor-control-center-demo/`. It is a plain window that hosts the rails
+over the real services. A tile whose service is missing on the machine shows that it is unavailable, and does not
+disappear.
 
 ## Dependencies
 
-- Qt6 >= 6.6 Core / Gui / Qml / Quick and KF6 Kirigami, for the tile icons.
-  This module is QML-only: it builds no C++ library of its own.
-- `phosphor-theme` (`Phosphor.Theme`) for tokens, Motion and the state-layer
-  opacities; `phosphor-shell-widgets` (`Phosphor.Widgets`) for the slider and
-  the ripple. In-tree builds link their QML plugins automatically.
-- No service dependency. The tiles bind whichever `Phosphor.Service.*` types
-  their host has registered, so this module never links them itself.
-
-## Status
-
-Phase 4.4: in the tree. The host, the shared tile chrome, the slider variant,
-the detail panel and five built-in tiles are present, with a QtQuickTest
-suite over the host's registry-agnostic contract.
-
-The acceptance demo is `../../examples/phosphor-control-center-demo/`, a plain
-window that hosts the rails over the real services, so a tile whose service
-is missing on the machine reports itself unavailable rather than vanishing.
-
-One thing is deliberately unfinished. `DetailPanel` has a content path, and
-a tile supplies its own view through `detailTitle` and `detailContent`, but
-none of the five built-ins authors one yet. `hasDetail` is derived from
-whether that content exists, so a tile without it shows no chevron rather
-than a chevron leading to a blank panel.
-
-The other open item is not this module's to close: the shipped mount is the
-bar's socket, whose surface requests no keyboard interactivity, so the tile
-and panel key handlers are inert there. See "Presentation is the host's
-choice" above.
-
+- Qt6 >= 6.6 Core / Gui / Qml / Quick and KF6 Kirigami, for the tile icons. This module is QML only. It builds no
+  C++ library.
+- `phosphor-theme` (`Phosphor.Theme`) for the tokens, Motion and the state-layer opacities. `phosphor-shell-widgets`
+  (`Phosphor.Widgets`) for the slider and the ripple. In-tree builds link their QML plugins automatically.
+- No service dependency. The tiles bind the `Phosphor.Service.*` types that their host registered, so this module
+  never links them.

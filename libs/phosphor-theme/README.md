@@ -1,34 +1,27 @@
-<!-- SPDX-FileCopyrightText: 2026 Phosphor Works Team
-     SPDX-License-Identifier: LGPL-2.1-or-later -->
+<!-- SPDX-FileCopyrightText: 2026 Phosphor Works Team -->
+<!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
 
 # phosphor-theme
 
-> Active design-token store for Phosphor shells. M3, ANSI 16, and brand
-> gradient extensions. Ships a hot-reloadable `PaletteStore`, a matugen
-> subprocess wrapper, a `{{token[.field]}}` template renderer, and the
-> `Phosphor.Theme` QML module.
+The active design-token store for Phosphor shells, with M3, ANSI 16 and brand-gradient extensions. It has a
+hot-reloadable `PaletteStore`, a matugen subprocess wrapper, a `{{token[.field]}}` template renderer and the
+`Phosphor.Theme` QML module.
 
 ## Responsibility
 
-The shell binds to colors through tokens, not literals. `phosphor-theme`
-owns the live token map. It keeps that map in sync with matugen output,
-user-edited JSON, and in-process producers.
+The shell binds to colors through tokens, not literals. `phosphor-theme` owns the live token map. It keeps that map
+in sync with matugen output, user-edited JSON and in-process producers.
 
-- **One token map per engine.** `PaletteStore` is registered as a
-  `QML_SINGLETON` and ships the canonical Phosphor dark palette as its
-  built-in default. QML reads via `Phosphor.Theme`'s `Theme` singleton.
-  C++ reads through `IThemeService::palette()`.
-- **Three input paths land at the same map.** JSON load via
-  `loadFromFile` and `QFileSystemWatcher`. In-process push via
-  `applyTokens(QVariantMap)`. The matugen subprocess via
-  `MatugenRunner::paletteReady`, which plumbs into `applyTokens`. Each
-  path is testable in isolation.
-- **Atomic-rename safe.** Editors that save via a temp file plus rename
-  are handled. The watcher re-arms on every `fileChanged` so vim and
-  emacs both fire exactly one reload per save.
-- **Token name contract.** `TokenNames::*` are the canonical strings.
-  Consumers reference these constants rather than literal map keys. A
-  renamed token surfaces as a compile error at every call site.
+- **One token map for each engine.** `PaletteStore` is registered as a `QML_SINGLETON`. Its built-in default is the
+  canonical Phosphor dark palette. QML reads it through the `Theme` singleton of `Phosphor.Theme`. C++ reads it
+  through `IThemeService::palette()`.
+- **Three input paths write the same map.** JSON load through `loadFromFile` and `QFileSystemWatcher`. In-process
+  push through `applyTokens(QVariantMap)`. The matugen subprocess through `MatugenRunner::paletteReady`, which feeds
+  `applyTokens`. You can test each path in isolation.
+- **Safe for atomic renames.** The store handles editors that save through a temp file and a rename. The watcher
+  re-arms on each `fileChanged`, so vim and emacs both cause exactly one reload for each save.
+- **Token name contract.** `TokenNames::*` are the canonical strings. Consumers use these constants, not literal map
+  keys. Thus a renamed token causes a compile error at each call site.
 
 ## Key types
 
@@ -44,7 +37,7 @@ user-edited JSON, and in-process producers.
 | `Phosphor.Theme.Motion`           | M3 duration tokens plus bezier easing curves named `standard`, `emphasized`, `decelerated`, `accelerated` |
 | `Phosphor.Theme.StateLayer`       | Interactive-state opacities. Properties are `hover`, `focus`, `pressed`, `dragged`, `disabled_content`, `disabled_container` |
 
-## Typical use
+## Use
 
 **C++: load a palette and react to changes.**
 
@@ -67,9 +60,8 @@ QObject::connect(&store, &PaletteStore::loadError,
                  });
 ```
 
-**QML: bind to tokens.** The named accessors route through the tracked
-`palette` map so bindings update live when the store reloads. The Design
-notes section below explains the binding-tracking model.
+**QML: bind to tokens.** The named accessors read the tracked `palette` map, so bindings update live when the store
+reloads. "Design notes" explains the binding-tracking model.
 
 ```qml
 import QtQuick
@@ -96,7 +88,7 @@ Rectangle {
 }
 ```
 
-**Wallpaper-driven retint via matugen.**
+**Retint from the wallpaper with matugen.**
 
 ```cpp
 #include <PhosphorTheme/MatugenRunner.h>
@@ -113,7 +105,7 @@ QObject::connect(&runner, &MatugenRunner::paletteReady,
 runner.run(QStringLiteral("/path/to/wallpaper.jpg"));
 ```
 
-**Template fan-out for external apps.**
+**Render templates for external apps.**
 
 ```cpp
 #include <PhosphorTheme/TemplateEngine.h>
@@ -127,48 +119,31 @@ PhosphorTheme::TemplateEngine::renderFile(
 
 ## Design notes
 
-- **QML bindings only track property reads, not method calls.** The
-  `Theme.*` accessors index into the `palette` Q_PROPERTY, which has
-  `NOTIFY paletteChanged`. They never call `PaletteStore.token("...")`.
-  That overload is a `Q_INVOKABLE` and is invisible to QML's dependency
-  tracker. Bindings on it would not re-evaluate when the palette
-  reloads. The same rule applies in any QML downstream of this module.
-  Prefer `Theme.<name>` over `paletteStore.token(name)`.
-- **Per-engine singleton, not a process global.** `PaletteStore` is a
-  `QML_SINGLETON`. The engine owns one instance per `QQmlEngine`. Tests
-  and shells that need an alternate service register an `IThemeService`
-  instance with `qmlRegisterSingletonInstance` before the
-  `Phosphor.Theme` module is imported.
-- **Merge semantics, not replace.** `loadFromJson` and `applyTokens`
-  insert the supplied tokens over the active map. Tokens absent from
-  the new payload keep their previous value. Matugen omits brand-
-  gradient and ANSI status colors. Those Phosphor extensions stay at
-  their previous value across wallpaper changes.
-- **Two JSON shapes accepted.** The wrapped form is
-  `{ "tokens": { ... } }`. The flat form is
-  `{ "primary": "...", ... }` at the top level. The wrapper leaves
-  room for sibling metadata. The wrapper takes precedence when both
-  could match.
-- **Matugen schema variants.** The parser handles wrapped
-  `colors.{dark,light}`, single-mode `colors.{token}`, and bare
-  mode-at-root layouts so the runner stays compatible across the
-  matugen versions seen in the wild.
-- **Unknown tokens in templates surface, not silently disappear.**
-  `TemplateEngine` keeps the `{{...}}` placeholder in the output and
-  logs to `qWarning`. Unknown `.field` values fall back to hex with a
-  warning rather than aborting.
+- **QML bindings track property reads, not method calls.** The `Theme.*` accessors index into the `palette`
+  Q_PROPERTY, which has `NOTIFY paletteChanged`. They never call `PaletteStore.token("...")`. That overload is a
+  `Q_INVOKABLE`, which QML's dependency tracker cannot see. A binding on it does not re-evaluate when the palette
+  reloads. The same rule applies in all QML that uses this module. Use `Theme.<name>`, not `paletteStore.token(name)`.
+- **One singleton for each engine, not a process global.** `PaletteStore` is a `QML_SINGLETON`. The engine owns one
+  instance for each `QQmlEngine`. If a test or a shell needs a different service, it registers an `IThemeService`
+  instance with `qmlRegisterSingletonInstance` before it imports the `Phosphor.Theme` module.
+- **Merge, not replace.** `loadFromJson` and `applyTokens` insert the supplied tokens over the active map. A token
+  that the new payload does not have keeps its previous value. Matugen does not give brand-gradient and ANSI status
+  colors. Thus those Phosphor extensions keep their previous values when the wallpaper changes.
+- **Two JSON shapes.** The wrapped form is `{ "tokens": { ... } }`. The flat form is `{ "primary": "...", ... }` at
+  the top level. The wrapper leaves room for sibling metadata. If both forms could match, the wrapper wins.
+- **Matugen schema variants.** The parser reads wrapped `colors.{dark,light}`, single-mode `colors.{token}` and bare
+  mode-at-root layouts. Thus the runner works with the matugen versions that are in use.
+- **Unknown tokens in templates stay visible.** `TemplateEngine` keeps the `{{...}}` placeholder in the output and
+  logs to `qWarning`. An unknown `.field` value falls back to hex with a warning. It does not stop the render.
 
 ## Dependencies
 
-- `QtCore`, `QtGui`, `QtQml`. Zero Phosphor deps. This is a leaf
-  library.
-- Optional runtime is the external `matugen` binary on `$PATH`. Only
-  needed when `MatugenRunner` is used. The library never invokes matugen
-  unsolicited.
+- `QtCore`, `QtGui`, `QtQml`. No Phosphor dependencies. This is a leaf library.
+- An optional runtime dependency is the external `matugen` binary on `$PATH`. Only `MatugenRunner` needs it. The
+  library never starts matugen on its own.
 
 ## See also
 
-- `examples/phosphor-theme-demo/`, GUI swatch sheet that hot-reloads
-  from disk and from in-memory pushes.
-- `examples/phosphor-theme-cli/`, headless driver. Provides
-  `set-wallpaper`, `dump`, `render-template`, and `cycle` subcommands.
+- `examples/phosphor-theme-demo/`, a GUI swatch sheet that hot-reloads from disk and from in-memory pushes.
+- `examples/phosphor-theme-cli/`, a headless driver with the `set-wallpaper`, `dump`, `render-template` and `cycle`
+  subcommands.

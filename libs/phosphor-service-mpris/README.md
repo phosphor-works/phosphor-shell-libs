@@ -3,23 +3,25 @@
 
 # phosphor-service-mpris
 
-MPRIS2 (`org.mpris.MediaPlayer2.*`) media-player discovery and control for Phosphor-based desktop shells.
+This library finds and controls MPRIS2 (`org.mpris.MediaPlayer2.*`) media players for Phosphor-based desktop shells.
 
 ## Responsibility
 
-Watches the session bus for MPRIS players, surfaces their metadata + playback state, and forwards transport controls. No UI. The shell decides how a now-playing card, transport bar, or media pop-out is rendered.
+The library watches the session bus for MPRIS players. It shows their metadata and playback state, and sends
+transport controls to them. It has no UI. The shell decides how to show a now-playing card, a transport bar or a
+media pop-out.
 
 ## Key types
 
-| Type                | Role                                                                                                                                  |
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `MprisPlayer`       | One player. Identity, track metadata, playback state, position, volume, loop / shuffle, capability flags, and invokables for play / pause / stop / togglePlaying / next / previous / seek / setPosition / raise / quit. |
-| `MprisHost`         | Watches the session bus for `org.mpris.MediaPlayer2.*` names; owns the live `MprisPlayer` set; emits `playerAdded` / `playerRemoved`. |
-| `MprisPlayerModel`  | `QAbstractListModel` over `MprisHost`. Roles: `player`, `identity`, `playbackState`, `trackTitle`, `trackArtist`, `artUrl`.            |
+| Type | Role |
+| --- | --- |
+| `MprisPlayer` | One player. Identity, track metadata, playback state, position, volume, loop / shuffle and capability flags. Invokables for play / pause / stop / togglePlaying / next / previous / seek / setPosition / raise / quit. |
+| `MprisHost` | Watches the session bus for `org.mpris.MediaPlayer2.*` names. Owns the live `MprisPlayer` set. Emits `playerAdded` / `playerRemoved`. |
+| `MprisPlayerModel` | `QAbstractListModel` over `MprisHost`. Roles `player`, `identity`, `playbackState`, `trackTitle`, `trackArtist`, `artUrl`. |
 
-## Typical use
+## Use
 
-C++ shell composition root:
+In the C++ composition root of the shell:
 
 ```cpp
 #include <PhosphorServiceMpris/QmlRegistration.h>
@@ -32,7 +34,7 @@ int main(int argc, char** argv)
 }
 ```
 
-QML consumer:
+A QML consumer:
 
 ```qml
 import Phosphor.Service.Mpris 1.0
@@ -50,15 +52,16 @@ Repeater {
 
 ## Design notes
 
-- **Async D-Bus.** All property fetches go through `QDBusPendingCallWatcher`. The GUI thread is never blocked on a player that's slow to respond.
-- **PropertiesChanged + NameOwnerChanged.** Player discovery hangs off `NameOwnerChanged` for `org.mpris.MediaPlayer2.*` services, and property updates ride `PropertiesChanged`. Both connect via `QDBusConnection::connect` with a SLOT() string because Qt's D-Bus API doesn't expose a lambda-friendly overload for those signals.
-- **Row mirror.** `MprisPlayerModel` keeps its own `QList<MprisPlayer*>` instead of indexing into the host's, so the model's `beginInsertRows` / `endRemoveRows` transaction boundaries always straddle the actual mutation regardless of when the host emits its add/remove signals relative to its own list state.
+- **Async D-Bus.** All property fetches go through `QDBusPendingCallWatcher`. A player that is slow to respond never
+  blocks the GUI thread.
+- **PropertiesChanged + NameOwnerChanged.** `NameOwnerChanged` for `org.mpris.MediaPlayer2.*` services finds the
+  players. `PropertiesChanged` brings the property updates. Both connect through `QDBusConnection::connect` with a
+  SLOT() string, because the Qt D-Bus API has no overload for these signals that takes a lambda.
+- **Row mirror.** `MprisPlayerModel` keeps its own `QList<MprisPlayer*>` and does not index into the list of the
+  host. Thus the `beginInsertRows` / `endRemoveRows` boundaries of the model always enclose the real change. This
+  stays true independent of when the host emits its add and remove signals relative to its own list.
 
 ## Dependencies
 
 - Qt6 ≥ 6.6 (Core, Qml, DBus)
 - A running session bus with one or more `org.mpris.MediaPlayer2.*` players
-
-## Status
-
-Shipped. Extracted from the original `phosphor-services` umbrella as one of four per-domain siblings. The umbrella is gone, with no backwards-compat shim (per `feedback_no_legacy_shims`). The C++ + QML API is unchanged from its pre-extraction form (`PhosphorServices::Mpris*` becomes `PhosphorServiceMpris::Mpris*`, `Phosphor.Services` QML module becomes `Phosphor.Service.Mpris`).

@@ -3,28 +3,34 @@
 
 # phosphor-service-bluetooth
 
-BlueZ (`org.bluez`) adapter / device readouts and pairing for Phosphor-based desktop shells.
+This library gives Phosphor-based desktop shells the BlueZ (`org.bluez`) adapter and device state, and Bluetooth
+pairing.
 
 ## Responsibility
 
-Exposes the system bus `org.bluez` surface (per-adapter power / discovery state, per-device pairing / connection state, and the pairing agent) as Qt + QML types. No UI. The shell decides how an adapter toggle, device list, or pairing dialog is rendered.
+The library exposes the system bus `org.bluez` interface as Qt and QML types. It covers the power and discovery
+state of each adapter, the pairing and connection state of each device, and the pairing agent. It has no UI. The
+shell decides how to show an adapter toggle, a device list or a pairing dialog.
 
-The library is a D-Bus client built on the generic `PhosphorDBus::Client` async helper and `PhosphorDBus::ObjectManager` (BlueZ is ObjectManager-rooted). It observes adapter + device state, offers the discovery / connect / trust / pair write surface, and acts as a D-Bus *server* for the `org.bluez.Agent1` pairing agent.
+The library is a D-Bus client. It uses the generic `PhosphorDBus::Client` async helper and
+`PhosphorDBus::ObjectManager`, because BlueZ is ObjectManager-rooted. It observes the adapter and device state and
+gives the write calls for discovery, connect, trust and pair. It is also a D-Bus *server* for the `org.bluez.Agent1`
+pairing agent.
 
 ## Key types
 
-| Type                    | Role                                                                                                  |
-|-------------------------|-------------------------------------------------------------------------------------------------------|
-| `BluetoothAdapter`      | One `org.bluez.Adapter1`. `address`, `name`, `alias`, `powered`, `discoverable`, `pairable`, `discovering`; `setPowered()`, `setDiscoverable()`, `startDiscovery()`, `stopDiscovery()`, `removeDevice()`. |
-| `BluetoothDevice`       | One `org.bluez.Device1`. `address`, `name`, `alias`, `icon`, `paired`, `trusted`, `blocked`, `connected`, `rssi`, `adapter`, `uuids`; `connectDevice()`, `disconnectDevice()`, `setTrusted()`, `setBlocked()`, `pair()`, `cancelPairing()`. |
-| `BluetoothHost`         | Owns the adapter + device sets via an ObjectManager observer and registers the pairing agent. `adapterCount`, `deviceCount`, `agent`; `adapterAt()`, `deviceAt()`; signals on adapter/device add/remove. |
-| `BluetoothAdapterModel` | `QAbstractListModel` over the host's adapters. Roles: `adapter`, `address`, `name`, `alias`, `powered`, `discoverable`, `pairable`, `discovering`. |
-| `BluetoothDeviceModel`  | `QAbstractListModel` over the host's devices, optionally scoped to one `adapter`. Roles: `device`, `address`, `name`, `alias`, `icon`, `paired`, `trusted`, `blocked`, `connected`, `rssi`, `adapter`, `uuids`. |
-| `BluetoothAgent`        | `org.bluez.Agent1` (KeyboardDisplay). Emits `pinCodeRequested` / `passkeyRequested` / `confirmationRequested` / `authorizationRequested` / `serviceAuthorizationRequested` (+ display signals); answered via `respondPinCode()` / `respondPasskey()` / `respondConfirmation()` / `rejectRequest()`. |
+| Type | Role |
+| --- | --- |
+| `BluetoothAdapter` | One `org.bluez.Adapter1`. Properties `address`, `name`, `alias`, `powered`, `discoverable`, `pairable`, `discovering`. Calls `setPowered()`, `setDiscoverable()`, `startDiscovery()`, `stopDiscovery()`, `removeDevice()`. |
+| `BluetoothDevice` | One `org.bluez.Device1`. Properties `address`, `name`, `alias`, `icon`, `paired`, `trusted`, `blocked`, `connected`, `rssi`, `adapter`, `uuids`. Calls `connectDevice()`, `disconnectDevice()`, `setTrusted()`, `setBlocked()`, `pair()`, `cancelPairing()`. |
+| `BluetoothHost` | Owns the adapter and device sets through an ObjectManager observer, and registers the pairing agent. Properties `adapterCount`, `deviceCount`, `agent`. Calls `adapterAt()`, `deviceAt()`. Emits signals when an adapter or a device is added or removed. |
+| `BluetoothAdapterModel` | `QAbstractListModel` over the adapters of the host. Roles `adapter`, `address`, `name`, `alias`, `powered`, `discoverable`, `pairable`, `discovering`. |
+| `BluetoothDeviceModel` | `QAbstractListModel` over the devices of the host. It can show only the devices of one `adapter`. Roles `device`, `address`, `name`, `alias`, `icon`, `paired`, `trusted`, `blocked`, `connected`, `rssi`, `adapter`, `uuids`. |
+| `BluetoothAgent` | `org.bluez.Agent1` (KeyboardDisplay). Emits `pinCodeRequested`, `passkeyRequested`, `confirmationRequested`, `authorizationRequested`, `serviceAuthorizationRequested` and the display signals. The consumer answers with `respondPinCode()`, `respondPasskey()`, `respondConfirmation()` or `rejectRequest()`. |
 
-## Typical use
+## Use
 
-C++ shell composition root:
+In the C++ composition root of the shell:
 
 ```cpp
 #include <PhosphorServiceBluetooth/QmlRegistration.h>
@@ -37,7 +43,7 @@ int main(int argc, char** argv)
 }
 ```
 
-QML consumer (adapter power toggle + device list):
+A QML consumer with an adapter power toggle and a device list:
 
 ```qml
 import Phosphor.Service.Bluetooth 1.0
@@ -58,7 +64,7 @@ Repeater {
 }
 ```
 
-QML consumer (pairing dialog wired to the agent):
+A QML pairing dialog that the agent drives:
 
 ```qml
 import Phosphor.Service.Bluetooth 1.0
@@ -74,20 +80,38 @@ Connections {
 }
 ```
 
+## Tests and demo
+
+| Item | What it covers |
+| --- | --- |
+| Smoke harness | The public contract: model role names, the lifecycle, the request and response state machine of the agent, and one delayed-reply round trip. It runs over a session-bus loopback, with no daemon. |
+| `phosphor-dbus` | The ObjectManager observer has its own loopback test. Other services (notifications, session) use the same observer. |
+| `examples/phosphor-service-bluetooth-cli` | A `phosphorctl`-style CLI demo with the commands status, list-adapters, list-devices, power, scan, pair, connect, disconnect, trust, untrust and remove. |
+
 ## Design notes
 
-- **ObjectManager-rooted enumeration.** Adapters and devices are discovered through `PhosphorDBus::ObjectManager` pointed at the BlueZ root (`GetManagedObjects` + `InterfacesAdded` / `InterfacesRemoved`), not per-interface signals. Removing an adapter cascades to its child devices by path prefix.
-- **Async-only D-Bus.** The initial walk, per-object `PropertiesChanged` tracking, and every write (`Properties.Set`, `StartDiscovery`, `Connect`, `Pair`, `RemoveDevice`) go through `QDBusPendingCallWatcher` / `PhosphorDBus::Client`. The GUI thread is never blocked. Initial properties arrive in the ObjectManager enumeration, so domain objects need no construction-time round-trip.
-- **No optimistic writes.** `setPowered` / `setDiscoverable` / `setTrusted` / `setBlocked` issue `Properties.Set` and let BlueZ echo the change back through `PropertiesChanged`. The cached value (and its NOTIFY) moves only once the daemon actually applied it, so the property never lies about daemon state.
-- **The agent is a D-Bus server.** `BluetoothAgent` implements `org.bluez.Agent1` directly on the QObject (`ExportAllSlots` + `QDBusContext`) rather than via a generated adaptor, so `setDelayedReply` applies to its calls. The interactive callbacks defer their reply, emit a request signal with a `requestId`, and are answered later by a consumer. Replies are sent exactly once (value, empty accept, or `org.bluez.Error.Rejected`), and `Cancel` answers every in-flight request with `Canceled`.
-- **Best-effort default agent.** The host registers the agent with `AgentManager1.RegisterAgent` (KeyboardDisplay) and requests default-agent status. If `RequestDefaultAgent` fails because another agent holds the slot, that is non-fatal, and pairing still works as a non-default agent.
+- **ObjectManager-rooted enumeration.** `PhosphorDBus::ObjectManager` at the BlueZ root finds the adapters and
+  devices (`GetManagedObjects` and `InterfacesAdded` / `InterfacesRemoved`). The library does not use signals for
+  each interface. When an adapter goes, its child devices go too, by path prefix.
+- **Async-only D-Bus.** The initial walk, the `PropertiesChanged` tracking of each object and every write
+  (`Properties.Set`, `StartDiscovery`, `Connect`, `Pair`, `RemoveDevice`) go through `QDBusPendingCallWatcher` /
+  `PhosphorDBus::Client`. The GUI thread never blocks. The initial properties come in the ObjectManager
+  enumeration, so a domain object needs no round trip when it is constructed.
+- **No optimistic writes.** `setPowered` / `setDiscoverable` / `setTrusted` / `setBlocked` send `Properties.Set`.
+  BlueZ then sends the change back through `PropertiesChanged`. The cached value and its NOTIFY change only after
+  the daemon applied the change. Thus the property always agrees with the daemon state.
+- **The agent is a D-Bus server.** `BluetoothAgent` implements `org.bluez.Agent1` directly on the QObject
+  (`ExportAllSlots` + `QDBusContext`), not through a generated adaptor. This lets `setDelayedReply` apply to its
+  calls. An interactive callback defers its reply and emits a request signal with a `requestId`. A consumer answers
+  it later. Each reply goes exactly once (a value, an empty accept, or `org.bluez.Error.Rejected`). `Cancel`
+  answers every open request with `Canceled`.
+- **Best-effort default agent.** The host registers the agent with `AgentManager1.RegisterAgent` (KeyboardDisplay)
+  and asks to be the default agent. If `RequestDefaultAgent` fails because another agent has the slot, the error is
+  not fatal. Pairing still works as a non-default agent.
 
 ## Dependencies
 
 - Qt6 ≥ 6.6 (Core, Qml, DBus)
-- `PhosphorDBus` (private link; async method-call helper + ObjectManager observer)
-- A running `org.bluez` on the system bus (the lib loads inert without it, with empty adapter and device lists and no crash)
-
-## Status
-
-Shipped. The ObjectManager-driven adapter / device enumeration with live `PropertiesChanged` tracking and cascade removal (`BluetoothHost`, `BluetoothAdapter`, `BluetoothDevice`), the two `QAbstractListModel`s (`BluetoothAdapterModel`, `BluetoothDeviceModel` with an adapter filter), the write paths (power / discoverable / discovery, connect / disconnect / trust / block / pair / cancel-pairing / remove), the full `org.bluez.Agent1` pairing agent (`BluetoothAgent`, KeyboardDisplay, delayed-reply interactive callbacks), and the `phosphorctl`-style CLI demo (`examples/phosphor-service-bluetooth-cli`: status, list-adapters, list-devices, power, scan, pair, connect, disconnect, trust, untrust, remove) covering the core capabilities (list adapters / devices, scan, pair, connect). The ObjectManager observer added for this service lives in `phosphor-dbus` and is reused by other services (notifications, session). The smoke harness pins the public contract (model role names, lifecycle, the agent request/response state machine, and a delayed-reply round-trip) deterministically over a session-bus loopback without a daemon. The `phosphor-dbus` ObjectManager has its own loopback test.
+- `PhosphorDBus` (private link: the async method-call helper and the ObjectManager observer)
+- A running `org.bluez` on the system bus. Without it the library loads inert, with empty adapter and device lists
+  and no crash.

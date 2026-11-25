@@ -3,23 +3,26 @@
 
 # phosphor-service-upower
 
-UPower (`org.freedesktop.UPower`) battery and power-supply readouts for Phosphor-based desktop shells.
+UPower (`org.freedesktop.UPower`) battery and power-supply values for Phosphor-based desktop shells.
 
 ## Responsibility
 
-Exposes the system bus `org.freedesktop.UPower` surface (the aggregate display device, the per-device list, the `OnBattery` flag) as Qt + QML types. There is no UI. The shell decides how a battery percentage, charging icon, or low-power warning is rendered.
+The library gives the `org.freedesktop.UPower` interface on the system bus to the shell as Qt and QML types. This
+includes the aggregate display device, the list of devices and the `OnBattery` flag. It has no UI. The shell decides
+how to show a battery percentage, a charging icon or a low-power warning.
 
-The library is a pure D-Bus client. It does not write to UPower (UPower has no writable surface for the kinds of facts it reports), it only observes.
+The library is only a D-Bus client. It does not write to UPower, because UPower has no writable interface for the
+values that it reports. It only observes.
 
 ## Key types
 
-| Type                          | Role                                                                                 |
-|-------------------------------|--------------------------------------------------------------------------------------|
-| `UPowerDevice`                | One physical power source. `percentage`, `state`, `type`, `timeToEmpty`, `timeToFull`, `iconName`, `isLaptopBattery`, `healthPercentage`. |
-| `UPowerHost`                  | Owns the device set. `onBattery`, `displayDevice` (the UPower-aggregate battery), `deviceCount`, signals on add/remove. |
-| `UPowerDeviceModel`           | `QAbstractListModel` over the host's devices. Roles: `device`, `percentage`, `deviceState`, `deviceType`, `iconName`, `isLaptopBattery`. |
+| Type | Role |
+| --- | --- |
+| `UPowerDevice` | One physical power source. `percentage`, `state`, `type`, `timeToEmpty`, `timeToFull`, `iconName`, `isLaptopBattery`, `healthPercentage`. |
+| `UPowerHost` | Owns the device set. `onBattery`, `displayDevice` (the UPower aggregate battery), `deviceCount`, and signals when a device is added or removed. |
+| `UPowerDeviceModel` | `QAbstractListModel` over the devices of the host. Roles: `device`, `percentage`, `deviceState`, `deviceType`, `iconName`, `isLaptopBattery`. |
 
-## Typical use
+## Use
 
 C++ shell composition root:
 
@@ -34,7 +37,7 @@ int main(int argc, char** argv)
 }
 ```
 
-QML consumer (single-battery indicator):
+QML consumer (indicator for one battery):
 
 ```qml
 import Phosphor.Service.UPower 1.0
@@ -49,7 +52,7 @@ Label {
 }
 ```
 
-QML consumer (per-device list):
+QML consumer (list of devices):
 
 ```qml
 import Phosphor.Service.UPower 1.0
@@ -63,17 +66,24 @@ Repeater {
 }
 ```
 
+## Device types
+
+The `DeviceType` enum covers the full UPower 1.0 range, from `UnknownType = 0` to `BluetoothGeneric=28`. Each value
+has the UPower number, for example `MediaPlayer=9`. Thus QML can resolve each device type that UPower reports.
+
 ## Design notes
 
-- **Async-only D-Bus.** Startup (`GetAll`, `EnumerateDevices`, `GetDisplayDevice`) and `PropertiesChanged` fan-out all go through `QDBusPendingCallWatcher`. The GUI thread is never blocked waiting on UPower.
-- **Derived-state transitions.** `isLaptopBattery` depends on both `type` and `powerSupply`; `healthPercentage` on `energyFull` and `energyFullDesign`. The applyProps path snapshots the prior derived value and emits the NOTIFY only when the result actually moved, so QML bindings don't churn on every device-level property tick.
-- **Display device.** UPower returns a single "display" device aggregating every battery on the system. Shells should prefer `displayDevice` for top-of-bar indicators and reserve the model for power-management UIs that want the per-device breakdown.
+- **Async-only D-Bus.** The startup calls (`GetAll`, `EnumerateDevices`, `GetDisplayDevice`) and the
+  `PropertiesChanged` fan-out all go through `QDBusPendingCallWatcher`. The GUI thread never waits on UPower.
+- **Derived-state transitions.** `isLaptopBattery` depends on `type` and `powerSupply`. `healthPercentage` depends on
+  `energyFull` and `energyFullDesign`. The applyProps path keeps the previous derived value and emits the NOTIFY
+  only when the result changed. Thus QML bindings do not update again on each property change of the device.
+- **Per-property signals.** `UPowerDeviceModel` subscribes to the `NOTIFY` of each property (percentage, state,
+  type, iconName, isLaptopBattery). External consumers bind the specific signal that they need.
+- **Display device.** UPower returns one "display" device that aggregates all batteries of the system. Use
+  `displayDevice` for indicators at the top of a bar. Use the model for power-management UIs that show each device.
 
 ## Dependencies
 
 - Qt6 ≥ 6.6 (Core, Qml, DBus)
 - A running `org.freedesktop.UPower` on the system bus
-
-## Status
-
-Shipped. Extracted from the original `phosphor-services` umbrella as one of four per-domain siblings. The umbrella is gone, no backwards-compat shim (per `feedback_no_legacy_shims`). The C++ namespace and QML module URI moved (`PhosphorServices::UPower*` → `PhosphorServiceUPower::UPower*`, `Phosphor.Services` → `Phosphor.Service.UPower`). The `DeviceType` enum was extended additively from `MediaPlayer=9` to `BluetoothGeneric=28` to cover the full UPower 1.0 range, and existing enumerators kept their original values. The internal `propertiesRefreshed()` signal was removed because `UPowerDeviceModel` now subscribes to per-property `NOTIFY`s (percentage, state, type, iconName, isLaptopBattery). External consumers should bind the specific signal they care about.

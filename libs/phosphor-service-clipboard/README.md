@@ -3,33 +3,30 @@
 
 # phosphor-service-clipboard
 
-A clipboard-history service for Phosphor-based desktop shells.
+This library is a clipboard-history service for Phosphor-based desktop shells.
 
 ## Responsibility
 
-Watches the session clipboard, keeps a de-duplicated, capped, on-disk history,
-and can re-apply any entry. It is the policy / history / persistence layer over
-`phosphor-wayland`'s `ClipboardDevice` (a `wlr-data-control` client). It composes
-the device rather than binding the protocol itself, so its public surface is a
-clean Qt/QML type with no Wayland types leaking out. It surfaces the
-history as a model and leaves a shell to render the picker. No UI is provided here.
+The library watches the session clipboard, keeps a de-duplicated, capped history on disk, and can apply any entry
+again. It is the policy, history and persistence layer over `phosphor-wayland`'s `ClipboardDevice` (a
+`wlr-data-control` client). It composes the device and does not bind the protocol itself. Thus its public interface
+is a clean Qt/QML type, with no Wayland types. It shows the history as a model, and the shell shows the picker. The
+library has no UI.
 
 - Watch the clipboard independent of keyboard focus (`wlr-data-control`).
-- Keep a de-duplicated, capped history that survives restarts.
+- Keep a de-duplicated, capped history that stays after a restart.
 - Never read or keep a sensitive selection (password-manager hints).
-- Re-apply a history entry to the clipboard on request.
-
-The clipboard-manager UI itself is a future shell consumer of this library.
+- Apply a history entry to the clipboard again on request.
 
 ## Key types
 
-| Type             | Role                                                                                  |
-|------------------|---------------------------------------------------------------------------------------|
-| `ClipboardService` | The clipboard-history host. Exposes `history` (a list model, most-recent first, with `preview` / `mimeType` / `offeredTypes` / `timestamp` roles) and `count`. `copy(index)` re-applies an entry, `remove(index)` and `clear()` prune. Loads from disk on construction and persists on every change. A plain instantiable QML type, not a singleton. |
+| Type | Role |
+| --- | --- |
+| `ClipboardService` | The clipboard-history host. Exposes `history` (a list model, most recent first, with the roles `preview` / `mimeType` / `offeredTypes` / `timestamp`), `count` and `supported`. `copy(index)` applies an entry again. `remove(index)` and `clear()` remove entries. It loads from disk when it is constructed, and saves on every change. It is a plain QML type that you can instantiate, not a singleton. |
 
-## Typical use
+## Use
 
-C++ shell composition root:
+In the C++ composition root of the shell:
 
 ```cpp
 #include <PhosphorServiceClipboard/QmlRegistration.h>
@@ -42,7 +39,7 @@ int main(int argc, char** argv)
 }
 ```
 
-QML clipboard picker (binds the history, pastes a chosen entry):
+A QML clipboard picker that binds the history and pastes the selected entry:
 
 ```qml
 import Phosphor.Service.Clipboard 1.0
@@ -62,7 +59,7 @@ ListView {
 }
 ```
 
-The CLI doubles as the worked example and the acceptance harness:
+The CLI is also the worked example and the acceptance harness:
 
 ```sh
 # watch the clipboard and log each new entry
@@ -73,53 +70,49 @@ phosphor-service-clipboard-cli list
 phosphor-service-clipboard-cli copy 2
 ```
 
+## History limits
+
+| Item | Value |
+| --- | --- |
+| Entries kept | 100 by default, most recent first. Past the cap, the oldest entry goes. |
+| Duplicates | A new copy of an entry moves the entry to the front. |
+| Sensitive selections | The library drops a selection with `x-kde-passwordManagerHint` before it reads it. |
+| Location | A JSON index and SHA-256 content blobs under `~/.local/share/phosphor-works/clipboard`. |
+
+## Tests and demo
+
+The `examples/phosphor-service-clipboard-cli` demo gives `watch` / `list` / `copy` against a live session. Four
+test binaries cover the deterministic behavior with no `wlr-data-control`:
+
+| Test | What it covers |
+| --- | --- |
+| Smoke harness | Registration idempotency and inert construction. |
+| QML-engine load test | The QML type loads in an engine. |
+| History-model unit test | The preferred-MIME selection, the move to the front on a duplicate, cap eviction, the sensitive drop and preview generation. |
+| Store unit test | The text and binary round trip, sensitive exclusion, orphan-blob pruning and recovery from a corrupt index. |
+
 ## Design notes
 
-- **Composes the foundation primitive.** The `wlr-data-control` client lives in
-  `phosphor-wayland` (`ClipboardDevice`). This library links it privately and
-  builds the history / dedup / persistence / model layer on top. It binds no
-  protocols itself.
-- **Reads asynchronously.** Each new selection is read off a pipe on the event
-  loop (`receive` returns immediately and the bytes arrive via a signal), so a large
-  or slow producer never blocks the UI. The model is driven through an
-  `IClipboardSource` seam, so its policy is unit-tested with a fake source and no
-  compositor.
-- **Never persist secrets.** A selection carrying a sensitivity hint (the KDE
-  `x-kde-passwordManagerHint`) is dropped entirely and is never read, kept, or
-  written. The on-disk store also refuses sensitive entries as a second line of
-  defence, mirroring `phosphor-service-polkit`'s never-store-the-secret stance.
-- **On-disk history.** A JSON index plus per-entry content blobs (named by
-  SHA-256, so identical content shares a blob) under
-  `~/.local/share/phosphor-works/clipboard`. Writes are atomic and orphaned blobs are
-  pruned. The history loads on startup and saves on every change.
-- **A model, not a single host.** Clipboard is inherently a list, so the facade
-  exposes a `QAbstractItemModel` (the `phosphor-service-notifications`
-  host-backed-model shape), distinct from the single-active-item shape of
-  `phosphor-service-polkit` / `phosphor-service-idle`.
+- **Composes the foundation primitive.** The `wlr-data-control` client is in `phosphor-wayland`
+  (`ClipboardDevice`). This library links it privately and adds the history, de-duplication, persistence and model
+  layer. It binds no protocols itself.
+- **Reads asynchronously.** The library reads each new selection from a pipe on the event loop. `receive` returns
+  immediately, and the bytes arrive through a signal. Thus a large or slow producer never blocks the UI. An
+  `IClipboardSource` seam drives the model, so unit tests check its policy with a fake source and no compositor.
+- **Never persist secrets.** The library drops a selection that has a sensitivity hint (the KDE
+  `x-kde-passwordManagerHint`) completely. It never reads, keeps or writes it. The on-disk store also refuses
+  sensitive entries as a second defense. `phosphor-service-polkit` has the same rule: never store the secret.
+- **On-disk history.** The store is a JSON index and one content blob for each entry under
+  `~/.local/share/phosphor-works/clipboard`. A blob is named by its SHA-256, so identical content shares a blob.
+  Writes are atomic, and the store removes orphaned blobs. The history loads at startup and saves on every change.
+- **A model, not a single host.** A clipboard history is a list. The facade therefore exposes a
+  `QAbstractItemModel`, the host-backed-model shape of `phosphor-service-notifications`. This is different from the
+  single-active-item shape of `phosphor-service-polkit` / `phosphor-service-idle`.
 
 ## Dependencies
 
-- `phosphor-wayland` (private link; provides the `ClipboardDevice`
-  `wlr-data-control` client and the vendored protocol code). No separate
-  `wayland-protocols` dependency.
-- Qt6 >= 6.6 (Core, Qml). The CLI additionally uses Qt6 Gui for
-  `QGuiApplication`.
-- A compositor advertising `wlr-data-control-unstable-v1` for the live path (the
-  library loads inert without it, and the persisted history still loads and reads).
-
-## Status
-
-Shipped. `ClipboardService` watches the session clipboard through
-`PhosphorWayland::ClipboardDevice` (`wlr-data-control`), de-duplicates and caps a
-history (default 100 entries, most-recent first), persists it as a JSON index +
-SHA-256 content blobs under `~/.local/share/phosphor-works/clipboard`, and re-applies an
-entry via `copy()`. Sensitive selections (the `x-kde-passwordManagerHint`) are
-dropped before they are ever read. The `examples/phosphor-service-clipboard-cli`
-demo provides `watch` / `list` / `copy` against a live session. Four test
-binaries pin the deterministic surface with no `wlr-data-control`: the smoke
-harness (registration idempotency, inert construction), the QML-engine load test,
-the history-model unit test (preferred-MIME selection, dedup move-to-front, cap
-eviction, sensitive drop, preview generation), and the store unit test
-(text / binary round-trip, sensitive exclusion, orphan-blob pruning,
-corrupt-index recovery). Image thumbnail rendering, primary-selection history,
-and the clipboard-manager UI are future shell consumers.
+- `phosphor-wayland` (private link: the `ClipboardDevice` `wlr-data-control` client and the vendored protocol code).
+  No separate `wayland-protocols` dependency.
+- Qt6 >= 6.6 (Core, Qml). The CLI also uses Qt6 Gui for `QGuiApplication`.
+- A compositor that advertises `wlr-data-control-unstable-v1`, for the live path. Without it the library loads
+  inert, and the saved history still loads and reads.

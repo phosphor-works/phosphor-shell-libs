@@ -3,33 +3,30 @@
 
 # phosphor-service-polkit
 
-A PolicyKit authentication agent, built on the `polkit-qt6` binding, for
-Phosphor-based desktop shells.
+A PolicyKit authentication agent for Phosphor-based desktop shells, built on the `polkit-qt6` binding.
 
 ## Responsibility
 
-When an application requests a privileged action, `polkitd` calls into the
-authentication agent registered for the session, and the agent drives the PAM
-conversation that authenticates the user. This library is that agent. It has no
-UI. It surfaces the request and a respond / cancel path, and a shell renders the
-authentication dialog.
+When an application requests a privileged action, `polkitd` calls the authentication agent that is registered for
+the session. The agent drives the PAM conversation that authenticates the user. This library is that agent. It has
+no UI. It shows the request and gives a respond and cancel path. A shell shows the authentication dialog.
 
-- Register with `polkitd` as the session's authentication agent (opt-in, since
-  becoming the agent intercepts every authentication).
-- Surface the active authentication request (action, message, identities, and
-  each PAM prompt) and drive the `polkit-qt6` `Agent::Session` that answers it.
-- Pass the user's response straight through to PAM without retaining it.
+- It registers with `polkitd` as the authentication agent of the session. This is opt-in, because the agent
+  intercepts each authentication.
+- It shows the active authentication request (action, message, identities and each PAM prompt). It drives the
+  `polkit-qt6` `Agent::Session` that answers the request.
+- It sends the response of the user directly to PAM and does not keep it.
 
-The authentication dialog itself is a future shell consumer of this library.
+The authentication dialog is not part of this library. `phosphor-shell-polkit` has the dialog surfaces.
 
 ## Key types
 
-| Type          | Role                                                                                     |
-|---------------|------------------------------------------------------------------------------------------|
-| `PolkitAgent` | Registers as the session's authentication agent and surfaces the active request + a respond / cancel path. Wraps `polkit-qt6`'s `Agent::Listener` privately, so its public surface carries no polkit-qt types. |
-| `AuthRequest` | One decoded authentication request polkit is waiting on (action / message / icon / details / identities + the selected identity). |
+| Type | Role |
+| --- | --- |
+| `PolkitAgent` | Registers as the authentication agent of the session. It shows the active request and gives a respond and cancel path. It wraps the `Agent::Listener` of `polkit-qt6` privately, so its public API has no polkit-qt types. |
+| `AuthRequest` | One decoded authentication request that polkit waits on (action / message / icon / details / identities, and the selected identity). The agent decodes the `initiateAuthentication` call of polkit into it. |
 
-## Typical use
+## Use
 
 C++ shell composition root:
 
@@ -72,8 +69,17 @@ AuthDialog {
 }
 ```
 
-The CLI doubles as the worked example and the acceptance harness. It runs as the
-agent itself:
+The conversation has these steps:
+
+1. `authenticate()` starts the PAM conversation.
+2. The PAM prompt shows on `AuthRequest`.
+3. `respond()` sends the answer directly to PAM. The library does not keep the secret.
+4. `completed` / `cancel` resolve the result of polkit one time only.
+
+## Example program
+
+`examples/phosphor-service-polkit-cli` is the worked example and the acceptance harness. It runs as the agent. It
+logs the requests, answers the prompts and tests the live path against `pkexec`.
 
 ```sh
 # register as the session agent and answer prompts (stop the desktop agent first)
@@ -82,42 +88,33 @@ phosphor-service-polkit-cli
 pkexec true
 ```
 
+## Tests
+
+The tests need no `polkitd`.
+
+| Test | What it covers |
+| --- | --- |
+| C++ smoke harness | Inert construction, a failed registration, and the guards on the active request, `authenticate`, `respond` and `cancel`. |
+| QML-engine facade load test | The QML module loads and `PolkitAgent` works in QML. |
+| Decode unit test | The decode over real polkit-qt `Details` / `Identity` values. |
+| Lifecycle test | The conversation steps with a fake authentication session. |
+
 ## Design notes
 
-- **Wraps polkit-qt privately.** `PolkitAgent` is a plain `QObject`, and the
-  `PolkitQt1::Agent::Listener` it subclasses lives in the `.cpp`. polkit-qt6 is
-  a private link, so consumers neither include nor link it.
-- **Registration is explicit.** `registerAgent()` opts into becoming the
-  session's agent, and the constructor has no side effects. Exactly one agent serves
-  a session, so when the desktop's agent (KDE / GNOME) already holds it,
+- **Wraps polkit-qt privately.** `PolkitAgent` is a plain `QObject`. The `PolkitQt1::Agent::Listener` that it
+  subclasses is in the `.cpp`. polkit-qt6 is a private link, so consumers do not include or link it.
+- **Registration is explicit.** `registerAgent()` makes the object the agent of the session. The constructor has no
+  side effects. Only one agent serves a session. When the agent of the desktop (KDE / GNOME) already holds it, the
   registration fails and the object stays inert (`registered() == false`).
-- **Surface the request, never the secret.** The user's response flows straight
-  into `Agent::Session::setResponse`. The library never stores, logs, or echoes
-  it.
-- **Dependency injection for tests.** The agent takes an injectable session id +
-  object path, so registration is exercised against a synthetic session with no
-  real `polkitd` and no chance of intercepting the tester's authentications.
+- **Show the request, never the secret.** The response of the user goes directly into
+  `Agent::Session::setResponse`. The library never stores, logs or echoes it.
+- **Dependency injection for tests.** The agent takes an injectable session id and object path. Thus the tests
+  register against a synthetic session with no real `polkitd`. They cannot intercept the authentications of the
+  tester.
 
 ## Dependencies
 
-- `polkit-qt6` (Core + Agent), discovered via `find_package(PolkitQt6-1)`. A
-  running `polkitd` on the system bus for the live path (the lib loads inert
-  without it). The polkit-qt6 GUI action-button widgets are not used.
+- `polkit-qt6` (Core + Agent), found through `find_package(PolkitQt6-1)`. The library does not use the GUI
+  action-button widgets of polkit-qt6.
+- A running `polkitd` on the system bus for the live path. Without it, the library loads inert.
 - Qt6 ≥ 6.6 (Core, Qml).
-
-## Status
-
-Shipped. The `PolkitAgent` registers as the session's authentication
-agent (explicit, inert when another agent owns the session), decodes polkit's
-`initiateAuthentication` into a typed `AuthRequest` (action / message / icon /
-details / identities), and drives the `polkit-qt6` `Agent::Session` PAM
-conversation: `authenticate()` starts it, the PAM prompt surfaces on
-`AuthRequest`, `respond()` answers it straight to PAM without retaining the
-secret, and `completed` / `cancel` resolve polkit's result exactly once. The
-`examples/phosphor-service-polkit-cli` standalone-agent demo runs as the agent,
-logs requests, answers prompts, and exercises the live
-path against `pkexec`. Three test binaries pin the deterministic surface with no
-`polkitd`: the C++ smoke harness (inert construction, registration-fail, the
-active-request / authenticate / respond / cancel guards), the QML-engine facade
-load test, and the decode unit test over real polkit-qt `Details` / `Identity`
-values. The authentication dialog UI is a future shell consumer.
