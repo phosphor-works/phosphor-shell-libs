@@ -68,17 +68,16 @@ void PamAuthenticatorTest::busyRejectsConcurrentCall()
     QSignalSpy failSpy(&auth, &IAuthenticator::failed);
 
     // The first call starts a real (bogus-user) transaction; the second, issued
-    // before it completes, must fail fast rather than run two PAM stacks at once.
-    // QtConcurrent::run marks the future Running synchronously at setFuture(), so
-    // the busy guard (isRunning()) sees it on the immediately-following second
-    // call regardless of how fast the worker runs; PAM's faildelay only widens
-    // the window further.
+    // before its result is delivered, must fail fast rather than run two PAM
+    // stacks at once. The authenticator is busy until it emits the first
+    // result, which needs the event loop, so the guard holds however fast the
+    // worker ends: in the Nix sandbox PAM has no configuration and no fail
+    // delay, and the worker ended before the second call.
     const QString user = QStringLiteral("phosphor-no-such-user-2f1a9c");
     auth.authenticate(user, QStringLiteral("x"));
 
-    // The second call is rejected synchronously (the worker is still running, held
-    // by PAM's faildelay), so exactly one new failure appears immediately and it
-    // carries the in-progress reason.
+    // The second call is rejected synchronously, so exactly one new failure
+    // appears immediately and it carries the in-progress reason.
     QCOMPARE(failSpy.count(), 0);
     auth.authenticate(user, QStringLiteral("y"));
     QCOMPARE(failSpy.count(), 1);
