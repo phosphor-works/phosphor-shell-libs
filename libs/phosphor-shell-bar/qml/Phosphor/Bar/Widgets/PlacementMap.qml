@@ -5,21 +5,21 @@
 // Replaces the workspace pager. An 18 px, aspect-true miniature of this
 // screen's placement geometry (zones, tile rects or the scrolling strip)
 // drawn from the engine's own model through Phosphor.Shell.PlacementMap,
-// with one 2 × 1 px tick per virtual desktop under it (A2 §1). Hover
+// with one 2 × 1 px tick per virtual desktop under it. Hover
 // grows it to 22 px; click activates a cell; a cell dragged onto another
 // moves or swaps; middle-click floats; wheel pans the strip or steps
 // focus; Ctrl+wheel switches desktop; on a scrolling screen a drag on the
 // map (not on a cell) pans the strip's view 1:1 in strip space (the lens
 // drag). Every gesture routes through the model, never around it.
 //
-// The miniature is also the compositor's DROP PROXY (A2 §1.5): whenever
+// The miniature is also the compositor's DROP PROXY: whenever
 // its screen rect or the cells change, the bar registers the rect and one
 // rect per cell with the daemon (coalesced to one call per turn), so a
 // window dragged onto the miniature lands in the real zone. Withdrawn
 // when the widget goes.
 //
 // Long-press, or a right-click, asks the bar for the EXPANDED map (the
-// bar's pane, A2 §1.1): `expandRequested(menu)`, with `menu` true when
+// bar's pane): `expandRequested(menu)`, with `menu` true when
 // the pane should open on its menu section. `expanded` mirrors the pane.
 //
 // The map draws whatever mode the screen is in right now; the shape IS
@@ -40,7 +40,7 @@ BarWidget {
     // True while the bar shows the expanded map pane for this widget.
     property bool expanded: false
     // Any cell on this screen demands attention: the rail thickens over
-    // this chip (A2 §3.3).
+    // this chip.
     readonly property bool urgent: root.map ? root.map.urgent : false
 
     signal expandRequested(bool menu)
@@ -110,7 +110,7 @@ BarWidget {
             }
         }
 
-        // Lens drag (A2 §1.5): on a scrolling screen a press-and-drag over
+        // Lens drag: on a scrolling screen a press-and-drag over
         // the miniature pans the real strip 1:1 in strip space, a map
         // pixel being stripExtentPx / map width strip pixels. Deltas are
         // accumulated and flushed once per frame so a fast drag is one
@@ -162,7 +162,7 @@ BarWidget {
 
         // Drop proxy: re-registered whenever the miniature's screen rect
         // or the cells change, one daemon call per event-loop turn. The
-        // bar sits at the screen's top edge with no inset (A2 §3.2), so
+        // bar sits at the screen's top edge with no inset, so
         // window coordinates are screen coordinates.
         onXChanged: proxy.restart()
         onYChanged: proxy.restart()

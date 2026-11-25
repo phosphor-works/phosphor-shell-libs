@@ -22,9 +22,8 @@
  *     pair / connect / trust write surface.
  * and render however they like.
  *
- * Phase 2.3 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`. Built on the
- * generic `PhosphorDBus::Client` async helper and `PhosphorDBus::ObjectManager`.
+ * Built on the generic `PhosphorDBus::Client` async helper and
+ * `PhosphorDBus::ObjectManager`.
  */
 
 #include <PhosphorServiceBluetooth/BluetoothAdapter.h>

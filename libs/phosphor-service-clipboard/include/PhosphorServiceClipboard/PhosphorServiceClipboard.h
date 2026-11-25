@@ -18,9 +18,6 @@
  * Shells consume:
  *   - `ClipboardService`: the clipboard-history host (the live history model and
  *     a copy / remove / clear path).
- *
- * Phase 2.8 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`.
  */
 
 #include <PhosphorServiceClipboard/ClipboardService.h>

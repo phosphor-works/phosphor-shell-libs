@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// PlacementMapScreen pinned to a desktop (A3 §7): the dashboard draws
+// PlacementMapScreen pinned to a desktop: the dashboard draws
 // every desktop's placement map at once, so a screen needs a view of a
 // desktop that is not current. The daemon resolves mode and snapping
 // layout per (screen, desktop), and WindowTracking.getWindowStatesForDesktop

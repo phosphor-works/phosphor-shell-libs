@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceSession: logind session manager for Phosphor-based desktop
-# shells. Phase 2.10 of the service-library split (see
-# docs/phosphor-shell-design/04-implementation-plan.md). Surfaces the
+# shells. Surfaces the
 # session/power actions (lock, logout, suspend, hibernate, reboot, power-off,
 # ...) over org.freedesktop.login1.Manager, manages logind inhibitor locks
 # (delay-on-sleep for lock-before-suspend, block-on-keys for shell key

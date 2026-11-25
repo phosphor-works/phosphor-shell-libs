@@ -3,7 +3,7 @@
 #
 # PhosphorServicePipeWire: native PipeWire mixer (sinks / sources / streams,
 # default-node switching, per-app volume + mute) for Phosphor-based desktop
-# shells. Phase 2.1 of docs/phosphor-shell-design/04-implementation-plan.md.
+# shells.
 #
 # Single-process by design (U3): the PipeWire main loop runs on a dedicated
 # QThread inside the same QGuiApplication that hosts the shell. Public API

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// The placement map's drop proxy (A2 §1.5): the cell rects the bar hands
+// The placement map's drop proxy: the cell rects the bar hands
 // the daemon are the model's 0..1 fractions scaled onto the miniature's
 // screen rect, whole pixels, and cells with no id or no area are left
 // out. The JSON itself is built and tested in PhosphorShell

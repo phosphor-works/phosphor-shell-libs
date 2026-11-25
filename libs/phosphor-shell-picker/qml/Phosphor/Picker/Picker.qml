@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// Phosphor.Picker.Picker, the wallpaper and theme strip (A3 §8).
+// Phosphor.Picker.Picker, the wallpaper and theme strip.
 //
 // A 96 px strip along the bottom screen edge: wallpaper candidates on
 // the left, a hairline, theme tiles, a hairline, then Apply / Apply on
@@ -65,7 +65,7 @@ FocusScope {
         return encodeURI(path).replace(/#/g, "%23").replace(/\?/g, "%3F");
     }
 
-    // The surface pack on the strip (A1 §2.4, `shell.phosphor.picker`),
+    // The surface pack on the strip (`shell.phosphor.picker`),
     // set by the composition root.
     property Component decoration: null
 

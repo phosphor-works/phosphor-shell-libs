@@ -131,7 +131,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 anchors.margins: Tokens.spacing_m
                 color: Theme.on_surface
-                font.family: "monospace"
+                font.family: Tokens.font_family_mono
                 font.pixelSize: Tokens.font_size_body_s
                 textFormat: Text.PlainText
                 wrapMode: Text.WordWrap

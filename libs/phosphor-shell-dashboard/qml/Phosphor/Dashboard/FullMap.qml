@@ -5,7 +5,7 @@
 // The placement map drawn over the desktop itself: one outline per cell
 // at the cell's own screen rect, a 1 px stroke in the cell's spectrum
 // hue and an 8 % fill, the focused cell's edge white. The cheatsheet
-// hangs its chord labels on these rects (A3 §10 d: labels are positioned
+// hangs its chord labels on these rects (labels are positioned
 // from the engine's rects), so `cellRects()` hands the same rects out in
 // this item's coordinates.
 //
@@ -21,7 +21,7 @@ Item {
     id: root
 
     property var model: null
-    // Fill and stroke alphas (A3 §10 b: 1 px spectrum stroke, 8 % fill).
+    // Fill and stroke alphas (1 px spectrum stroke, 8 % fill).
     property real fillOpacity: 0.08
     property real strokeOpacity: 0.7
 

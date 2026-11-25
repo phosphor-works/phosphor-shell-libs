@@ -8,8 +8,6 @@
 # ILauncherProvider implementations (apps, calculator, command, windows,
 # clipboard). The QML surface (Phosphor.Launcher) is a separate module in
 # this same directory so a plugin author can link the core without the UI.
-#
-# Phase 4.2 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 

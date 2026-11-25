@@ -7,7 +7,7 @@ The `Phosphor.Widgets` atom library: the spectrum primitives that draw each shel
 atoms. It is pure QML. The `Theme`, `Tokens`, `Motion` and `Spectrum` singletons of
 [`phosphor-theme`](../phosphor-theme/README.md) supply all of its theming. Thus a palette or motion change reaches
 each widget with no change to the widget. The atoms implement the design in Lambent's
-[`docs/design/05-visual-identity.md`](https://github.com/phosphor-works/Lambent/blob/main/docs/design/05-visual-identity.md).
+[`docs/visual-identity.md`](https://github.com/phosphor-works/Lambent/blob/main/docs/visual-identity.md).
 
 ## Responsibility
 

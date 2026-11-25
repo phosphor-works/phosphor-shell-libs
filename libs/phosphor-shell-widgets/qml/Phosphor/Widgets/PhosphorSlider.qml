@@ -178,7 +178,7 @@ Item {
         x: root._trackWidth * root._ratio
         color: root.enabled ? Theme.primary : root._disabledTint
 
-        // The knob settles on the shell's spring (A1 M4): a programmatic
+        // The knob settles on the shell's spring: a programmatic
         // value change overshoots 3 % and lands, and a drag retargets the
         // same motion from its current velocity rather than restarting it,
         // so the handle follows the pointer without easing lag.

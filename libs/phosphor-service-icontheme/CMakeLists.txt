@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceIconTheme: XDG icon-theme spec 0.13 resolver and
-# Qt image provider for Phosphor-based desktop shells. Extracted
-# from the original `phosphor-services` umbrella as part of the
-# Phase 2.0 tenant splits documented in
-# docs/phosphor-shell-design/04-implementation-plan.md.
+# Qt image provider for Phosphor-based desktop shells.
 
 cmake_minimum_required(VERSION 3.16)
 

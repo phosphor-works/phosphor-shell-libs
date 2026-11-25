@@ -133,7 +133,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 anchors.margins: Tokens.spacing_l
                 color: Theme.on_surface
-                font.family: "monospace"
+                font.family: Tokens.font_family_mono
                 font.pixelSize: Tokens.font_size_body_s
                 // When IPC startup failed, demoController.socketPath
                 // is empty; show a placeholder instead of emitting a
@@ -184,7 +184,7 @@ ApplicationWindow {
                         required property string modelData
 
                         color: Theme.on_surface
-                        font.family: "monospace"
+                        font.family: Tokens.font_family_mono
                         font.pixelSize: Tokens.font_size_body_s
                         text: modelData
                         width: eventList.width
@@ -213,7 +213,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             color: Theme.on_surface_variant
             elide: Text.ElideLeft
-            font.family: "monospace"
+            font.family: Tokens.font_family_mono
             font.pixelSize: Tokens.font_size_body_s
             text: demoController.status
         }

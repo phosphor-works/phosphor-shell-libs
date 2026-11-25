@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Picker.PickerAction, a text action with a 2 px underline.
 //
-// The picker's Apply and Apply on all screens (A3 §8): no filled button,
+// The picker's Apply and Apply on all screens: no filled button,
 // the word itself in the ramp colour with the underline that IS the
 // control (05 R2). `primary` lights the word blue and rests the underline
 // visible; a secondary action shows its underline on hover only. The

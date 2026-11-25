@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// PlacementMapScreen's verbs (A2 §1.5): everything the miniature can ask
+// PlacementMapScreen's verbs: everything the miniature can ask
 // the engine to do, plus the drop proxy and the right-click menu. Every
 // action routes through the daemon so it behaves exactly as the keyboard
 // verbs do; nothing here bypasses the mode router. Phase-3 surfaces are

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Dashboard.MediaCell, the media cell in the dashboard's last
-// row (A3 §7 b).
+// row.
 //
 // Title, artist, a 2 px position band (SpectrumUnderline as a slider)
 // and three 13 px text transport glyphs, in the desktop cell's outline.
@@ -149,7 +149,7 @@ Item {
             }
         }
 
-        // Transport as text glyphs (A3 §7 b: no icon art).
+        // Transport as text glyphs (no icon art).
         Row {
             spacing: Tokens.spacing_l
             visible: root.player !== null

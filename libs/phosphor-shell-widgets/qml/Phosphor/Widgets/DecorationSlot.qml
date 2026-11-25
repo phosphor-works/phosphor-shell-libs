@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Widgets.DecorationSlot, where a surface pack lands on chrome.
 //
-// Every chrome surface is a decoration host like a window frame (A1 §2.4),
+// Every chrome surface is a decoration host like a window frame,
 // but the host that renders a pack chain (the shell's SurfaceDecoration)
 // lives above these libraries, in the shell process. So a surface declares
 // a slot: it names its frame item (the one a pack wraps, which carries

@@ -2,10 +2,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceUPower: UPower (org.freedesktop.UPower) battery /
-# power-supply readouts for Phosphor-based desktop shells. Extracted
-# from the original `phosphor-services` umbrella as the first of the
-# Phase 2.0 tenant splits (see docs/phosphor-shell-design/04-
-# implementation-plan.md). Pure D-Bus client, no UI.
+# power-supply readouts for Phosphor-based desktop shells. Pure D-Bus
+# client, no UI.
 
 cmake_minimum_required(VERSION 3.16)
 

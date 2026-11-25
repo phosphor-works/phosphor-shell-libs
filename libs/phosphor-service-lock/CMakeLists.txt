@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceLock: a session-lock + authentication service for Phosphor-based
-# desktop shells. Phase 2.9 of the service-library split (see
-# docs/phosphor-shell-design/04-implementation-plan.md). It authenticates the
+# desktop shells. It authenticates the
 # user through PAM and coordinates the ext-session-lock-v1 lock state with the
 # compositor. It is the policy layer over the raw protocol client that already
 # lives in phosphor-wayland (SessionLock), so it does not re-vendor protocols;

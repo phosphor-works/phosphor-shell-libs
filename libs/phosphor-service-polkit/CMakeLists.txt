@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServicePolkit: a PolicyKit authentication agent for Phosphor-based
-# desktop shells, via the polkit-qt6 binding. Phase 2.6 of the service-library
-# split (see docs/phosphor-shell-design/04-implementation-plan.md). polkitd
+# desktop shells, via the polkit-qt6 binding. polkitd
 # calls into the registered agent when an app requests a privileged action, and
 # the agent drives the PAM conversation that authenticates the user. polkit-qt6
 # is wrapped privately, so it does not appear in the public link interface.

@@ -6,7 +6,7 @@
 // `defaultSink` by joining the default-sink name against the live node
 // set. Falls back to the first sink when PipeWire publishes no default.
 //
-// GLYPH ONLY, no percentage. A2 §5 groups this chip with network,
+// GLYPH ONLY, no percentage. The bar groups this chip with network,
 // bluetooth and battery as one run of four glyphs where state is
 // brightness, and battery is the single argued exception to that (its
 // number is the one people actually check). A volume readout on the bar
@@ -99,7 +99,7 @@ BarWidget {
         source: root.muted || root.volumePercent === 0 ? "audio-volume-muted" : root.volumePercent < 34 ? "audio-volume-low" : root.volumePercent < 67 ? "audio-volume-medium" : "audio-volume-high"
         isMask: true
         // State is brightness, not colour: muted sits back at 35%, live
-        // sits at 90%, and the chip never paints a background (A2 §5).
+        // sits at 90%, and the chip never paints a background.
         color: Appearance.text
         opacity: root.muted ? 0.35 : 0.9
         scale: pressGuard.pressed ? 0.94 : 1

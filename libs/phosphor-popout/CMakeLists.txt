@@ -7,8 +7,6 @@
 # policy across the shell. The transport seam decouples arbitration from
 # the actual layer-shell surface stack so tests can run pure logic and
 # alternate hosts can swap the backend.
-#
-# Phase 1.2 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 

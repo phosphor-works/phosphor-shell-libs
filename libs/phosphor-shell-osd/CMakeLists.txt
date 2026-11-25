@@ -8,8 +8,6 @@
 # OSDCard chrome and the four built-in OSD delegates (Volume, Brightness,
 # Mic, CapsLock). Themed through phosphor-theme and built on the
 # phosphor-shell-widgets atoms (TabularText, SettleAnimation, DecorationSlot).
-#
-# Phase 3.3 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 
@@ -39,7 +37,7 @@ if(NOT TARGET PhosphorShellWidgets::PhosphorShellWidgetsQml)
     find_package(PhosphorShellWidgets CONFIG QUIET)
 endif()
 # OSDHost imports Phosphor.Shell for the PlacementMap singleton (the
-# focused window's rect, A3 §4). The module's own registrar only carries
+# focused window's rect). The module's own registrar only carries
 # PerScreen; the singleton is registered by ShellEngine at runtime, and
 # OSDHost probes for it, so a host without it (demo, test) still loads.
 if(NOT TARGET PhosphorShell::PhosphorShellQml)

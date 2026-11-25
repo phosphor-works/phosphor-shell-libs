@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceBrightness: display + keyboard backlight brightness for
-# Phosphor-based desktop shells. Phase 2.4 of the service-library split (see
-# docs/phosphor-shell-design/04-implementation-plan.md). Read path is sysfs
+# Phosphor-based desktop shells. Read path is sysfs
 # (/sys/class/backlight + /sys/class/leds/*::kbd_backlight); the privileged
 # write path is logind's org.freedesktop.login1.Session.SetBrightness (no root
-# / udev needed). Mirrors the Phase-2.2/2.3 sibling pattern.
+# / udev needed). Mirrors the network and bluetooth sibling pattern.
 
 cmake_minimum_required(VERSION 3.16)
 

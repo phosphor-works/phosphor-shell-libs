@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceMpris: MPRIS2 (`org.mpris.MediaPlayer2.*`) media-player
-# discovery and control. Extracted from the original `phosphor-services`
-# umbrella as part of the Phase 2.0 tenant splits documented in
-# docs/phosphor-shell-design/04-implementation-plan.md. Pure D-Bus
-# client; no UI.
+# discovery and control. Pure D-Bus client; no UI.
 
 cmake_minimum_required(VERSION 3.16)
 

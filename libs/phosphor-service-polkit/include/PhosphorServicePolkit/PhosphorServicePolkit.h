@@ -20,9 +20,6 @@
  *     surfaces the active request + a respond / cancel path.
  *   - `AuthRequest`: one decoded authentication request (action / message /
  *     icon / details / identities) polkit is waiting on.
- *
- * Phase 2.6 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`.
  */
 
 #include <PhosphorServicePolkit/AuthRequest.h>

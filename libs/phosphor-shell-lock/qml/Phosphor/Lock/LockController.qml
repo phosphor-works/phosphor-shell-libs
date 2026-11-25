@@ -32,7 +32,7 @@ QtObject {
     property bool dismissing: false
     readonly property int dismissDuration: Appearance.motion ? Motion.duration_long_3 : 0
     // "idle", "authenticating", "error" or "dismissing": what the field's
-    // edge shows (A3 §6 e).
+    // edge shows.
     readonly property string phase: controller.dismissing ? "dismissing" : (controller.authenticating ? "authenticating" : (controller.errorText !== "" ? "error" : "idle"))
     // True from the moment a lock object exists, which is not the same as
     // `locked`. ext-session-lock expects the surfaces to be created against

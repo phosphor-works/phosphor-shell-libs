@@ -98,7 +98,7 @@ Like `OSDHost` and `ToastHost`, `ControlCenter` draws into the item that is its 
 shell decides how it appears:
 
 - As an engine-placed pane: a real toplevel that the placement engine positions, tethered to the chip of the bar
-  (the spectrum design, A2 §4).
+  (see Lambent's [architecture](https://github.com/phosphor-works/Lambent/blob/main/docs/architecture.md)).
 - Painted into the surface of the bar, as the floating fallback on an output with no placement engine.
 - In a standalone layer-shell popout that `PopoutController` opens.
 

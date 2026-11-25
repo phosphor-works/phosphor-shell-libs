@@ -14,8 +14,6 @@
 # widgets. The other shell-tier libraries that need it for the same reason
 # are phosphor-shell-power, phosphor-shell-control-center,
 # phosphor-shell-launcher and phosphor-shell-lock.
-#
-# Phase 4.1 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 
@@ -165,7 +163,7 @@ set(_phosphor_bar_qml_files
     qml/Phosphor/Bar/Panels/AppearancePanel.qml
     qml/Phosphor/Bar/Panels/BarLayoutEditor.qml
     qml/Phosphor/Bar/BarRegion.qml
-    # The wire from a chip to its engine-placed pane (A2 §4.3): pure
+    # The wire from a chip to its engine-placed pane: pure
     # routing math plus the two segments it draws.
     qml/Phosphor/Bar/PaneTether.qml
 )

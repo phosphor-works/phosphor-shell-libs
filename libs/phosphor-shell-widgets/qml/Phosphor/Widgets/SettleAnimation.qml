@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// Phosphor.Widgets.SettleAnimation, the shell's positional spring (A1 M4).
+// Phosphor.Widgets.SettleAnimation, the shell's positional spring.
 //
 // Every positional or dimensional change in the chrome (a slider knob, a
 // band's fill end, a toast travelling with its window, a pane's height)

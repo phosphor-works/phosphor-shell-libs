@@ -7,8 +7,8 @@
 // scripts: qt6_target_qml_sources only reads the first 128 bytes when it
 // decides whether the script is shared.
 
-// Phosphor.Dashboard.ChordLayout, the cheatsheet's placement rule (A3
-// §10): where each chord label sits on the placement map.
+// Phosphor.Dashboard.ChordLayout, the cheatsheet's placement rule:
+// where each chord label sits on the placement map.
 //
 // Pure functions over plain objects, so a test drives them without a
 // scene. The sheet feeds `place()` the screen's cells in SCREEN PIXELS
@@ -35,7 +35,7 @@
 //         focused cell, stacked
 //   everything else   the column
 // Labels sharing an anchor stack downward by `StackStep`. A chord whose
-// `mode` does not apply to the screen's mode is dropped (A3 §10 e).
+// `mode` does not apply to the screen's mode is dropped.
 // Unbound chords keep their place, drawn dimmed by the sheet.
 
 var StackStep = 24;

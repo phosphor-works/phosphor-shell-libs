@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorShellDashboard, the Phosphor.Dashboard module: the two full-screen
-# placement-map surfaces of A3 §7 and §10.
+# placement-map surfaces: the dashboard and the keybind cheatsheet.
 #
 #   Dashboard   every desktop's placement map at once (PlacementMap
 #               .forScreenDesktop per cell), plus the calendar and media
@@ -13,8 +13,7 @@
 #               .Control.getShortcutsJson plus its shortcutsChanged relay.
 #
 # Themed through phosphor-theme, drawn with the phosphor-shell-widgets
-# atoms (PlacementMiniature, TabularText, SpectrumUnderline). Phase 4
-# deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
+# atoms (PlacementMiniature, TabularText, SpectrumUnderline).
 
 cmake_minimum_required(VERSION 3.16)
 

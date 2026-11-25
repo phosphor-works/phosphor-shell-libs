@@ -4,8 +4,8 @@
 # PhosphorShellLauncher
 
 The launcher: a spotlight-style search over installed applications, open windows, clipboard history, arithmetic
-and shell commands. It follows
-[Lambent's `docs/design/mockups-v2/launcher.svg`](https://github.com/phosphor-works/Lambent/blob/main/docs/design/mockups-v2/launcher.svg).
+and shell commands. It follows Lambent's
+[visual identity](https://github.com/phosphor-works/Lambent/blob/main/docs/visual-identity.md).
 
 ## Responsibility
 

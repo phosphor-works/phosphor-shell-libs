@@ -14,7 +14,7 @@ namespace PhosphorTheme {
 /**
  * @brief The shell's two type faces, resolved against what is installed.
  *
- * The identity (05 §7) sets Manrope for display and UI text and JetBrains
+ * The identity sets Manrope for display and UI text and JetBrains
  * Mono for every value. Neither ships with a desktop, and binding the name
  * unconditionally hands the choice to fontconfig, which substitutes by its
  * own rules (often a serif, or the wrong weight axis). This singleton asks

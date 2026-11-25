@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Dashboard.CalendarCell, the month grid in the dashboard's
-// last row (A3 §7 b).
+// last row.
 //
 // Same outline and label as a desktop cell. The month's days in 13 px
 // tabular figures, seven columns from the locale's first day of the
-// week, today in blue (A3 §7 e). `today` is a property so a test can pin
+// week, today in blue. `today` is a property so a test can pin
 // the month.
 
 import QtQuick

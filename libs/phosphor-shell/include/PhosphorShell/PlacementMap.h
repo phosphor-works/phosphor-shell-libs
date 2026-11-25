@@ -43,13 +43,13 @@ class Workspaces;
  * absent or does not list this screen. `cells` is a list of maps with
  * `id, x, y, w, h, t, occupied, focused, label, zoneNumber, stack, stripT,
  * columnIndex, windowId, appId, title, urgent`, where the rect is 0..1 of
- * the work area and `t` is the hue axis (A2 §1.2). `lens` is `{x, w}` in
+ * the work area and `t` is the hue axis. `lens` is `{x, w}` in
  * scrolling mode and empty otherwise; `stripExtentPx` is the strip's
  * length in scrolling mode (0 against a daemon without `stripModelJson`).
- * `urgent` is true while any cell demands attention (the rail thickening
- * of A2 §3.3).
+ * `urgent` is true while any cell demands attention (it drives the rail
+ * thickening over the map chip).
  *
- * `menuModel` is the right-click menu (A2 §1.5): after `refreshMenu()` it
+ * `menuModel` is the right-click menu: after `refreshMenu()` it
  * holds one `{kind, id, name, current}` map per choice for this mode
  * (`kind` "layout", "algorithm" or "template") followed by `{kind:
  * "verb", id}` entries (snapping: editLayout, snapAll; tiling: retile,
@@ -60,14 +60,14 @@ class Workspaces;
  *
  * `workArea` and `cellRect(id)` are in this screen's logical coordinates,
  * origin at the screen's top-left, so a full-screen surface on the screen can
- * place an item on a cell directly (the OSD and toast bands, A3 §3–§4).
+ * place an item on a cell directly (the OSD and toast bands).
  *
  * `currentDesktop` and `switchDesktop(index)` are both 0-based, matching
  * the row index of `Workspaces.model`.
  *
  * `pinnedDesktop` is -1 for the live screen (`forScreen`) and the 0-based
  * desktop for a screen vended by `forScreenDesktop`: a view of that
- * desktop's placement whether or not it is current (A3 §7, the
+ * desktop's placement whether or not it is current (the
  * dashboard's grid). A pinned screen reads its mode and snapping layout
  * per desktop (`getModeForScreenDesktop`, `getLayoutForScreenDesktop`)
  * and its occupancy from `WindowTracking.getWindowStatesForDesktop`; it
@@ -148,7 +148,7 @@ public:
     /// `Scrolling.focusColumnAt`, stepping one column at a time toward the
     /// cell on a daemon without it.
     Q_INVOKABLE void activate(const QString& id);
-    /// Drag of one cell onto another (A2 §1.5). Snapping:
+    /// Drag of one cell onto another. Snapping:
     /// `Snap.swapWindowsById` when the target is occupied, else
     /// `Snap.moveWindowToZone`. Tiling: `Autotile.swapWindows`. Scrolling:
     /// `Scrolling.moveColumnTo`, inert on a daemon without it.

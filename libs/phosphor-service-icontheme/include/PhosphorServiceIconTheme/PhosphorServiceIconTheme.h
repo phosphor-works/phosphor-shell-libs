@@ -15,10 +15,6 @@
  *   `image://phosphor-service-icontheme/` that holds a thread-safe
  *   `QImage` registry so models can hand QML a URL even when the
  *   payload is a raw bitmap rather than a file.
- *
- * Extracted from the legacy `phosphor-services` umbrella as part of
- * the Phase 2.0 split documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`.
  */
 
 #include <PhosphorServiceIconTheme/IconThemeResolver.h>

@@ -9,7 +9,7 @@
 // strip, and 1 px gutter columns at the ends for the columns scrolled
 // off either side. This is the bar's live map, the launcher's viewfinder
 // and the dashboard's grid cell, so it is pure QML over the model and
-// nothing else (05 §2, claim 1).
+// nothing else. The live map is the shell's identifying feature.
 //
 // The map is drawn in two layers. FILLS are per cell, keyed by id: a cell
 // that appears enters (scale 0.7 → 1 on the reveal curve and duration,
@@ -22,12 +22,12 @@
 // (opacity over the reveal duration, staggered 15 ms in reading order,
 // capped 150 ms),
 // a vanished edge releases (720 ms) and is dropped, and at most two
-// generations are drawn, the live one and the releasing one (A2 §2).
+// generations are drawn, the live one and the releasing one.
 // That is what makes a mode morph read as one shape: the 50/50 split
 // shared by a snapping layout and a tiling result is handed over, never
 // redrawn. `morphing` is true while any edge is entering or releasing.
 //
-// Cell states (A2 §1.4, §6): focused = white edge + a 2 px white core
+// Cell states: focused = white edge + a 2 px white core
 // line along the top; hovered = +10 % lightness, edge at 100 %; pressed =
 // fill at 55 %; urgent = white edge pulsing 0.4 → 1.0 at 1.2 s (steady
 // under reduced motion); a drag's target = white edge. Labels (the app
@@ -66,7 +66,7 @@ Item {
     // Composers can retain the continuous, matched-edge map with false.
     property bool separatedCells: true
     // Draw the app glyph (or the title's first letter) in each occupied
-    // cell. Only at expanded height (A2 §1.3).
+    // cell. Only at expanded height.
     property bool labels: false
 
     signal cellClicked(string id)
@@ -99,7 +99,7 @@ Item {
     // The edge layer, for tests: rows are {key, o, pos, start, end,
     // occupied, phase ("enter" | "live" | "release"), delay}.
     readonly property alias edgeModel: edgeModel
-    // True while any edge is entering or releasing (A2 §2.1 phases).
+    // True while any edge is entering or releasing.
     readonly property bool morphing: _enteringEdges > 0 || _releasingEdges > 0
     property int _enteringEdges: 0
     property int _releasingEdges: 0
@@ -270,7 +270,7 @@ Item {
             });
         }
         const r = Edges.reconcile(existing, Edges.edgesFor(cells));
-        // Oldest generation first: gone at once (A2 §2.3).
+        // Oldest generation first: gone at once.
         for (const key of r.drop) {
             const at = _edgeIndex(key);
             if (at >= 0) {

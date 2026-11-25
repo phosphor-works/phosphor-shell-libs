@@ -12,10 +12,6 @@
  * (`MprisHost`, `MprisPlayer`, `MprisPlayerModel`). No UI; the shell
  * decides how a now-playing card, transport bar, or pop-out media
  * widget is rendered.
- *
- * Extracted from the legacy `phosphor-services` umbrella as part of
- * the Phase 2.0 split documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`.
  */
 
 #include <PhosphorServiceMpris/MprisHost.h>

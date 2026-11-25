@@ -9,7 +9,7 @@
 // recreating the surface (debounce/dedupe), so spinning a volume key
 // keeps one OSD alive and refreshed.
 //
-// OSDs are EDGE BANDS (A3 §4): the delegate declares which edge it lives
+// OSDs are EDGE BANDS: the delegate declares which edge it lives
 // on (`edge`) and the host places its frame along that edge. A bottom or
 // top band sits on the FOCUSED WINDOW's edge, read from the screen's
 // placement map (`cellRect(focusedCellId())`), and travels with focus
@@ -49,7 +49,7 @@ Item {
     property string screenName: ""
     property int holdDuration: 1500
     property var provider: null
-    // The surface pack Component every band instantiates (A1 §2.4); set
+    // The surface pack Component every band instantiates; set
     // by the composition root, forwarded to each delegate that takes it.
     property Component decoration: null
     // This screen's PlacementMapScreen (or any object with its
@@ -286,7 +286,7 @@ Item {
         }
     }
 
-    // Focus moved, or the window moved: the band follows (A3 §4 c).
+    // Focus moved, or the window moved: the band follows.
     Connections {
         target: root.activeMap
         ignoreUnknownSignals: true

@@ -17,7 +17,7 @@ namespace PhosphorShellLock {
 LockSurfaceWindow::LockSurfaceWindow(QWindow* parent)
     : QQuickWindow(parent)
 {
-    // The void ground (A3 consistency table) as the window's clear colour,
+    // The void ground as the window's clear colour,
     // so the first frame the compositor presents is never a white flash
     // before QML paints.
     setColor(QColor(0x05, 0x09, 0x16));

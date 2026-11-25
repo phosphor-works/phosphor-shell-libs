@@ -145,7 +145,7 @@ PanelWindow {
     // (phosphor-glass is real backdrop blur under the navy tint, and only
     // the compositor can blur what is behind a surface).
     readonly property Item bandItem: band
-    // The surface pack on the band (A1 §2.4): the host's decoration
+    // The surface pack on the band: the host's decoration
     // Component, instantiated over the band with `shell.phosphor.bar`.
     property Component decoration: null
     readonly property rect bandRect: Qt.rect(band.x, band.y, band.width, band.height)
@@ -181,7 +181,7 @@ PanelWindow {
     }
 
     on_PaneOpenEffChanged: panel._recaptureFocusLatch()
-    // A second pane replaces the first (A2 §4.7): the host's pane opening
+    // A second pane replaces the first: the host's pane opening
     // closes the map pane.
     onPaneOpenChanged: {
         if (panel.paneOpen)
@@ -219,7 +219,7 @@ PanelWindow {
     signal paneClosed
 
     // Open/close progress, 0..1. Everything in the pane derives from it so
-    // one animation carries the whole choreography (A2 §4.4): tether drops
+    // one animation carries the whole choreography: tether drops
     // first, content enters after, and on close the content leaves first
     // and the tether retracts.
     property real _paneProgress: panel._paneOpenEff ? 1 : 0
@@ -315,7 +315,7 @@ PanelWindow {
         width: band.width - 2 * band.radius
         gleam: Appearance.glow && Appearance.motion
         // Bound axis on a scrolling screen: the rail shows the same slice
-        // of the strip's gradient as the lens (A2 §3.3). The lens is the
+        // of the strip's gradient as the lens. The lens is the
         // viewport's fraction of the strip from Scrolling.stripModelJson,
         // so it narrows as columns pile up off screen; against an older
         // daemon the visible-cut fallback gives a full-width lens.
@@ -371,7 +371,7 @@ PanelWindow {
     }
 
     // Urgency: while any cell on the map demands attention, the rail over
-    // the map chip thickens 2 → 4 px in white (A2 §3.3), entering over
+    // the map chip thickens 2 → 4 px in white, entering over
     // 200 ms into the band (never into the screen) and pulsing 0.4 → 1.0
     // at 1.2 s with the cell. Steady under reduced motion. Releases when
     // clear.
@@ -514,7 +514,7 @@ PanelWindow {
     // The anchor chip's rect in the bar's own coordinates, which are the
     // screen's (the bar sits at the screen's top-left). Empty until the
     // chip has mounted. A host reports it to the pane transport, which
-    // asks the engine for the zone nearest the chip (A2 §4.2).
+    // asks the engine for the zone nearest the chip.
     readonly property rect paneAnchorRect: {
         const c = panel._anchorCell;
         panel._trackCell(c);
@@ -639,7 +639,7 @@ PanelWindow {
 
         // The map pane's content, in its own loader so opening it never
         // tears down the host's kept content. Kept through its close so
-        // the content releases before the surface collapses (A2 §4.4).
+        // the content releases before the surface collapses.
         Loader {
             id: mapContent
 
@@ -652,7 +652,7 @@ PanelWindow {
                     if (panel.mapPaneOpen) {
                         mapContent.showing = true;
                     } else if (panel.paneOpen) {
-                        // A host pane is replacing the map pane (A2 §4.7). The
+                        // A host pane is replacing the map pane. The
                         // surface stays up, so `_paneProgress` never moves and
                         // the release below would never fire: without this the
                         // map's content stays latched over the host's, and

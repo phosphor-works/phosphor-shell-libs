@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 //
-// PaneTether's routing math (A2 §4.3 step 2): a pane under its chip gets a
+// PaneTether's routing math: a pane under its chip gets a
 // straight drop; a pane the engine put elsewhere gets a run along the rail
 // to the nearest x inside the pane, then the drop from there.
 

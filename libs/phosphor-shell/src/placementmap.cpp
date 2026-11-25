@@ -844,7 +844,7 @@ void PlacementMap::seedUrgentWindows()
         w->deleteLater();
         QDBusPendingReply<QStringList> reply = *w;
         if (reply.isError()) {
-            // Older daemon: urgency never fires (A2 §1.4).
+            // Older daemon: urgency never fires.
             latchUnknownMethod(m_caps.urgentWindows, reply.error());
             return;
         }
@@ -968,7 +968,7 @@ void PlacementMap::applyWindowState(const QString& windowId, const QString& scre
         m_occupancy.remove(windowId);
         return;
     }
-    // The latest state change ranks topmost in its zone (A2 §1.3: the
+    // The latest state change ranks topmost in its zone (the
     // label is the topmost window's).
     m_occupancy.insert(windowId, WindowOccupancy{screenId, zones, ++m_occupancySeq});
 }
