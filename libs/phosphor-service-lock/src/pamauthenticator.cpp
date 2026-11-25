@@ -146,6 +146,11 @@ class PamAuthenticator::Private
 public:
     QString service;
     QFutureWatcher<PamResult> watcher;
+    /// From authenticate() until its result is emitted. The worker can end
+    /// before the next call (PAM with no fail delay), while its result has not
+    /// been delivered: the watcher's state alone would let a second
+    /// transaction start then.
+    bool busy = false;
 };
 
 PamAuthenticator::PamAuthenticator(QString service, QObject* parent)
@@ -156,6 +161,8 @@ PamAuthenticator::PamAuthenticator(QString service, QObject* parent)
     // QFutureWatcher::finished is delivered on this (the GUI) thread, so reading
     // the result and emitting here is thread-safe.
     connect(&d->watcher, &QFutureWatcher<PamResult>::finished, this, [this] {
+        // Before the signals: a slot may start the next transaction.
+        d->busy = false;
         if (d->watcher.future().resultCount() == 0)
             return; // cancelled / no result
         const PamResult result = d->watcher.result();
@@ -175,8 +182,9 @@ QString PamAuthenticator::service() const
 
 void PamAuthenticator::authenticate(const QString& username, const QString& password)
 {
-    if (d->watcher.isRunning()) {
-        // One transaction at a time: never run two PAM stacks concurrently.
+    if (d->busy) {
+        // One transaction at a time, until its result is out: never run two
+        // PAM stacks concurrently, and give each call its own result.
         Q_EMIT failed(QStringLiteral("authentication already in progress"));
         return;
     }
@@ -192,6 +200,7 @@ void PamAuthenticator::authenticate(const QString& username, const QString& pass
     // mid-transaction cannot dangle: the watcher disconnects and the detached
     // task finishes harmlessly. The password buffer is moved through to
     // runPamTransaction, which is its sole owner and wipes it.
+    d->busy = true;
     d->watcher.setFuture(QtConcurrent::run([service, user = username, pw = std::move(pw)]() mutable -> PamResult {
         return runPamTransaction(service, user, std::move(pw));
     }));
