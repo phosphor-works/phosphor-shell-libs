@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // One password and authentication lifecycle shared by every output. The real
 // service keeps the compositor lock held during the exit, then finishUnlock()

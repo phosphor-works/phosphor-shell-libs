@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Floating bar with registry-owned widgets and a bounded placement pane.
 // Surface geometry is rebuilt by ShellEngine when appearance dimensions change.

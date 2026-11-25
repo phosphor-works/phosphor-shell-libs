@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // The placement map's matched-edge morph (A2 §2.1, §2.3). The pure
 // reconcile logic is checked directly through MiniatureEdges.js, then

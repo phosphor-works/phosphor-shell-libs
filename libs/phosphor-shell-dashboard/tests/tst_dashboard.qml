@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Dashboard over fakes: the grid holds one cell per desktop plus the
 // fixed cells (and the `+` only when a create verb exists), Escape asks

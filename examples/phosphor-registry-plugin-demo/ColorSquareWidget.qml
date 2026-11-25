@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Built-in bar widget: a coloured square. Demonstrates that the
 // registry seam doesn't care what the widget actually does — pure

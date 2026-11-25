@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 fuddlesworth
+// SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
 // phosphor-popout-demo entry QML. Window with five buttons and a
 // status bar. The host item below the buttons is where popouts get
