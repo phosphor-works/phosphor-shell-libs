@@ -9,7 +9,7 @@
  *
  * PhosphorServiceClipboard is a clipboard-history service for Phosphor-based
  * desktop shells. It watches the session clipboard through `phosphor-wayland`'s
- * `ClipboardDevice` (a `wlr-data-control` client), keeps a de-duplicated, capped,
+ * `ClipboardDevice` (a data-control client), keeps a de-duplicated, capped,
  * on-disk history, and can re-apply any entry. It is the policy / history /
  * persistence layer over the raw device, composing it rather than binding the
  * protocol itself, so its public surface is a clean Qt/QML type with no Wayland

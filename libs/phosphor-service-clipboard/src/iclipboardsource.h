@@ -4,7 +4,7 @@
 #pragma once
 
 // Internal (not installed) seam for the clipboard the history model watches.
-// Production wraps PhosphorWayland::ClipboardDevice (a wlr-data-control client);
+// Production wraps PhosphorWayland::ClipboardDevice (a data-control client);
 // tests substitute a fake that drives the selectionChanged / dataReceived edges
 // directly. Keeping the model behind this interface is what lets the dedup / cap
 // / preview logic be unit-tested without a live compositor.

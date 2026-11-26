@@ -10,6 +10,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 
 ## [Unreleased]
 
+### Changed
+
+- The clipboard history service watches the clipboard through `ext-data-control-v1` when the compositor has it
+  (phosphor-libs `bcad89a2`), and through `wlr-data-control` only when it does not. On KWin, which has only the ext
+  protocol, clipboard history now works.
+
 ## [0.1.0] - 2026-11-26
 
 The first release. It has 28 libraries: `phosphor-popout`, `phosphor-service-bluetooth`, `phosphor-service-brightness`, `phosphor-service-clipboard`, `phosphor-service-icontheme`, `phosphor-service-lock`, `phosphor-service-mpris`, `phosphor-service-network`, `phosphor-service-nightlight`, `phosphor-service-notifications`, `phosphor-service-pipewire`, `phosphor-service-polkit`, `phosphor-service-session`, `phosphor-service-sni`, `phosphor-service-upower`, `phosphor-shell-bar`, `phosphor-shell-control-center`, `phosphor-shell-dashboard`, `phosphor-shell-launcher`, `phosphor-shell-lock`, `phosphor-shell-notifications`, `phosphor-shell-osd`, `phosphor-shell-picker`, `phosphor-shell-polkit`, `phosphor-shell-power`, `phosphor-shell-widgets`, `phosphor-shell`, `phosphor-theme`. The tag `v0.1.0` is commit `5bfa3764`, which Lambent pins.

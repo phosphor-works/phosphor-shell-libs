@@ -11,7 +11,7 @@
 //                clipboard owner, which must stay alive to answer pastes)
 //
 // It runs under the phosphorwayland QPA integration (registered before
-// QGuiApplication) so wlr-data-control is live. `list` reads only the persisted
+// QGuiApplication) so data-control is live. `list` reads only the persisted
 // history and needs no compositor; `watch` / `copy` need one and report when it
 // is unavailable.
 
@@ -79,7 +79,7 @@ void printList(const QAbstractItemModel* model)
 int main(int argc, char** argv)
 {
     // MUST run before QGuiApplication: selects the phosphorwayland Wayland
-    // shell-integration plugin so the wlr-data-control global is reachable.
+    // shell-integration plugin so the data-control global is reachable.
     PhosphorWayland::registerLayerShellPlugin();
     QGuiApplication app(argc, argv);
     const QStringList args = app.arguments();
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 
     if (command == QLatin1String("watch")) {
         if (!service.isSupported()) {
-            err() << "the compositor does not advertise wlr-data-control; cannot watch the clipboard.\n"
+            err() << "the compositor advertises no data-control protocol (ext or wlr); cannot watch the clipboard.\n"
                   << "run this inside a Phosphor / wlroots-style Wayland session.\n";
             err().flush();
             return kRuntime;
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
             return kUsage;
         }
         if (!service.isSupported()) {
-            err() << "the compositor does not advertise wlr-data-control; cannot set the clipboard.\n";
+            err() << "the compositor advertises no data-control protocol (ext or wlr); cannot set the clipboard.\n";
             err().flush();
             return kRuntime;
         }
