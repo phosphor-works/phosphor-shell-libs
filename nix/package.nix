@@ -73,11 +73,11 @@ let
     ]
     ++ lib.optionals withTests [
       {
-        name = "phosphor-surface-packs-087bd740eb0650b5a4256566663d8332d00c7cd7.tar.gz";
+        name = "phosphor-surface-packs-572e2240ef306d48650ed45ba6672af5ab31e75f.tar.gz";
         path = fetchurl {
-          url = "https://github.com/phosphor-works/phosphor-surface-packs/archive/087bd740eb0650b5a4256566663d8332d00c7cd7.tar.gz";
-          # sha256 2b3244bbd1d198cc9361dea105b01bfbcd32bbe35843ddd392881208370b40e1
-          hash = "sha256-KzJEu9HRmMyTYd6hBbAb+80yu+NYQ93TkogSCDcLQOE=";
+          url = "https://github.com/phosphor-works/phosphor-surface-packs/archive/572e2240ef306d48650ed45ba6672af5ab31e75f.tar.gz";
+          # sha256 2fb063f95503dcca9b23c2905213940f1f4aa8701623f1020c695335dd90475e
+          hash = "sha256-L7Bj+VUD3MqbI8KQUhOUDx9KqHAWI/ECDGlTNd2QR14=";
         };
       }
     ]
