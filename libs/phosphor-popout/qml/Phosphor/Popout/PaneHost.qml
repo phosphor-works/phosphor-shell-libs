@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Popout.PaneHost, the root item of an ENGINE-PLACED pane.
 //
-// A pane is a real xdg toplevel the placement engine positions (A2 §4.1):
+// A pane is a real xdg toplevel the placement engine positions:
 // the transport puts one of these at the root of a FloatingWindow and
 // parents the popout content into it. This item paints what belongs to
 // the pane's own surface and nothing more:
 //
-//   - the ground: navy 0.96 (05 §5, "engine-placed panes") with the tile
+//   - the ground: navy 0.96 (an engine-placed pane's ground) with the tile
 //     radius, and the 1 px spectrum stroke every shell surface carries;
-//   - the top-edge band (A2 §4.3 step 3): a 2 px SpectrumRail sampled
+//   - the top-edge band: a 2 px SpectrumRail sampled
 //     over the pane's own x-range, so it matches the bar's rail directly
 //     above it. `railOffset` / `railWidth` are the pane's screen x and the
 //     screen width, fed by the transport when the bar has located the
 //     pane; until then the band shows the gradient over its own width;
-//   - the content choreography (A2 §4.4): opacity 0 → 1 with a 4 px
+//   - the content choreography: opacity 0 → 1 with a 4 px
 //     downward slide on open, a 120 ms release on close. The engine's own
 //     animation moves the surface; nothing here animates placement.
 //
@@ -43,7 +43,7 @@ FocusScope {
     // The pane's screen x and the screen width, for the band's slice.
     property real railOffset: 0
     property real railWidth: 0
-    // The surface pack on the pane (A1 §2.4, `shell.phosphor.popout`),
+    // The surface pack on the pane (`shell.phosphor.popout`),
     // set by the transport from the composition root. With a chain
     // engaged the pane's own stroke steps aside for the pack's.
     property Component decoration: null
@@ -71,9 +71,9 @@ FocusScope {
     //
     // `placementWindow` is the fallback for the case the resize never
     // comes — a zone that happens to match the requested size exactly, or
-    // no engine on the output. Its interval is A2 §4.4's own placement
-    // window ("0-140 ms: Engine places the surface"), so the pane is never
-    // held longer than the spec already budgeted.
+    // no engine on the output. Its interval is the open choreography's own
+    // placement window (the engine places the surface in 0-140 ms), so the
+    // pane is never held longer than the choreography already budgets.
     property bool _placed: false
 
     Timer {
@@ -155,7 +155,8 @@ FocusScope {
         // engine's rule path.
         //
         // An earlier attempt also HELD the enter for the 140 ms placement
-        // window of A2 §4.4. That closed the window but delayed every pane
+        // window of the open choreography. That closed the window but
+        // delayed every pane
         // open by 140 ms to hide a flash nobody had actually observed:
         // screenshot latency is longer than the window it was meant to
         // catch, so it was never captured, only inferred from the geometry.
@@ -243,7 +244,7 @@ FocusScope {
         }
         placementWindow.stop();
         root._placed = false;
-        // Closed before the enter ever moved (A2 §4.6, close during open):
+        // Closed before the enter ever moved (close during open):
         // the value is already 0, so no change will report it.
         if (root._progress === 0)
             root.released();

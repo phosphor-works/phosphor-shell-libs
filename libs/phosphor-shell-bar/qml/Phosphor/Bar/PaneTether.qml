@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// Phosphor.Bar.PaneTether, the wire from a chip to its pane (A2 §4.3).
+// Phosphor.Bar.PaneTether, the wire from a chip to its pane.
 //
 // A 2 px line in the rail's hue that drops from the rail to the pane's
 // top edge. When the pane's top edge spans the chip's x it drops straight
@@ -17,7 +17,7 @@
 //
 // `progress` is the open/close progress the bar animates: the drop grows
 // over the first 60 % of it and retracts over the last, so the tether is
-// first to arrive and last to leave (A2 §4.4). The routing math is exposed
+// first to arrive and last to leave. The routing math is exposed
 // as read-only properties so it can be tested without a screen.
 
 import QtQuick

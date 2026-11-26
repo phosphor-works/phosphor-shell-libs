@@ -496,7 +496,7 @@ private Q_SLOTS:
         QCOMPARE(m.value(QStringLiteral("columnIndex")).toInt(), -1);
     }
 
-    // The screen-pixel helpers a surface uses to sit on a cell (A3 §3–§4):
+    // The screen-pixel helpers a surface uses to sit on a cell:
     // no daemon, so no work area, so no rect and no focused cell.
     void cellRectAndFocusedCellIdAreEmptyWithoutADaemon()
     {

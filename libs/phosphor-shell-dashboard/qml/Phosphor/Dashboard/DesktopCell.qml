@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Dashboard.DesktopCell, one desktop's placement map in the
-// dashboard grid (A3 §7 b).
+// dashboard grid.
 //
 // A PlacementMiniature with labels at the cell size, under a 1 px
 // outline: blue when this is the current desktop, cyan otherwise, rose
-// while the desktop holds an urgent window, white while hovered (A3 §7
-// e). Non-current cells sit at 62 % (the focus-fade of the mock). The
+// while the desktop holds an urgent window, white while hovered.
+// Non-current cells sit at 62 % (the focus-fade of the mock). The
 // 12 px label top-left reads `N · Mode`. Click goes there.
 
 import QtQuick
@@ -91,7 +91,7 @@ Item {
         labels: true
         cellRadius: Tokens.radius_mini
         // Not interactive: a click anywhere in the cell goes to the
-        // desktop (A3 §7 d); the per-window verbs are the bar map's.
+        // desktop; the per-window verbs are the bar map's.
         interactive: false
     }
 

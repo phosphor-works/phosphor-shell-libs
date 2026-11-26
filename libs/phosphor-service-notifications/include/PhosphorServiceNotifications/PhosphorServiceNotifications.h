@@ -23,9 +23,6 @@
  *     urgency / image / hints), mutated in place on `replaces_id`.
  *   - `NotificationModel`: a `QAbstractListModel` over a server's live
  *     notifications, for a `ListView` / `Repeater` to bind.
- *
- * Phase 2.5 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`.
  */
 
 #include <PhosphorServiceNotifications/Notification.h>

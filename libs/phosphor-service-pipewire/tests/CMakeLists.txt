@@ -46,9 +46,8 @@ endfunction()
 
 # Smoke test: connection lifecycle without a guaranteed PipeWire daemon
 # on the CI runner. The test exercises the QThread + loop teardown path,
-# the idempotency contract, and the rest of the public surface; per
-# docs/phosphor-shell-design/04-implementation-plan.md § 2.1 milestone 9,
-# this is the canonical contract coverage for the lib.
+# the idempotency contract, and the rest of the public surface. This is
+# the canonical contract coverage for the lib.
 #
 # HOST AUDIO STATE WARNING (writeAPIsAreSafeForUnknownTargets):
 #

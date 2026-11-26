@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// Phosphor.Dashboard.ChordPill, the cheatsheet's one pill (A3 §10 b).
+// Phosphor.Dashboard.ChordPill, the cheatsheet's one pill.
 //
 // 20 px tall, `radius_edge` corners, abyss ground at 90 % under a 1 px
 // cyan edge, the chord in 12 px tabular text. An unbound chord reads

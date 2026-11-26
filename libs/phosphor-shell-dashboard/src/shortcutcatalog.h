@@ -15,7 +15,7 @@ QT_END_NAMESPACE
 namespace PhosphorShellDashboard {
 
 /**
- * @brief The daemon's bound chords, for the cheatsheet (A3 §10).
+ * @brief The daemon's bound chords, for the cheatsheet.
  *
  *     import Phosphor.Dashboard
  *     ShortcutCatalog { id: chords }

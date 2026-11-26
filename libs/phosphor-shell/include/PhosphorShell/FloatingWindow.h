@@ -22,7 +22,7 @@ namespace PhosphorShell {
 // place in the scene.
 //
 // The compositor places, sizes and stacks it like any application window,
-// which is the point: an engine-placed shell pane (A2 §4) IS one of these,
+// which is the point: an engine-placed shell pane IS one of these,
 // with `appId` naming it to the daemon's window rules and `minimumWidth` /
 // `minimumHeight` telling tiling and scrolling how small a slot it accepts.
 class PHOSPHORSHELL_EXPORT FloatingWindow : public QQuickItem

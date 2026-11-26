@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceSni: StatusNotifierItem (system tray) host + watcher
-# + com.canonical.dbusmenu context-menu model. Extracted from the
-# original `phosphor-services` umbrella as the last of the Phase 2.0
-# tenant splits (documented in
-# docs/phosphor-shell-design/04-implementation-plan.md). Consumes
+# + com.canonical.dbusmenu context-menu model. Consumes
 # phosphor-service-icontheme for XDG icon resolution and the Qt image
 # provider that publishes raw IconPixmap blobs to QML.
 

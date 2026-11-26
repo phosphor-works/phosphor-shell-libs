@@ -28,14 +28,14 @@ QtObject {
     readonly property int duration_extra_long_2: 800
     readonly property int duration_extra_long_3: 900
     readonly property int duration_extra_long_4: 1000
-    // Shell chrome primitives (05 §6). Enter fast, leave slow: enter for a
+    // Shell chrome primitives. Enter fast, leave slow: enter for a
     // stroke or opacity, enter_content for the body behind it, release
     // for small things, release_long for geometry and retiring map cells,
     // reveal / dismiss for a surface opening and closing, tick for a
     // discrete step (volume notch, clock minute). The M3 durations above
     // stay for settings pages.
     //
-    // Reduced motion (05 §3.2) keeps every primitive, because they carry
+    // Reduced motion keeps every primitive, because they carry
     // state, and halves the long tails: release 180 ms, the long release
     // 360 ms, reveal a 120 ms opacity enter. Enter, dismiss and tick are
     // already at the floor.

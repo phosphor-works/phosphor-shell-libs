@@ -8,7 +8,7 @@
 // bytes when it decides whether the script is shared.
 
 // Phosphor.Widgets.MiniatureEdges, the matched-edge half of the placement
-// map's mode morph (A2 §2.1).
+// map's mode morph.
 //
 // A cell set is reduced to its edges: every cell contributes four lines
 // (orientation, position across the map, span along it), and lines that
@@ -30,9 +30,10 @@
 // Position quantum for edge keys and coincidence: 1/200 of the map, well
 // under a pixel at every miniature size.
 var Quantum = 0.005;
-// A2 §2.1: matched when within 6 % of the map.
+// Matched when within 6 % of the map, so a split that both modes share
+// never blinks.
 var DefaultTolerance = 0.06;
-// A2 §2.1: 15 ms per edge in reading order, capped at 150 ms.
+// 15 ms per edge in reading order, capped at 150 ms.
 var StaggerMs = 15;
 var StaggerCapMs = 150;
 
@@ -146,7 +147,7 @@ function _overlap(a, b) {
 //             in reading order with their stagger
 //   release:  [key]  live edges no new edge matched
 //   drop:     [key]  releasing edges of the OLDER generation, removed at
-//             once so at most two generations are ever drawn (A2 §2.3);
+//             once so at most two generations are ever drawn;
 //             only when this change is itself a morph
 //   morph:    whether anything entered or released
 function reconcile(existing, next, tolerance) {

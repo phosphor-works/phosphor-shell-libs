@@ -290,7 +290,8 @@ TestCase {
         compare(hiddenSpy.count, 2, "volume and brightness each announced hidden once");
     }
 
-    // A3 §4: a bottom band sits on the FOCUSED WINDOW's bottom edge, read
+    // Feedback lives on the window it concerns: a bottom band sits on the
+    // FOCUSED WINDOW's bottom edge, read
     // from the placement map, not on the screen edge.
     function test_band_anchors_to_focused_cell_rect() {
         const map = createTemporaryObject(fakeMapComp, testCase, {

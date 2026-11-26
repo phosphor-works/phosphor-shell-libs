@@ -19,9 +19,7 @@
  *   - `NetworkConnection` + `NetworkConnectionModel` — saved profiles.
  * and render however they like.
  *
- * Phase 2.2 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`. Built on the
- * generic `PhosphorDBus::Client` async helper.
+ * Built on the generic `PhosphorDBus::Client` async helper.
  */
 
 #include <PhosphorServiceNetwork/AccessPoint.h>

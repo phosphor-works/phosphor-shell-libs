@@ -3,23 +3,33 @@
 
 # phosphor-service-icontheme
 
-XDG Icon Theme Specification 0.13 lookup + the Qt image provider that lets QML consume the resulting `QImage` payloads through a `QUrl` source.
+This library finds icons by the XDG Icon Theme Specification 0.13. It also gives the Qt image provider that lets QML
+show the resulting `QImage` payloads through a `QUrl` source.
 
 ## Responsibility
 
-- **`IconThemeResolver`**: spec-compliant theme walk. Detects the active theme via `QIcon::themeName()` (which the Qt platform plugin sources from Plasma, GTK, or xsettings as available), parses each theme's `index.theme`, follows `Inherits=` chains, and falls back to Hicolor or direct filesystem search for absolute paths. `iconForName(name, size, scale, extraThemeDir)` returns the best-match `QImage` by the spec's distance algorithm.
-- **`IconImageProvider`**: Qt image provider mounted at `image://phosphor-service-icontheme/`. The publisher (e.g. a tray-item model holding `QImage` payloads from D-Bus) calls `IconImageProvider::setImage(id, image)`. The consumer binds `Image.source` to a URL of the form `image://phosphor-service-icontheme/<id>?v=<cacheKey>`, and Qt routes that back through `requestImage()` which reads the QImage out of the thread-safe static registry. The `?v=` suffix exists only to force QML's `Image` element to re-fetch when the underlying QImage data changes (QML's `Image` only reloads when the URL string differs).
+- **`IconThemeResolver`** walks the themes as the specification says. It finds the active theme through
+  `QIcon::themeName()`. The Qt platform plugin gets that name from Plasma, GTK or xsettings, as available. The
+  resolver parses the `index.theme` of each theme and follows the `Inherits=` chains. It falls back to Hicolor, or to
+  a direct file-system search for absolute paths. `iconForName(name, size, scale, extraThemeDir)` returns the
+  best-match `QImage` by the distance algorithm of the specification.
+- **`IconImageProvider`** is a Qt image provider at `image://phosphor-service-icontheme/`. A publisher (for example,
+  a tray-item model that holds `QImage` payloads from D-Bus) calls `IconImageProvider::setImage(id, image)`. The
+  consumer binds `Image.source` to a URL of the form `image://phosphor-service-icontheme/<id>?v=<cacheKey>`. Qt sends
+  that URL back through `requestImage()`, which reads the QImage from the thread-safe static registry. The `?v=`
+  suffix only makes QML's `Image` element fetch again when the QImage data changes. QML's `Image` reloads only when
+  the URL string is different.
 
 ## Key types
 
-| Type                | Role                                                                                                |
-|---------------------|-----------------------------------------------------------------------------------------------------|
-| `IconThemeResolver` | Singleton XDG icon resolver. `iconForName` + `decodePixmaps` static for raw IconPixmap byte blobs.  |
-| `IconImageProvider` | `QQuickImageProvider` with a process-global registry; `setImage` / `clearImage` from publishers.    |
+| Type | Role |
+| --- | --- |
+| `IconThemeResolver` | Singleton XDG icon resolver. `iconForName`, and the static `decodePixmaps` for raw IconPixmap byte blobs. |
+| `IconImageProvider` | `QQuickImageProvider` with a process-global registry. Publishers call `setImage` / `clearImage`. |
 
-## Typical use
+## Use
 
-C++ shell composition root:
+In the C++ composition root of the shell:
 
 ```cpp
 #include <PhosphorServiceIconTheme/QmlRegistration.h>
@@ -34,7 +44,8 @@ int main(int argc, char** argv)
 }
 ```
 
-QML consumer (resolve an XDG icon, then route the resulting QImage through the image provider so QML's `Image.source` can consume it as a URL):
+A QML consumer. The resolver finds an XDG icon. The image provider then gives the resulting QImage to QML's
+`Image.source` as a URL:
 
 ```qml
 import Phosphor.Service.IconTheme 1.0
@@ -53,7 +64,8 @@ Image {
 }
 ```
 
-Publisher (typically internal to a service that holds raw `QImage` payloads, e.g. phosphor-service-sni's tray-item model):
+A publisher. This is usually inside a service that holds raw `QImage` payloads, for example the tray-item model of
+phosphor-service-sni:
 
 ```cpp
 #include <PhosphorServiceIconTheme/IconImageProvider.h>
@@ -68,22 +80,25 @@ const QString url = QStringLiteral("image://")
     + QString::number(qimage.cacheKey());
 ```
 
+## Consumers
+
+| Consumer | Use |
+| --- | --- |
+| `phosphor-service-sni` | Calls `IconThemeResolver::instance()->iconForName(...)` for XDG-themed tray icons. Sends raw IconPixmap blobs through `IconImageProvider::setImage` for QML binding. |
+| `phosphor-service-notifications` | Calls `IconThemeResolver::instance()->iconForName(...)` to resolve notification icons. |
+
+The library also registers the QML singleton (`IconThemeResolver` under `Phosphor.Service.IconTheme 1.0`) for bar
+widgets and third-party shells.
+
 ## Design notes
 
-- **Static registry, not per-engine.** Shells may construct multiple `QQmlEngine`s across reload cycles. The icon payload is valid across all of them. Coarse single-mutex locking is fine at human update rates.
-- **URL host segment stability.** The `imageProviderUrlHost()` accessor exists so publishers don't hard-code the host string. A rename here breaks the link rather than failing silently at runtime.
-- **`?v=` cache busting.** `Image` re-fetches only on URL change. The publisher appends `?v=cacheKey()` so a fresh `setImage` for the same id forces a rebind. `requestImage` strips the query before lookup.
+- **Static registry, not one for each engine.** A shell can construct more than one `QQmlEngine` across reload
+  cycles. The icon payload is valid in all of them. One coarse mutex is sufficient at human update rates.
+- **Stable URL host segment.** The `imageProviderUrlHost()` accessor exists so that publishers do not hard-code the
+  host string. A rename of the host then breaks the link openly. It does not fail silently at runtime.
+- **`?v=` cache busting.** `Image` fetches again only when the URL changes. The publisher appends `?v=cacheKey()`,
+  so a new `setImage` for the same id forces a new binding. `requestImage` removes the query before the lookup.
 
 ## Dependencies
 
 - Qt6 ≥ 6.6 (Core, Gui, Qml, Quick)
-
-## Status
-
-Shipped. Extracted from the original `phosphor-services` umbrella as one of four per-domain siblings. The umbrella is gone, with no backwards-compat shim (per `feedback_no_legacy_shims`). The URL host was renamed from `phosphor-services` to `phosphor-service-icontheme` for consistency with the new library name, and consumers of the old URL fail loudly rather than silently fall back. Namespace `PhosphorServices::IconThemeResolver` becomes `PhosphorServiceIconTheme::IconThemeResolver`, QML module `Phosphor.Services` becomes `Phosphor.Service.IconTheme`.
-
-## Current consumers
-
-- `phosphor-service-sni` calls `IconThemeResolver::instance()->iconForName(...)` for XDG-themed tray icons and routes raw IconPixmap blobs through `IconImageProvider::setImage` for QML binding.
-
-The QML singleton (`IconThemeResolver` under `Phosphor.Service.IconTheme 1.0`) is registered for future bar widgets and third-party shells. The bundled shell QML tree at `phosphor-shell/shell/` does not import it yet.

@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceNotifications: the server side of org.freedesktop.Notifications
-# (Desktop Notifications Spec 1.3) for Phosphor-based desktop shells. Phase 2.5
-# of the service-library split (see
-# docs/phosphor-shell-design/04-implementation-plan.md). Unlike the sibling
+# (Desktop Notifications Spec 1.3) for Phosphor-based desktop shells. Unlike the sibling
 # service libs, this one OWNS a well-known bus name and answers it: it is the
 # notification daemon, not a client of one. The interface is generated from a
 # checked-in XML via qt6_add_dbus_adaptor (all methods reply synchronously, so

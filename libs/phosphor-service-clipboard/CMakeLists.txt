@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceClipboard: a clipboard-history service for Phosphor-based
-# desktop shells. Phase 2.8 of the service-library split (see
-# docs/phosphor-shell-design/04-implementation-plan.md). It watches the
+# desktop shells. It watches the
 # session's clipboard through phosphor-wayland's data-control client, keeps a
 # de-duplicated, capped, on-disk history, and can re-apply any entry. It is the
 # policy / history / persistence layer over the raw ClipboardDevice primitive;

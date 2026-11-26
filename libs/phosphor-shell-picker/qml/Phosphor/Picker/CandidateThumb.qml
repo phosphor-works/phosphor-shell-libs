@@ -3,7 +3,7 @@
 // Phosphor.Picker.CandidateThumb, one wallpaper candidate in the strip.
 //
 // A 120 x 68 thumbnail, radius 6, with a 1 px outline that turns into
-// the 2 px blue outline while selected (A3 §8e). The thumbnail is the
+// the 2 px blue outline while selected. The thumbnail is the
 // only image the picker shows: the preview is the live desktop, so this
 // stays small and decodes asynchronously at thumbnail size. Hovering
 // reports to the strip, which drives the retint; the strip owns the

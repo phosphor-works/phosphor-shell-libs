@@ -3,7 +3,7 @@
 #
 # PhosphorShellPicker, the Phosphor.Picker wallpaper and theme strip.
 #
-# The picker tries a palette on the real desktop (A3 §8): hovering a
+# The picker tries a palette on the real desktop: hovering a
 # wallpaper candidate runs matugen on it and retints the live PaletteStore
 # for as long as the candidate is hovered; Apply commits, leaving restores.
 # Three C++ types carry the logic (the candidate scan, the debounced retint
@@ -11,8 +11,6 @@
 # presentation. Built as one STATIC QML module, the way phosphor-theme
 # compiles its C++ into Phosphor.Theme, so the types register through
 # QML_ELEMENT and the tests link the same target.
-#
-# Phase 4 deliverable per docs/phosphor-shell-design/identity/A3-surfaces.md §8.
 
 cmake_minimum_required(VERSION 3.16)
 

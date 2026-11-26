@@ -10,7 +10,7 @@
 // Phosphor.Bar.DropProxyGeometry, the placement map's drop-proxy rects.
 //
 // The bar registers its miniature with the daemon as a drop proxy for the
-// compositor's own window drag (A2 §1.5, WindowDrag.registerDropProxy):
+// compositor's own window drag (WindowDrag.registerDropProxy):
 // the miniature's rect in screen pixels plus one rect per zone cell, so a
 // drag ending over a cell of the miniature commits to the real zone. The
 // cell rects are the model's 0..1 fractions scaled onto the miniature.

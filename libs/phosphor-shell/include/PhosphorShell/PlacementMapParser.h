@@ -20,8 +20,8 @@ namespace PhosphorShell::PlacementMapParser {
 /**
  * @brief One cell of the placement map, in work-area fractions.
  *
- * `rect` is 0..1 of the work area on both axes. `t` is the hue axis
- * (A2 §1.2): the cell's horizontal centre in work-area space for snapping
+ * `rect` is 0..1 of the work area on both axes. `t` is the hue axis:
+ * the cell's horizontal centre in work-area space for snapping
  * and tiling, and the visible-cut fallback for scrolling until the daemon
  * exposes the strip extent.
  */
@@ -40,7 +40,8 @@ struct PHOSPHORSHELL_EXPORT Cell
     /// rect (a tabbed or stacked column's tile count). 1 otherwise.
     int stack = 1;
     /// Scrolling only: the column's start as a fraction of the whole strip
-    /// (`stripPosPx / stripExtentPx`), the structure axis of A2 §1.2. It
+    /// (`stripPosPx / stripExtentPx`), the structure axis: the first column
+    /// is cyan and the last rose, whatever is visible. It
     /// is the hue for a strip cell, kept apart from `t` so a reader can
     /// tell a real strip position from the visible-cut fallback. 0 for
     /// snapping and tiling cells.
@@ -176,7 +177,7 @@ PHOSPHORSHELL_EXPORT StripParse parseVisibleStrip(const QString& stripJson);
  * cross axis is the full 0..1), so a column straddling an edge is cut
  * and a column wholly outside is dropped and counted in
  * `overflowLeft` / `overflowRight`. `t` and `stripT` are the column's
- * start over the whole strip extent, the structure axis of A2 §1.2. The
+ * start over the whole strip extent, the structure axis. The
  * lens is `{0, 1}` when the whole strip fits the viewport and the
  * viewport's fraction of the strip otherwise. `axis` 1 (vertical) puts
  * the strip axis on y. An empty object (`{}`, the daemon's answer for a

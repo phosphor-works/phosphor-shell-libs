@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # PhosphorServiceBluetooth: BlueZ (org.bluez) adapter / device readouts and
-# the pairing agent for Phosphor-based desktop shells. Phase 2.3 of the
-# service-library split (see docs/phosphor-shell-design/04-implementation-
-# plan.md). Pure D-Bus client, no UI. Built on PhosphorDBus::Client and
-# PhosphorDBus::ObjectManager (BlueZ is ObjectManager-rooted), mirroring the
-# Phase-2.1/2.2 sibling pattern (phosphor-service-pipewire / -network).
+# the pairing agent for Phosphor-based desktop shells. Pure D-Bus client, no
+# UI. Built on PhosphorDBus::Client and PhosphorDBus::ObjectManager (BlueZ is
+# ObjectManager-rooted), mirroring the sibling pattern
+# (phosphor-service-pipewire / -network).
 
 cmake_minimum_required(VERSION 3.16)
 

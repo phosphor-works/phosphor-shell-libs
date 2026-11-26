@@ -30,6 +30,7 @@
 namespace {
 
 constexpr const char* CpuMeterQml = R"(
+import Phosphor.Theme
 import QtQuick
 
 Rectangle {
@@ -61,7 +62,7 @@ Rectangle {
         text: "CPU " + Math.round(root.reading * 100) + "%"
         color: "#e8eaee"
         font.pixelSize: 12
-        font.family: "monospace"
+        font.family: Tokens.font_family_mono
     }
 }
 )";

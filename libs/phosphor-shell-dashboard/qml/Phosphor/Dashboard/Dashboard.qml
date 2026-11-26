@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// Phosphor.Dashboard.Dashboard, every desktop's placement map at once
-// (A3 §7).
+// Phosphor.Dashboard.Dashboard, every desktop's placement map at once.
 //
 // A full-screen overlay on the void ground at 85 %: one cell per virtual
 // desktop, each that desktop's live placement map (PlacementMap
@@ -11,7 +10,7 @@
 // `+` cell exists only when `workspaces` can create a desktop
 // (`Workspaces` cannot, so it is omitted).
 //
-// Open is the shell's one scale transition (A3 §7 c, consistency table):
+// Open is the shell's one scale transition:
 // the grid enters scaled so the current desktop's cell covers the
 // screen and settles to 1 over 280 ms while the ground fades in; close
 // reverses. It is the desktop that scales, not a UI element.
@@ -36,7 +35,7 @@ FocusScope {
     property var mapFor: null
     property var media: null
     property bool open: false
-    // Cell width as a fraction of the screen width (A3 §7 b: 1/4).
+    // Cell width as a fraction of the screen width (1/4).
     property real cellFraction: 0.25
     property int gap: Tokens.spacing_xl
 
@@ -105,7 +104,7 @@ FocusScope {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr("Dashboard")
 
-    // Esc closes (A3 §7 d).
+    // Esc closes.
     focus: true
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Escape) {

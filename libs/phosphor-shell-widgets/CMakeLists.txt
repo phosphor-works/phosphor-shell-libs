@@ -8,8 +8,6 @@
 # surface composes. The atoms bind through PhosphorTheme's Theme / Motion
 # / StateLayer singletons, so a palette or motion retune propagates here
 # with no per-widget edits.
-#
-# Phase 3.1 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 

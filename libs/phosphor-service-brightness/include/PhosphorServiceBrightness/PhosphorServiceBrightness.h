@@ -25,9 +25,8 @@
  *     (brightness / maxBrightness / percentage / kind) and the set surface.
  * and render however they like.
  *
- * Phase 2.4 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`. Built on the generic
- * `PhosphorDBus::Client` async helper for the logind call.
+ * Built on the generic `PhosphorDBus::Client` async helper for the logind
+ * call.
  */
 
 #include <PhosphorServiceBrightness/BrightnessDevice.h>

@@ -35,7 +35,7 @@ namespace PhosphorShellPicker {
  * know.
  *
  * The four `brand_stop_*` tokens never change through this controller
- * (05 §4: the spectrum is fixed; matugen moves ground, containers and
+ * (the spectrum is fixed; matugen moves ground, containers and
  * text). They are stripped from every incoming map before it is
  * applied, and the store's merge leaves them as they were.
  *

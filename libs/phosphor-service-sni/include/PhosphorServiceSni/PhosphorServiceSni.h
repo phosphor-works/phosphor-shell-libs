@@ -18,12 +18,6 @@
  *
  * Icon resolution + the `image://phosphor-service-icontheme/` provider
  * are provided by the sibling `phosphor-service-icontheme` library.
- *
- * Extracted from the legacy `phosphor-services` umbrella as the last
- * of the Phase 2.0 splits documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`. With this
- * extraction the umbrella is deleted; no compat shim per the
- * `feedback_no_legacy_shims` memory.
  */
 
 #include <PhosphorServiceSni/StatusNotifierItem.h>

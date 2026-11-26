@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: LGPL-2.1-or-later
-// The placement map's matched-edge morph (A2 §2.1, §2.3). The pure
+// The placement map's matched-edge morph. The pure
 // reconcile logic is checked directly through MiniatureEdges.js, then
 // the same contract is driven through a PlacementMiniature over a fake
 // model so the persistent edge model and `morphing` are covered too.

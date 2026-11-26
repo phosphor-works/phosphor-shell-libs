@@ -12,8 +12,6 @@
 # dependency: it never links phosphor-service-*, and a tile that needs
 # NetworkManager is the shell's problem to register, not this library's to
 # know about.
-#
-# Phase 4.4 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 

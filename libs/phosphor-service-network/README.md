@@ -3,29 +3,34 @@
 
 # phosphor-service-network
 
-NetworkManager (`org.freedesktop.NetworkManager`) device and connectivity readouts for Phosphor-based desktop shells.
+This library gives Phosphor-based desktop shells the NetworkManager (`org.freedesktop.NetworkManager`) device and
+connectivity state.
 
 ## Responsibility
 
-Exposes the system bus `org.freedesktop.NetworkManager` surface (per-device interface/type/state, the global connectivity level, the networking and Wi-Fi radio toggles) as Qt + QML types. No UI. The shell decides how a connectivity icon, device list, or Wi-Fi toggle is rendered.
+The library exposes the system bus `org.freedesktop.NetworkManager` interface as Qt and QML types. It covers the
+interface, type and state of each device, the global connectivity level, and the networking and Wi-Fi radio
+toggles. It has no UI. The shell decides how to show a connectivity icon, a device list or a Wi-Fi toggle.
 
-The library is a D-Bus client built on the generic `PhosphorDBus::Client` async helper. It observes manager + device state and offers a small write surface (toggle the Wi-Fi radio, trigger a Wi-Fi scan).
+The library is a D-Bus client that uses the generic `PhosphorDBus::Client` async helper. It observes the manager and
+device state. Its write calls toggle the Wi-Fi radio, start a Wi-Fi scan, and connect to a saved profile or an access
+point.
 
 ## Key types
 
-| Type                  | Role                                                                                                  |
-|-----------------------|-------------------------------------------------------------------------------------------------------|
-| `NetworkDevice`       | One `org.freedesktop.NetworkManager.Device`. `interfaceName`, `deviceType`, `state`, `managed`.       |
-| `NetworkHost`         | Owns the device set + manager state. `networkingEnabled`, `wirelessEnabled` (writable), `connectivity`, `primaryConnectionType`, `deviceCount`; `scanWifi()`, `activateConnection()`, `connectToAccessPoint()`; signals on device add/remove. |
-| `NetworkDeviceModel`  | `QAbstractListModel` over the host's devices. Roles: `device`, `interfaceName`, `deviceType`, `deviceState`, `managed`. |
-| `AccessPoint`         | One `org.freedesktop.NetworkManager.AccessPoint`. `ssid`, `strength`, `frequency`, `bssid`, `security`, `secured`. |
-| `AccessPointModel`    | `QAbstractListModel` over a Wi-Fi device's scanned APs (bind `device`). Roles: `accessPoint`, `ssid`, `strength`, `frequency`, `bssid`, `security`, `secured`. |
-| `NetworkConnection`   | One saved profile (`Settings.Connection`). `id`, `uuid`, `connectionType`. |
-| `NetworkConnectionModel` | `QAbstractListModel` over NetworkManager's saved connections (self-bootstrapping). Roles: `connection`, `id`, `uuid`, `connectionType`. |
+| Type | Role |
+| --- | --- |
+| `NetworkDevice` | One `org.freedesktop.NetworkManager.Device`. `interfaceName`, `deviceType`, `state`, `managed`. |
+| `NetworkHost` | Owns the device set and the manager state. `networkingEnabled`, `wirelessEnabled` (writable), `connectivity`, `primaryConnectionType`, `deviceCount`. Calls `scanWifi()`, `activateConnection()`, `connectToAccessPoint()`. Emits signals when a device is added or removed. |
+| `NetworkDeviceModel` | `QAbstractListModel` over the devices of the host. Roles `device`, `interfaceName`, `deviceType`, `deviceState`, `managed`. |
+| `AccessPoint` | One `org.freedesktop.NetworkManager.AccessPoint`. `ssid`, `strength`, `frequency`, `bssid`, `security`, `secured`. |
+| `AccessPointModel` | `QAbstractListModel` over the scanned access points of one Wi-Fi device (bind `device`). Roles `accessPoint`, `ssid`, `strength`, `frequency`, `bssid`, `security`, `secured`. |
+| `NetworkConnection` | One saved profile (`Settings.Connection`). `id`, `uuid`, `connectionType`. |
+| `NetworkConnectionModel` | `QAbstractListModel` over the saved connections of NetworkManager. It loads them itself. Roles `connection`, `id`, `uuid`, `connectionType`. |
 
-## Typical use
+## Use
 
-C++ shell composition root:
+In the C++ composition root of the shell:
 
 ```cpp
 #include <PhosphorServiceNetwork/QmlRegistration.h>
@@ -38,7 +43,7 @@ int main(int argc, char** argv)
 }
 ```
 
-QML consumer (connectivity indicator + Wi-Fi toggle):
+A QML consumer with a connectivity indicator and a Wi-Fi toggle:
 
 ```qml
 import Phosphor.Service.Network 1.0
@@ -56,7 +61,7 @@ Label {
 }
 ```
 
-QML consumer (per-device list):
+A QML consumer with a list of devices:
 
 ```qml
 import Phosphor.Service.Network 1.0
@@ -70,19 +75,41 @@ Repeater {
 }
 ```
 
+## Connect paths
+
+| Call | Target |
+| --- | --- |
+| `activateConnection()` | A saved profile. |
+| `connectToAccessPoint()` | An open or WPA-PSK network, through NM AddAndActivateConnection. |
+
+`AccessPointModel` derives a security label for each access point.
+
+## Tests and demo
+
+| Item | What it covers |
+| --- | --- |
+| Smoke harness | The public contract (role names, enum wire constants, lifecycle), with no daemon. |
+| `test_network_operations` | The live details, profile identity, connection settings and failures, a retry that updates the existing profile, and the deactivation of a late reply after a cancel. It runs against a fake NetworkManager fixture on D-Bus. |
+| `examples/phosphor-service-network-cli` | A `phosphorctl`-style CLI demo with the commands status, list-devices, list-connections, list-aps, scan and connect. |
+
 ## Design notes
 
-- **Async-only D-Bus.** The manager bootstrap (`Properties.GetAll`, `GetDevices`), per-device `Properties.GetAll`, the `PropertiesChanged` fan-out, and the writes (`Set WirelessEnabled`, `Device.Wireless.RequestScan`) all go through `QDBusPendingCallWatcher` / `PhosphorDBus::Client`. The GUI thread is never blocked.
-- **No optimistic writes.** `setWirelessEnabled` issues `Properties.Set` and lets NetworkManager echo the change back through `PropertiesChanged`. The cached `wirelessEnabled` flips (and the NOTIFY fires) only once the radio actually toggled, so the property never lies about daemon state.
-- **Sparse wire enums.** `DeviceType` (3/4 unused, jumps to `Wireguard=29`) and `DeviceState` (multiples of ten) are mapped value-by-value. An unrecognised raw value surfaces as `Unknown` / `UnknownState` rather than casting to an enumerator the lib doesn't declare. `Connectivity` is contiguous 0..4 and clamped.
-- **Path containment.** Device add/remove rejects any object path outside `/org/freedesktop/NetworkManager/Devices/` at the boundary, so a misbehaving daemon can't spin up a `NetworkDevice` on a nonsense path.
+- **Async-only D-Bus.** The manager bootstrap (`Properties.GetAll`, `GetDevices`), the `Properties.GetAll` of each
+  device, the `PropertiesChanged` fan-out and the writes (`Set WirelessEnabled`, `Device.Wireless.RequestScan`) all
+  go through `QDBusPendingCallWatcher` / `PhosphorDBus::Client`. The GUI thread never blocks.
+- **No optimistic writes.** `setWirelessEnabled` sends `Properties.Set`. NetworkManager then sends the change back
+  through `PropertiesChanged`. The cached `wirelessEnabled` and its NOTIFY change only after the radio toggled. Thus
+  the property always agrees with the daemon state.
+- **Sparse wire enums.** The library maps `DeviceType` (3/4 unused, then a jump to `Wireguard=29`) and
+  `DeviceState` (multiples of ten) value by value. An unknown raw value becomes `Unknown` / `UnknownState`. The
+  library never casts it to an enumerator that it does not declare. `Connectivity` is contiguous 0..4 and clamped.
+- **Path containment.** When a device is added or removed, the library rejects any object path outside
+  `/org/freedesktop/NetworkManager/Devices/`. Thus a daemon that behaves badly cannot create a `NetworkDevice` on an
+  invalid path.
 
 ## Dependencies
 
 - Qt6 ≥ 6.6 (Core, Qml, DBus)
-- `PhosphorDBus` (private link; async method-call helper)
-- A running `org.freedesktop.NetworkManager` on the system bus (the lib loads inert without it, with an empty device list and `UnknownConnectivity`)
-
-## Status
-
-Shipped. The manager lifecycle (connectivity / radio-toggle state + device enumeration), `NetworkDevice`, `NetworkDeviceModel`, the Wi-Fi radio toggle and `scanWifi()` trigger, access-point surfacing (`AccessPoint` / `AccessPointModel` with derived security labels), the saved-connection list (`NetworkConnection` / `NetworkConnectionModel`), the connect paths (`activateConnection()` for a saved profile, `connectToAccessPoint()` via NM AddAndActivateConnection for open or WPA-PSK networks), and the `phosphorctl`-style CLI demo (`examples/phosphor-service-network-cli`: status, list-devices, list-connections, list-aps, scan, connect) covering the core capabilities (list connections, scan wifi, connect to AP). Live D-Bus integration tests against a fake NetworkManager fixture are a follow-up. The smoke harness pins the public contract (role names, enum wire constants, lifecycle) deterministically without a daemon.
+- `PhosphorDBus` (private link: the async method-call helper)
+- A running `org.freedesktop.NetworkManager` on the system bus. Without it the library loads inert, with an empty
+  device list and `UnknownConnectivity`.

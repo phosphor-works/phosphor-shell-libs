@@ -23,9 +23,8 @@
  *
  * Shells consume `SessionHost` and render the power menu however they like.
  *
- * Phase 2.10 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`. Built on the generic
- * `PhosphorDBus::Client` async helper for the logind calls.
+ * Built on the generic `PhosphorDBus::Client` async helper for the logind
+ * calls.
  */
 
 #include <PhosphorServiceSession/QmlRegistration.h>

@@ -6,7 +6,7 @@
 // screen-edge rail, a pane's top band, a tether. Horizontal by default;
 // `vertical` turns it for a side bar. `sliceStart` / `sliceEnd` show only
 // a window of the ramp, so a scrolling screen's rail can carry the same
-// slice of the strip its lens shows (05 §4.1, structure axis). `gleam`
+// slice of the strip its lens shows (structure axis). `gleam`
 // sends a short bright segment along the rail once every 9 s while idle,
 // the packs' travelling highlight on chrome; it stays off under reduced
 // motion.
@@ -100,9 +100,9 @@ Item {
     }
 
     // The travelling highlight: about 12 % of the rail, soft-edged, at an
-    // alpha peak of 0.6 (05 §5). On a light field a highlight on white is
+    // alpha peak of 0.6. On a light field a highlight on white is
     // invisible, so the gleam becomes a darker segment of the same rail
-    // instead (A1 §2.5).
+    // instead.
     Rectangle {
         id: gleamSegment
 

@@ -13,8 +13,6 @@
 # and depends on KF6 Kirigami for
 # Kirigami.Icon's named-icon resolution on the action glyphs — the same
 # reason phosphor-shell-bar does.
-#
-# Phase 4.6 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 

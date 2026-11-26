@@ -90,7 +90,7 @@ QtObject {
     // are tokenised so widgets bind these instead of opening every Text
     // delegate to tune sizes.
     readonly property string font_family: Qt.application.font.family
-    // Shell chrome faces (05 §7). Manrope for display and UI, JetBrains
+    // Shell chrome faces. Manrope for display and UI, JetBrains
     // Mono for every value, resolved by FontFaces against the installed
     // families so a missing face degrades to a named fallback rather than
     // whatever fontconfig substitutes; `font_family` above stays the
@@ -115,10 +115,10 @@ QtObject {
     readonly property int font_weight_bold: Font.Bold
     // ─── Chrome strokes and bar geometry ─────────────────────────────────
     // The 1 px inset stroke that gives every chrome surface its edge: its
-    // opacity at rest and when active (05 §5). The bar is a 26 px band
+    // opacity at rest and when active. The bar is a 26 px band
     // under a 2 px spectrum rail on the screen edge, 28 px in all.
     readonly property real stroke_resting: 0.35
-    // A coloured hairline on a bright field needs more ink (A1 §2.5).
+    // A coloured hairline on a bright field needs more ink.
     readonly property real stroke_resting_light: 0.55
     readonly property real stroke_active: 1.0
     readonly property int bar_thickness: Appearance.barHeight + 2 * Appearance.barOffset

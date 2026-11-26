@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Picker.PaletteTile, one theme preset as a five-swatch strip.
 //
-// The theme view of the picker draws palettes as tiles without images
-// (A3 §8b): five swatches (surface, container, primary, secondary,
+// The theme view of the picker draws palettes as tiles without images:
+// five swatches (surface, container, primary, secondary,
 // tertiary) side by side under a 6 px radius, the preset's name under
 // them. Same outline rules as CandidateThumb.
 //

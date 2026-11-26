@@ -6,8 +6,6 @@
 # Holds the active M3 token palette, watches the on-disk JSON palette for
 # hot-reload, and exposes everything to QML as a `Phosphor.Theme` import
 # (Theme / Tokens / Motion / StateLayer / Spectrum singletons).
-#
-# Phase 1.1 deliverable per docs/phosphor-shell-design/04-implementation-plan.md.
 
 cmake_minimum_required(VERSION 3.16)
 

@@ -92,14 +92,14 @@ FocusScope {
     // Placement is the host's job, not the surface's: keeping the surface
     // full-bleed is what keeps the scrim, click-outside dismissal and the
     // keyboard grab exactly as they are for every placement.
-    // The surface pack drawn on this popout's frame (A1 §2.4), set by the
+    // The surface pack drawn on this popout's frame, set by the
     // transport from the composition root, exactly as PaneHost's is.
     //
     // Layer-routed popouts had no slot at all while pane-routed ones did,
     // so a user's surface pack stopped at the edge of everything on this
     // route — the launcher, the toasts, the bar's panels — and the control
     // center LOST its pack the day it moved here from the pane route,
-    // trading the frame A3 §2 promised for a bare stroke.
+    // trading the pack frame every surface carries for a bare stroke.
     property Component decoration: null
     property var surfaceEffects: null
     readonly property bool materialBlurred: Appearance.settings.material !== "solid"

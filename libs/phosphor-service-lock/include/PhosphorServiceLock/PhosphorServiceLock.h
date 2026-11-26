@@ -23,9 +23,6 @@
  * Lock *surfaces* (the per-output graphics shown while locked) are a shell
  * concern wired in a later phase; this service owns authentication and the lock
  * lifecycle, not rendering.
- *
- * Phase 2.9 of the service-library plan documented in
- * `docs/phosphor-shell-design/04-implementation-plan.md`.
  */
 
 #include <PhosphorServiceLock/IAuthenticator.h>

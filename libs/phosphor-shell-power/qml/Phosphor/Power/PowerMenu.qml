@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Phosphor.Power.PowerMenu, the session menu.
 //
-// A column of words over your dimmed desktop (A3 §5). No dialog box and
+// A column of words over your dimmed desktop. No dialog box and
 // no tiles: the surface is a full-screen layer with a void ground at
 // 60 % (phase 1's stand-in for the compositor dim, which is phase 2), and
 // the six session actions are 24 px words down the left edge, coloured

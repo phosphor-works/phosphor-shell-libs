@@ -3,10 +3,9 @@
 #
 # PhosphorServiceNetwork: NetworkManager (org.freedesktop.NetworkManager)
 # device / connectivity readouts for Phosphor-based desktop shells.
-# Phase 2.2 of the service-library split (see docs/phosphor-shell-design/
-# 04-implementation-plan.md). Pure D-Bus client, no UI. Built on the
-# generic PhosphorDBus::Client helper, mirroring the Phase-2.0/2.1
-# sibling pattern (phosphor-service-upower / -pipewire).
+# Pure D-Bus client, no UI. Built on the generic PhosphorDBus::Client
+# helper, mirroring the sibling pattern (phosphor-service-upower /
+# -pipewire).
 
 cmake_minimum_required(VERSION 3.16)
 

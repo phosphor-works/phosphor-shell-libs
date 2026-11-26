@@ -40,7 +40,7 @@ namespace DropProxyKey = PhosphorProtocol::Service::DropProxyKey;
 constexpr int GeometryModeFixed = 1;
 
 // Scrolling.stripModelJson keys: a straight serialisation of the scroll
-// engine's strip (A2 §1.3). The protocol's own definition, which the daemon's
+// engine's strip. The protocol's own definition, which the daemon's
 // serializer writes through as well.
 namespace StripModelKey = PhosphorProtocol::Service::StripModelKey;
 
@@ -210,7 +210,8 @@ StripParse parseVisibleStrip(const QString& stripJson)
     if (!parse.cells.isEmpty()) {
         // Older daemon without stripModelJson: no strip extent or view
         // offset, so the lens is the whole visible cut and the hue axis is
-        // sampled inside it (A2 §8 fallback). Overflow counts stay 0 for
+        // sampled inside it (the visible-cut fallback). Overflow counts
+        // stay 0 for
         // the same reason.
         parse.lens = QRectF(0.0, 0.0, 1.0, 1.0);
     }
