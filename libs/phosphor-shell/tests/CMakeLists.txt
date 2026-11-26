@@ -300,15 +300,19 @@ add_test(NAME test_phosphorshell_systemstats COMMAND test_phosphorshell_systemst
 phosphorshell_isolate_test(test_phosphorshell_systemstats "QT_QPA_PLATFORM=offscreen")
 set_tests_properties(test_phosphorshell_systemstats PROPERTIES LABELS "phosphorshell" TIMEOUT 30)
 
-# The mock layer-shell transport lives in phosphor-layer's own test tree, which
-# is not an exported interface. Name the directory explicitly so the include
-# reads `mocks/mocktransport.h`, the same spelling phosphor-layer's tests use.
-# The previous `../../phosphor-layer/tests/mocks/...` form resolved only by
-# accident, through an -I that the PhosphorLayer link happens to contribute,
-# and would have broken silently the moment that link changed.
+# The mock layer-shell transport of phosphor-layer's tests. phosphor-libs
+# exports it as PhosphorLayer::Testing, in its tree and in its installed
+# package, so the include reads `mocks/mocktransport.h`, the same spelling
+# phosphor-layer's tests use. A phosphor-libs older than that target gives it
+# only in its source tree.
 foreach(_mock_consumer test_phosphorshell_persistentproperties_scan
                        test_phosphorshell_inputregion_rearm)
-    if(TARGET ${_mock_consumer})
+    if(NOT TARGET ${_mock_consumer})
+        continue()
+    endif()
+    if(TARGET PhosphorLayer::Testing)
+        target_link_libraries(${_mock_consumer} PRIVATE PhosphorLayer::Testing)
+    else()
         target_include_directories(${_mock_consumer}
             PRIVATE ${PHOSPHOR_LIBS_SOURCE_DIR}/libs/phosphor-layer/tests)
     endif()

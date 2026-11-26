@@ -10,6 +10,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 
 ## [Unreleased]
 
+### Added
+
+- `PHOSPHOR_USE_INSTALLED_LIBS`: with this CMake option on, the build uses the installed `PhosphorLibs` package
+  instead of the pinned phosphor-libs archive, and fetches nothing. It is off by default.
+
 ## [0.1.0] - 2026-11-26
 
 The first release. It has 28 libraries: `phosphor-popout`, `phosphor-service-bluetooth`, `phosphor-service-brightness`, `phosphor-service-clipboard`, `phosphor-service-icontheme`, `phosphor-service-lock`, `phosphor-service-mpris`, `phosphor-service-network`, `phosphor-service-nightlight`, `phosphor-service-notifications`, `phosphor-service-pipewire`, `phosphor-service-polkit`, `phosphor-service-session`, `phosphor-service-sni`, `phosphor-service-upower`, `phosphor-shell-bar`, `phosphor-shell-control-center`, `phosphor-shell-dashboard`, `phosphor-shell-launcher`, `phosphor-shell-lock`, `phosphor-shell-notifications`, `phosphor-shell-osd`, `phosphor-shell-picker`, `phosphor-shell-polkit`, `phosphor-shell-power`, `phosphor-shell-widgets`, `phosphor-shell`, `phosphor-theme`. The tag `v0.1.0` is commit `5bfa3764`, which Lambent pins.

@@ -177,14 +177,18 @@ endif()
 if(TARGET PhosphorThemeQmlplugin)
     target_link_libraries(PhosphorShellWidgetsQml PUBLIC PhosphorThemeQmlplugin)
 endif()
-# The motion runtime behind SettleAnimation, module and registrar both, so
-# every consumer of the widgets (and their tests) resolves the import.
-target_link_libraries(PhosphorShellWidgetsQml
-    PUBLIC
-        PhosphorAnimation::PhosphorAnimation
-        PhosphorAnimation::PhosphorAnimationQml
-        PhosphorAnimationQmlplugin
-)
+# The motion runtime behind SettleAnimation. An in-tree phosphor-libs gives
+# its static QML module and registrar too, so every consumer of the widgets
+# (and their tests) resolves the import. An installed phosphor-libs gives the
+# shared module in the QML directory instead, which the import resolves at run
+# time.
+target_link_libraries(PhosphorShellWidgetsQml PUBLIC PhosphorAnimation::PhosphorAnimation)
+if(TARGET PhosphorAnimation::PhosphorAnimationQml)
+    target_link_libraries(PhosphorShellWidgetsQml PUBLIC PhosphorAnimation::PhosphorAnimationQml)
+endif()
+if(TARGET PhosphorAnimationQmlplugin)
+    target_link_libraries(PhosphorShellWidgetsQml PUBLIC PhosphorAnimationQmlplugin)
+endif()
 
 # Static archive: VERSION/SOVERSION apply to SHARED libraries only and are
 # silently ignored on STATIC. Don't set them so the property surface

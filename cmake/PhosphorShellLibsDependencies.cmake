@@ -127,12 +127,21 @@ endif()
 # Makes the phosphor-libs targets available, and leaves PHOSPHOR_LIBS_SOURCE_DIR
 # naming the tree in use. A macro, so CPM loads and sets its variables in the
 # caller's scope: call it from the top-level CMakeLists.
+# A distribution package links the packaged phosphor libraries: with this on,
+# the installed PhosphorLibs package replaces the pinned archive, and nothing is
+# fetched. The same switch exists in every phosphor-works repository.
+option(PHOSPHOR_USE_INSTALLED_LIBS
+       "Use the installed phosphor libraries (find_package) instead of building the pinned archives" OFF)
+
 macro(phosphor_shell_libs_add_phosphor_libs)
     # Asked of a target, not of PHOSPHOR_LIBS_CMAKE_DIR: that is a cache entry,
     # so it outlives the configure that set it, and a reconfigure would take a
     # stale one for a tree that is not added this time.
     if(TARGET PhosphorIpc)
         # An app added phosphor-libs before this tree, from its own pin.
+    elseif(PHOSPHOR_USE_INSTALLED_LIBS)
+        # Sets PHOSPHOR_LIBS_CMAKE_DIR to the installed helper modules.
+        find_package(PhosphorLibs 0.1 REQUIRED)
     elseif(PHOSPHOR_DEPS_ARCHIVES)
         set(_psl_archive "${PHOSPHOR_DEPS_ARCHIVES}/${PHOSPHOR_SHELL_LIBS_DEP_phosphor-libs_FILE}")
         if(NOT EXISTS "${_psl_archive}")
@@ -196,5 +205,7 @@ macro(phosphor_shell_libs_add_phosphor_libs)
         message(FATAL_ERROR "The phosphor-libs tree did not set PHOSPHOR_LIBS_CMAKE_DIR. It is older than the "
                             "commit cmake/PhosphorShellLibsDependencies.cmake pins.")
     endif()
-    get_filename_component(PHOSPHOR_LIBS_SOURCE_DIR "${PHOSPHOR_LIBS_CMAKE_DIR}/.." ABSOLUTE)
+    if(NOT PHOSPHOR_LIBS_INSTALLED)
+        get_filename_component(PHOSPHOR_LIBS_SOURCE_DIR "${PHOSPHOR_LIBS_CMAKE_DIR}/.." ABSOLUTE)
+    endif()
 endmacro()
