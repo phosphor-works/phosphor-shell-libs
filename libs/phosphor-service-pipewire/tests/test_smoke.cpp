@@ -513,7 +513,8 @@ private Q_SLOTS:
                 // contract (the known-good write echoes) isn't dragged
                 // down by cleanup flakiness.
                 if (sink->muted() != !flipTo) {
-                    QWARN("restore write did not converge to requested mute state (cleanup may have left dirty state)");
+                    qWarning(
+                        "restore write did not converge to requested mute state (cleanup may have left dirty state)");
                 }
             }
             // No sink available (rare: a connected daemon with zero
