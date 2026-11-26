@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# phosphor-widgets-kitchen-sink, the Phase 3.1 acceptance demo for the
+# phosphor-widgets-kitchen-sink, the demo for the
 # Phosphor.Widgets atom library. One scrollable window listing every atom
 # in its enabled / disabled states with a live accent-cycle header. This
 # is the acceptance test for libs/phosphor-shell-widgets.

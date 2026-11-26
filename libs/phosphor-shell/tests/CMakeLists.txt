@@ -197,7 +197,7 @@ set_tests_properties(test_phosphorshell_perscreenpanels PROPERTIES
     TIMEOUT 30
 )
 
-# PerScreen QML helper (Phase 1.5). Loads PerScreen.qml directly from
+# PerScreen QML helper. Loads PerScreen.qml directly from
 # the source tree via QQmlComponent::setData with a path-imported
 # directory, so the test doesn't depend on the Phosphor.Shell static
 # plugin being importable from a unit-test binary.

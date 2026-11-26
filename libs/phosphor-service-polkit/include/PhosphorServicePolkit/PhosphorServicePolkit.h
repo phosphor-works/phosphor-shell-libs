@@ -12,8 +12,8 @@
  * requests a privileged action, `polkitd` calls into the registered agent,
  * which drives the PAM conversation that authenticates the user. The library
  * wraps polkit-qt privately, so its public surface is a clean Qt/QML type with
- * no polkit-qt types leaking out; it has no UI of its own (the authentication
- * dialog is a Phase 3 / 4 consumer).
+ * no polkit-qt types leaking out; it has no UI of its own (phosphor-shell-polkit
+ * draws the authentication prompt).
  *
  * Shells consume:
  *   - `PolkitAgent`: registers as the session's authentication agent and

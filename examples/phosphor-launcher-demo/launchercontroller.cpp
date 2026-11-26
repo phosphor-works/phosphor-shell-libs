@@ -61,8 +61,8 @@ LauncherController::LauncherController(QObject* parent)
     , m_model(new PhosphorShellLauncher::LauncherModel(this))
 {
     // Register the built-ins as ILauncherProviderFactory instances, the
-    // same seam a plugin would come through. Capabilities are advisory
-    // until the Phase 5 runtime, declared now so the built-ins exercise
+    // same seam a plugin would come through. Nothing enforces capabilities
+    // yet, but they are declared so the built-ins exercise
     // the IFactoryBase::capabilities() surface a plugin factory will. The
     // windows provider is not registered here: it needs the shell's
     // Toplevels model, which the shell owns.

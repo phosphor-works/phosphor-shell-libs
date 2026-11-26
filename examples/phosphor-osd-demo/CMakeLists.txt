@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# phosphor-osd-demo, the Phase 3.3 acceptance demo for the Phosphor.OSD
+# phosphor-osd-demo, the demo for the Phosphor.OSD
 # framework. An OSDHost overlay driven by in-window buttons and by
 # `phosphorctl call osd.show <kind> <value>`. The four built-in OSDs are
 # supplied by OSDController's Registry<IOSDFactory>.

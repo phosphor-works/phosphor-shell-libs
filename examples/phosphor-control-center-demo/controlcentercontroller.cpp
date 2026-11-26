@@ -28,8 +28,7 @@ const QString kModule = QStringLiteral("Phosphor.ControlCenter");
 ControlCenterController::ControlCenterController(PhosphorServiceIdle::IdleService* idleService, QObject* parent)
     : QObject(parent)
 {
-    // Capabilities are advisory until the Phase 5 capability runtime lands,
-    // but they are declared now so the built-ins exercise the same
+    // Nothing enforces capabilities yet, but they are declared so the built-ins exercise the same
     // IFactoryBase::capabilities() surface a plugin factory will.
     const auto reg = [this](const QString& id, const QString& name, const QString& type, const QString& capability,
                             const QVariantMap& initialProperties = {}) {

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Phosphor Works Team
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# phosphor-launcher-demo, the Phase 4.2 acceptance demo for the
+# phosphor-launcher-demo, the demo for the
 # Phosphor.Launcher surface. The spotlight launcher in a plain window,
 # driven by the real providers over this machine's applications,
 # clipboard and PATH, supplied through a Registry<ILauncherProviderFactory>.

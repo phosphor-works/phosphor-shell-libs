@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
-// phosphor-control-center-demo, the Phase 4.4 acceptance demo.
+// phosphor-control-center-demo, the demo.
 //
 // A control-center surface driven by real services: the tiles here talk
 // to NetworkManager, BlueZ, PipeWire, logind and the idle ladder on this

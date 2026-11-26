@@ -21,8 +21,7 @@
 namespace {
 
 // XDG-conformant default. Edit this file (or copy a matugen output to
-// it) and the demo retints in <100 ms, that's the acceptance test for
-// Phase 1.1 hot-reload.
+// it) and the demo retints in under 100 ms: that is the hot-reload check.
 QString defaultPalettePath()
 {
     return QDir(PhosphorPaths::appDataDir()).filePath(QStringLiteral("palettes/current.json"));

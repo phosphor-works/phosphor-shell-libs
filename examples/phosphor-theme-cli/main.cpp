@@ -5,7 +5,7 @@
 //
 // Wraps MatugenRunner + PaletteStore + TemplateEngine so the matugen
 // round-trip and template renderer can be exercised without launching
-// the shell. This is the Phase 1.1 example-CLI acceptance test.
+// the shell.
 
 #include <PhosphorPaths/SuiteDirectories.h>
 #include <PhosphorTheme/MatugenRunner.h>

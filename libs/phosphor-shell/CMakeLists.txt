@@ -266,7 +266,7 @@ set_target_properties(PhosphorShell PROPERTIES
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 # First QML-side surface from phosphor-shell. URI Phosphor.Shell. Hosts
-# `PerScreen.qml` (Phase 1.5) — a reset-aware Instantiator wrapper around
+# `PerScreen.qml` — a reset-aware Instantiator wrapper around
 # ScreenModel that keys delegates on QScreen* identity so hot-plug
 # doesn't tear down delegates for surviving screens. Mirrors the
 # Phosphor.Theme / Phosphor.Popout split: separate static QML module

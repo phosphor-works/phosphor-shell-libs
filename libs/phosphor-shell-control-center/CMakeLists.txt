@@ -8,7 +8,7 @@
 # and built on the phosphor-shell-widgets atoms (PhosphorRipple).
 #
 # The concrete tiles are supplied through Registry<IControlCenterTileFactory>
-# (phosphor-registry, Phase 1.3), so this module holds no service
+# (phosphor-registry), so this module holds no service
 # dependency: it never links phosphor-service-*, and a tile that needs
 # NetworkManager is the shell's problem to register, not this library's to
 # know about.
@@ -145,8 +145,7 @@ endif()
 
 # No install rules: PhosphorShellControlCenterQml is a STATIC, in-tree-only
 # QML module (like PhosphorShellOsdQml / PhosphorShellWidgetsQml). It is
-# linked directly by the shell; a standalone installed deployment lands
-# with the shell binary in Phase 4.
+# linked directly by the shell. Nothing installs the module on its own.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tests

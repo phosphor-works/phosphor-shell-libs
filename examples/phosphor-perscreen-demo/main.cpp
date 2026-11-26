@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // phosphor-perscreen-demo. Acceptance harness for the Phosphor.Shell
-// PerScreen helper (Phase 1.5).
+// PerScreen helper.
 //
 // Wires the QGuiApplication-backed DefaultScreenProvider through
 // ScreenModel and exposes the model to QML as a context property. The

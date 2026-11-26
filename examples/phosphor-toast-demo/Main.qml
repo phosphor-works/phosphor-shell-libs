@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Phosphor Works Team
 // SPDX-License-Identifier: GPL-3.0-or-later
-// phosphor-toast-demo, the Phase 3.4 acceptance demo.
+// phosphor-toast-demo, the demo.
 //
 // A ToastHost overlay fed two ways: real notifications from the
 // NotificationServer (so `notify-send` raises a toast when this process

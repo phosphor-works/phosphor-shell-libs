@@ -136,8 +136,7 @@ endif()
 
 # No install rules: PhosphorShellOsdQml is a STATIC, in-tree-only QML
 # module (like PhosphorShellWidgetsQml / PhosphorPopoutQml). It is linked
-# directly by the shell and the osd demo; a standalone installed
-# deployment lands with the shell binary in Phase 4.
+# directly by the shell and the osd demo. Nothing installs the module on its own.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tests

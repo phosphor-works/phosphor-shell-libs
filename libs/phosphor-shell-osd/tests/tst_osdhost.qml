@@ -350,7 +350,7 @@ TestCase {
 
     function test_band_falls_back_without_a_map() {
         // No placementMap bound and no Phosphor.Shell singleton in this
-        // engine: the screen edge, as in phase 1.
+        // engine: the band falls back to the screen edge.
         const h = createTemporaryObject(hostComp, testCase, {
             "screenName": "DP-1",
             "edgeMargin": 8

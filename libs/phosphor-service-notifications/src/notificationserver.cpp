@@ -468,7 +468,7 @@ QStringList NotificationServer::GetCapabilities()
     // Advertise only what the server can honestly back today. "persistence" is
     // now backed: the server retains live notifications (NotificationModel
     // exposes them) until they are closed, rather than discarding on display.
-    // "body-markup" stays out until a renderer exists (Phase 4.3).
+    // "body-markup" stays out until a renderer exists.
     return {QStringLiteral("body"),        QStringLiteral("actions"),     QStringLiteral("icon-static"),
             QStringLiteral("persistence"), QStringLiteral("body-images"), QStringLiteral("inline-reply")};
 }

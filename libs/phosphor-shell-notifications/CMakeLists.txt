@@ -108,8 +108,7 @@ if(TARGET PhosphorThemeQmlplugin)
 endif()
 # No install rules: STATIC, in-tree-only QML module (like the sibling
 # phosphor-shell-* QML modules). Linked directly by the shell and the
-# toast demo; a standalone installed deployment lands with the shell
-# binary in Phase 4.
+# toast demo. Nothing installs the module on its own.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tests
