@@ -16,7 +16,7 @@ namespace PhosphorServiceClipboard {
  * @brief Clipboard-history host for Phosphor-based desktop shells.
  *
  * Watches the session clipboard through `phosphor-wayland`'s `ClipboardDevice`
- * (a `wlr-data-control` client), keeps a de-duplicated, capped, on-disk history,
+ * (a data-control client), keeps a de-duplicated, capped, on-disk history,
  * and can re-apply any entry. It is the policy / history / persistence layer over
  * the raw device; it composes the device rather than binding the protocol itself,
  * so its public surface is a clean Qt/QML type with no Wayland types leaking out.
@@ -37,9 +37,9 @@ public:
     explicit ClipboardService(QObject* parent = nullptr);
     ~ClipboardService() override;
 
-    /// Whether the compositor advertises the `wlr-data-control` protocol this
-    /// service builds on. When false the service constructs but stays inert
-    /// (the persisted history still loads and is readable).
+    /// Whether the compositor advertises a data-control protocol this service
+    /// builds on (`ext-data-control-v1`, or the older `wlr-data-control`). When false the service constructs but stays
+    /// inert (the persisted history still loads and is readable).
     [[nodiscard]] bool isSupported() const;
 
     /// The history list model (most-recent first). Owned by the service.

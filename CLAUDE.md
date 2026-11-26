@@ -75,7 +75,8 @@ never a crash.
 
 - Workspaces are ext-workspace-v1 (`libs/phosphor-shell/protocols/`). Toplevels are wlr-foreign-toplevel. Night light
   is wlr-gamma-control (`libs/phosphor-service-nightlight/protocols/`). Lock is ext-session-lock-v1 through
-  phosphor-wayland. Clipboard history is wlr-data-control through phosphor-wayland.
+  phosphor-wayland. Clipboard history is ext-data-control-v1 through phosphor-wayland, which falls back to
+  wlr-data-control on a compositor that has only that one.
 - Nothing new talks to `org.kde.KWin`, reads `kwinrc` or needs a KWin-only protocol. On KWin some features are
   unavailable (night light, the toplevel list), and that is the intended behavior.
 - A vendored protocol XML keeps its own license. Add each one to the third-party table in `README.md`.

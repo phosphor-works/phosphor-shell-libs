@@ -9,11 +9,11 @@ This library is a clipboard-history service for Phosphor-based desktop shells.
 
 The library watches the session clipboard, keeps a de-duplicated, capped history on disk, and can apply any entry
 again. It is the policy, history and persistence layer over `phosphor-wayland`'s `ClipboardDevice` (a
-`wlr-data-control` client). It composes the device and does not bind the protocol itself. Thus its public interface
+data-control client). It composes the device and does not bind the protocol itself. Thus its public interface
 is a clean Qt/QML type, with no Wayland types. It shows the history as a model, and the shell shows the picker. The
 library has no UI.
 
-- Watch the clipboard independent of keyboard focus (`wlr-data-control`).
+- Watch the clipboard independent of keyboard focus (data-control).
 - Keep a de-duplicated, capped history that stays after a restart.
 - Never read or keep a sensitive selection (password-manager hints).
 - Apply a history entry to the clipboard again on request.
@@ -82,7 +82,7 @@ phosphor-service-clipboard-cli copy 2
 ## Tests and demo
 
 The `examples/phosphor-service-clipboard-cli` demo gives `watch` / `list` / `copy` against a live session. Four
-test binaries cover the deterministic behavior with no `wlr-data-control`:
+test binaries cover the deterministic behavior with no data-control protocol:
 
 | Test | What it covers |
 | --- | --- |
@@ -93,7 +93,7 @@ test binaries cover the deterministic behavior with no `wlr-data-control`:
 
 ## Design notes
 
-- **Composes the foundation primitive.** The `wlr-data-control` client is in `phosphor-wayland`
+- **Composes the foundation primitive.** The data-control client is in `phosphor-wayland`
   (`ClipboardDevice`). This library links it privately and adds the history, de-duplication, persistence and model
   layer. It binds no protocols itself.
 - **Reads asynchronously.** The library reads each new selection from a pipe on the event loop. `receive` returns
@@ -111,8 +111,8 @@ test binaries cover the deterministic behavior with no `wlr-data-control`:
 
 ## Dependencies
 
-- `phosphor-wayland` (private link: the `ClipboardDevice` `wlr-data-control` client and the vendored protocol code).
+- `phosphor-wayland` (private link: the `ClipboardDevice` data-control client and the vendored protocol code).
   No separate `wayland-protocols` dependency.
 - Qt6 >= 6.6 (Core, Qml). The CLI also uses Qt6 Gui for `QGuiApplication`.
-- A compositor that advertises `wlr-data-control-unstable-v1`, for the live path. Without it the library loads
-  inert, and the saved history still loads and reads.
+- A compositor that advertises `ext-data-control-v1` or, as a fallback, `wlr-data-control-unstable-v1`, for the
+  live path. Without one the library loads inert, and the saved history still loads and reads.

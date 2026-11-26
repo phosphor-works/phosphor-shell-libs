@@ -5,7 +5,7 @@
 # phosphor-service-clipboard library. `watch` logs each new clipboard entry,
 # `list` prints the persisted history, and `copy <n>` re-applies an entry to the
 # selection. It runs under the phosphorwayland QPA shell integration
-# (registerLayerShellPlugin, before QGuiApplication) so the wlr-data-control
+# (registerLayerShellPlugin, before QGuiApplication) so the data-control
 # protocol is live. Pinned to Qt6 6.6 so it builds stand-alone from this
 # directory too.
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui)
