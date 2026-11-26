@@ -211,7 +211,10 @@ void PwAudioProbe::start(const QString& nodeName, bool capture)
         return;
     }
     uint8_t bytes[1024];
-    auto builder = SPA_POD_BUILDER_INIT(bytes, sizeof(bytes));
+    // spa_pod_builder_init, not SPA_POD_BUILDER_INIT: the macro is a C
+    // compound literal, which C++ does not have.
+    spa_pod_builder builder{};
+    spa_pod_builder_init(&builder, bytes, sizeof(bytes));
     spa_audio_info_raw format{};
     format.format = SPA_AUDIO_FORMAT_F32;
     format.rate = 48000;

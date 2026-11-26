@@ -232,7 +232,10 @@ void PipeWireConnection::Private::doParamWrite(const ParamWriteRequest& req)
     static_assert(SPA_AUDIO_MAX_CHANNELS * sizeof(float) + 256 <= 1024,
                   "raise pod buffer: SPA_AUDIO_MAX_CHANNELS grew");
     uint8_t buffer[1024];
-    spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
+    // spa_pod_builder_init, not SPA_POD_BUILDER_INIT: the macro is a C
+    // compound literal, which C++ does not have.
+    spa_pod_builder b{};
+    spa_pod_builder_init(&b, buffer, sizeof(buffer));
     spa_pod_frame frame;
     spa_pod_builder_push_object(&b, &frame, SPA_TYPE_OBJECT_Props, SPA_PARAM_Props);
     if (volumeCount > 0) {
