@@ -4,7 +4,7 @@
 // phosphor-osd-demo entry point.
 //
 // QGuiApplication + QQmlApplicationEngine + an IpcRouter so the OSD
-// overlay can be driven from a terminal (`phosphorctl call osd.show
+// overlay can be driven from a terminal (`lambentctl call osd.show
 // --arg kind=volume --arg value=62`). The OSDController owns a
 // Registry<IOSDFactory> with the
 // four built-in OSDs and is exposed to QML as the OSDHost provider.
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
     PhosphorOsdDemo::OSDController osdController;
 
-    // IPC router so `phosphorctl call osd.show ...` reaches the overlay.
+    // IPC router so `lambentctl call osd.show ...` reaches the overlay.
     // Socket: $PHOSPHOR_OSD_DEMO_SOCKET (the variable phosphor-ipc gives the
     // app phosphor-osd-demo), else a CMake-injected per-build path. The name
     // PHOSPHOR_SOCKET belongs to the compositor.

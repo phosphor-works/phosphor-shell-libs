@@ -66,7 +66,7 @@ ListView {
 }
 ```
 
-`examples/phosphor-service-notifications-cli` is a `phosphorctl`-style CLI with the subcommands watch, send, close
+`examples/phosphor-service-notifications-cli` is a CLI like `lambentctl` with the subcommands watch, send, close
 and info. It runs as the daemon and logs the notifications that it receives.
 
 ## Capabilities

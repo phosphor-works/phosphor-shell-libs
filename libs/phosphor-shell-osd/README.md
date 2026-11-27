@@ -64,7 +64,7 @@ The `targetScreen` argument of `show()` routes the trigger. `""` or no argument 
 ## Tests
 
 A QtQuickTest suite tests `OSDHost`, the band chrome and the four built-in OSDs. The acceptance demo is
-`../../examples/phosphor-osd-demo/`, and `phosphorctl call osd.show` drives it.
+`../../examples/phosphor-osd-demo/`, and `lambentctl call osd.show` drives it.
 
 ## Design notes
 

@@ -86,7 +86,7 @@ Connections {
 | --- | --- |
 | Smoke harness | The public contract: model role names, the lifecycle, the request and response state machine of the agent, and one delayed-reply round trip. It runs over a session-bus loopback, with no daemon. |
 | `phosphor-dbus` | The ObjectManager observer has its own loopback test. Other services (notifications, session) use the same observer. |
-| `examples/phosphor-service-bluetooth-cli` | A `phosphorctl`-style CLI demo with the commands status, list-adapters, list-devices, power, scan, pair, connect, disconnect, trust, untrust and remove. |
+| `examples/phosphor-service-bluetooth-cli` | A CLI like `lambentctl` demo with the commands status, list-adapters, list-devices, power, scan, pair, connect, disconnect, trust, untrust and remove. |
 
 ## Design notes
 

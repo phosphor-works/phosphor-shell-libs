@@ -22,7 +22,7 @@ DemoController::DemoController(QObject* parent)
 {
     // Reflect registry churn into the status panel so the demo
     // window shows live state without the user having to run
-    // `phosphorctl list` in another terminal.
+    // `lambentctl list` in another terminal.
     QObject::connect(m_router.get(), &PhosphorIpc::IpcRouter::targetRegistered, this,
                      &DemoController::onTargetRegistered);
     QObject::connect(m_router.get(), &PhosphorIpc::IpcRouter::targetUnregistered, this,
@@ -89,7 +89,7 @@ QStringList DemoController::eventLog() const
 void DemoController::recordEvent(const QString& targetName, const QString& signalName, const QVariantList& args)
 {
     // Format: "HH:mm:ss  target.signal(arg1, arg2)". Timestamp lets
-    // the user correlate a phosphorctl call burst against the visible
+    // the user correlate a lambentctl call burst against the visible
     // event stream when running side-by-side.
     QStringList parts;
     parts.reserve(args.size());

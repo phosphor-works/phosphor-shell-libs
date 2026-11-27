@@ -43,7 +43,7 @@ include(GenerateExportHeader)
 # QColor / QGuiApplication, and consumers that put these types into a
 # QQmlEngine already drag in Qt::Gui themselves through their
 # application infrastructure. Keeping the lib Gui-free lets CLI
-# consumers (phosphorctl-style demos) link it without inheriting the
+# consumers (lambentctl-style demos) link it without inheriting the
 # full GUI stack.
 find_package(Qt6 ${PHOSPHORSERVICEUPOWER_QT_MIN} REQUIRED COMPONENTS Core Qml DBus)
 

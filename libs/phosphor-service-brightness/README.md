@@ -65,7 +65,7 @@ Repeater {
 | Item | What it covers |
 | --- | --- |
 | Smoke harness | Enumeration, the `kbd_backlight` filter, the percentage math, divide-by-zero safety, live watcher updates, the model role names, the async add and remove of the model and its reset when the host is destroyed. Also the logind write path for the `backlight` and `leds` subsystems, and the route, clamp and read-back path of `ExternalDisplay`. It runs against a fake sysfs tree, a fake logind over a session-bus loopback and a recording setter (no I2C). It needs no root and no daemon. |
-| `examples/phosphor-service-brightness-cli` | A `phosphorctl`-style CLI demo with the commands list, get and set. The live DDC/CI worker needs hardware, so this CLI checks it against real monitors. |
+| `examples/phosphor-service-brightness-cli` | A CLI like `lambentctl` demo with the commands list, get and set. The live DDC/CI worker needs hardware, so this CLI checks it against real monitors. |
 
 ## Design notes
 

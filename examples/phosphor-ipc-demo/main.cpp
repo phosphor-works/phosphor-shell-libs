@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // phosphor-ipc-demo. Acceptance harness for phosphor-libs/libs/phosphor-ipc and
-// bin/phosphorctl.
+// lambentctl, or any other program of PhosphorIpcCli.
 //
 // QGuiApplication + IpcRouter bound to a per-build socket path
 // (overridable via --socket / $PHOSPHOR_IPC_DEMO_SOCKET). The QML side
 // declares three IpcTargets (greet, count, set-value) that
-// `phosphorctl call`, `phosphorctl schema`, and
-// `phosphorctl subscribe` exercise. Window shows registered
+// `lambentctl call`, `lambentctl schema`, and
+// `lambentctl subscribe` exercise. Window shows registered
 // targets + most recent socket activity.
 
 #include "DemoController.h"
@@ -49,8 +49,7 @@ int main(int argc, char* argv[])
     PhosphorIpcDemo::DemoController demoController;
 
     // Resolve socket path priority: --socket > $PHOSPHOR_IPC_DEMO_SOCKET
-    // (the variable phosphor-ipc gives the app phosphor-ipc-demo, so that
-    // `phosphorctl --app phosphor-ipc-demo` finds it too) > the
+    // (the variable that phosphor-ipc gives the app phosphor-ipc-demo) > the
     // PHOSPHOR_IPC_DEMO_SOCKET CMake injection. The name PHOSPHOR_SOCKET
     // belongs to the compositor.
     QString socketPath = parser.value(socketOption);

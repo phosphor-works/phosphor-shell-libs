@@ -213,11 +213,11 @@ if(PHOSPHOR_SHELL_LIBS_BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ex
 #   phosphor-popout-demo — popout arbitration harness (popout + theme).
 #   phosphor-registry-demo — in-process IBarWidgetFactory registration
 #                            (registry + theme).
-#   phosphor-ipc-demo    — three IpcTargets driven via phosphorctl.
+#   phosphor-ipc-demo    — three IpcTargets driven via lambentctl.
 #   phosphor-widgets-kitchen-sink — every Phosphor.Widgets atom in its
 #                            enabled/disabled states (widgets + theme).
 #   phosphor-osd-demo — OSDHost overlay; the four built-in OSDs via
-#                            Registry<IOSDFactory>, driven by phosphorctl.
+#                            Registry<IOSDFactory>, driven by lambentctl.
 #   phosphor-toast-demo — ToastHost overlay fed by a real NotificationServer
 #                            (notify-send) + buttons; DND exercises the rules seam.
 add_subdirectory(examples/phosphor-theme-demo)

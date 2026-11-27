@@ -3,7 +3,7 @@
 #
 # phosphor-osd-demo, the demo for the Phosphor.OSD
 # framework. An OSDHost overlay driven by in-window buttons and by
-# `phosphorctl call osd.show <kind> <value>`. The four built-in OSDs are
+# `lambentctl call osd.show <kind> <value>`. The four built-in OSDs are
 # supplied by OSDController's Registry<IOSDFactory>.
 
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 QuickShapes)

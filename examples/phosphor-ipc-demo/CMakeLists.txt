@@ -3,7 +3,7 @@
 #
 # phosphor-ipc-demo. Acceptance harness for phosphor-libs/libs/phosphor-ipc, three
 # IpcTargets declared in QML are driven from another terminal via
-# phosphorctl. Demonstrates the full call / list / schema / subscribe
+# lambentctl. Demonstrates the full call / list / schema / subscribe
 # wire surface.
 
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
