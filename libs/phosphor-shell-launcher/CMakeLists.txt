@@ -81,6 +81,10 @@ set(phosphorshelllauncher_SRCS
     src/launchhelpers_p.h
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorShellLauncher SHARED
     ${phosphorshelllauncher_public_HDRS}
     ${phosphorshelllauncher_SRCS}
@@ -148,22 +152,16 @@ set_target_properties(PhosphorShellLauncher PROPERTIES
 # that lands nowhere. The QML module below is STATIC and correctly installs
 # nothing, since it rides inside the binary.
 
-install(TARGETS PhosphorShellLauncher
-    EXPORT PhosphorShellLauncherTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorShellLauncher EXPORT PhosphorShellLauncherTargets)
 
-install(FILES ${phosphorshelllauncher_public_HDRS}
+phosphor_install_devel(FILES ${phosphorshelllauncher_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorShellLauncher
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/PhosphorShellLauncher/phosphorshelllauncher_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/PhosphorShellLauncher/phosphorshelllauncher_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorShellLauncher
 )
 
-install(EXPORT PhosphorShellLauncherTargets
+phosphor_install_devel(EXPORT PhosphorShellLauncherTargets
     FILE PhosphorShellLauncherTargets.cmake
     NAMESPACE PhosphorShellLauncher::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorShellLauncher
@@ -180,7 +178,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSHELLLAUNCHER_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorShellLauncherConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorShellLauncherConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorShellLauncher

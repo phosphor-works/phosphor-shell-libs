@@ -180,6 +180,10 @@ set(phosphorshell_SRCS
 # Main Shared Library
 # ═══════════════════════════════════════════════════════════════════════════════
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorShell SHARED
     ${phosphorshell_public_HDRS}
     ${phosphorshell_SRCS}
@@ -321,21 +325,16 @@ target_link_libraries(PhosphorShellQml
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorShell
-    EXPORT PhosphorShellTargets
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-)
+phosphor_install_targets(TARGETS PhosphorShell EXPORT PhosphorShellTargets)
 
-install(FILES ${phosphorshell_public_HDRS}
+phosphor_install_devel(FILES ${phosphorshell_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorShell
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorShell/phosphorshell_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorShell/phosphorshell_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorShell
 )
 
-install(EXPORT PhosphorShellTargets
+phosphor_install_devel(EXPORT PhosphorShellTargets
     FILE PhosphorShellTargets.cmake
     NAMESPACE PhosphorShell::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorShell
@@ -352,7 +351,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSHELL_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorShellConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorShellConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorShell

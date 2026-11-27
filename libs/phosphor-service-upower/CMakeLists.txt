@@ -68,6 +68,10 @@ set(phosphorserviceupower_SRCS
     src/upowerdevicemodel.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorServiceUPower SHARED
     ${phosphorserviceupower_public_HDRS}
     ${phosphorserviceupower_SRCS}
@@ -123,22 +127,16 @@ set_target_properties(PhosphorServiceUPower PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServiceUPower
-    EXPORT PhosphorServiceUPowerTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServiceUPower EXPORT PhosphorServiceUPowerTargets)
 
-install(FILES ${phosphorserviceupower_public_HDRS}
+phosphor_install_devel(FILES ${phosphorserviceupower_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceUPower
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceUPower/phosphorserviceupower_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceUPower/phosphorserviceupower_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceUPower
 )
 
-install(EXPORT PhosphorServiceUPowerTargets
+phosphor_install_devel(EXPORT PhosphorServiceUPowerTargets
     FILE PhosphorServiceUPowerTargets.cmake
     NAMESPACE PhosphorServiceUPower::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceUPower
@@ -155,7 +153,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICEUPOWER_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceUPowerConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceUPowerConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceUPower

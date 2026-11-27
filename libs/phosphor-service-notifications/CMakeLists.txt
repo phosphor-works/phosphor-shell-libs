@@ -86,6 +86,10 @@ set(phosphorservicenotifications_SRCS
     src/notificationmodel.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorServiceNotifications SHARED
     ${phosphorservicenotifications_public_HDRS}
     ${phosphorservicenotifications_SRCS}
@@ -144,22 +148,16 @@ set_target_properties(PhosphorServiceNotifications PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServiceNotifications
-    EXPORT PhosphorServiceNotificationsTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServiceNotifications EXPORT PhosphorServiceNotificationsTargets)
 
-install(FILES ${phosphorservicenotifications_public_HDRS}
+phosphor_install_devel(FILES ${phosphorservicenotifications_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceNotifications
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNotifications/phosphorservicenotifications_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNotifications/phosphorservicenotifications_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceNotifications
 )
 
-install(EXPORT PhosphorServiceNotificationsTargets
+phosphor_install_devel(EXPORT PhosphorServiceNotificationsTargets
     FILE PhosphorServiceNotificationsTargets.cmake
     NAMESPACE PhosphorServiceNotifications::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceNotifications
@@ -176,7 +174,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICENOTIFICATIONS_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNotificationsConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNotificationsConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceNotifications

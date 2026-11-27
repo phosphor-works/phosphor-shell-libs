@@ -77,6 +77,10 @@ set(phosphortheme_SRCS
     src/templateengine.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorTheme SHARED
     ${phosphortheme_public_HDRS}
     ${phosphortheme_SRCS}
@@ -323,21 +327,16 @@ if(NOT DEFINED KDE_INSTALL_QMLDIR)
     set(KDE_INSTALL_QMLDIR ${CMAKE_INSTALL_LIBDIR}/qt6/qml)
 endif()
 
-install(TARGETS PhosphorTheme
-    EXPORT PhosphorThemeTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-)
+phosphor_install_targets(TARGETS PhosphorTheme EXPORT PhosphorThemeTargets)
 
-install(FILES ${phosphortheme_public_HDRS}
+phosphor_install_devel(FILES ${phosphortheme_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorTheme
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorTheme/phosphortheme_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorTheme/phosphortheme_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorTheme
 )
 
-install(EXPORT PhosphorThemeTargets
+phosphor_install_devel(EXPORT PhosphorThemeTargets
     FILE PhosphorThemeTargets.cmake
     NAMESPACE PhosphorTheme::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorTheme
@@ -354,7 +353,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORTHEME_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorThemeConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorThemeConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorTheme
@@ -367,14 +366,14 @@ install(FILES
 if(PHOSPHOR_THEME_QML_INSTALL)
     set(_phosphor_theme_qml_install_dir "${KDE_INSTALL_QMLDIR}/Phosphor/Theme")
 
-    install(TARGETS PhosphorThemeQmlShared ${_phosphor_theme_qml_shared_plugin_target}
+    phosphor_install_devel(TARGETS PhosphorThemeQmlShared ${_phosphor_theme_qml_shared_plugin_target}
         EXPORT PhosphorThemeQmlTargets
         RUNTIME DESTINATION ${_phosphor_theme_qml_install_dir}
         LIBRARY DESTINATION ${_phosphor_theme_qml_install_dir}
         ARCHIVE DESTINATION ${_phosphor_theme_qml_install_dir}
     )
 
-    install(FILES
+    phosphor_install_devel(FILES
             ${CMAKE_BINARY_DIR}/qml_install/Phosphor/Theme/qmldir
             ${CMAKE_BINARY_DIR}/qml_install/Phosphor/Theme/PhosphorThemeQmlShared.qmltypes
         DESTINATION ${_phosphor_theme_qml_install_dir}
@@ -387,7 +386,7 @@ if(PHOSPHOR_THEME_QML_INSTALL)
     # that transforms them still ships.
     foreach(_qml_singleton IN LISTS _phosphor_theme_qml_singletons)
         get_filename_component(_qml_basename ${_qml_singleton} NAME)
-        install(FILES
+        phosphor_install_devel(FILES
                 ${CMAKE_BINARY_DIR}/qml_install/Phosphor/Theme/${_qml_basename}
             DESTINATION ${_phosphor_theme_qml_install_dir}
         )

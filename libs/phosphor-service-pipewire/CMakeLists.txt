@@ -103,6 +103,10 @@ set(phosphorservicepipewire_PRIVATE_HDRS
     src/pipewireconnection_p.h
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorServicePipeWire SHARED
     ${phosphorservicepipewire_public_HDRS}
     ${phosphorservicepipewire_PRIVATE_HDRS}
@@ -160,22 +164,16 @@ set_target_properties(PhosphorServicePipeWire PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServicePipeWire
-    EXPORT PhosphorServicePipeWireTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServicePipeWire EXPORT PhosphorServicePipeWireTargets)
 
-install(FILES ${phosphorservicepipewire_public_HDRS}
+phosphor_install_devel(FILES ${phosphorservicepipewire_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServicePipeWire
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePipeWire/phosphorservicepipewire_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePipeWire/phosphorservicepipewire_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServicePipeWire
 )
 
-install(EXPORT PhosphorServicePipeWireTargets
+phosphor_install_devel(EXPORT PhosphorServicePipeWireTargets
     FILE PhosphorServicePipeWireTargets.cmake
     NAMESPACE PhosphorServicePipeWire::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServicePipeWire
@@ -192,7 +190,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICEPIPEWIRE_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePipeWireConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePipeWireConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServicePipeWire
