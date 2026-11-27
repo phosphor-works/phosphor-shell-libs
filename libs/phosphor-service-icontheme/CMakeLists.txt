@@ -140,7 +140,7 @@ phosphor_install_devel(FILES
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceIconTheme
 )
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceIconTheme" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceIconTheme" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)

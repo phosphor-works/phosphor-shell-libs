@@ -289,7 +289,7 @@ phosphor_install_devel(FILES
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorPopout" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorPopout" OR PHOSPHOR_SHELL_LIBS_TESTS)
     # enable_testing() is a no-op when KDECMakeSettings already
     # included CTest at the top level. The redundant call lets a
     # standalone build of this subproject still discover ctest.

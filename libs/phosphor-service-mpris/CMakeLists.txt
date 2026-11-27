@@ -136,7 +136,7 @@ phosphor_install_devel(FILES
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceMpris
 )
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceMpris" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceMpris" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)

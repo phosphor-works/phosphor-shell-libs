@@ -203,7 +203,7 @@ target_link_libraries(PhosphorShellWidgetsQml
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorShellWidgets" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorShellWidgets" OR PHOSPHOR_SHELL_LIBS_TESTS)
     # enable_testing() is a no-op when KDECMakeSettings already included
     # CTest at the top level. The redundant call lets a standalone build
     # of this subproject still discover ctest.
