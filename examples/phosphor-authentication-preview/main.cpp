@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
     QString socketPath = parser.value(QStringLiteral("socket"));
     if (socketPath.isEmpty()) {
-        socketPath = qEnvironmentVariable("PHOSPHOR_SOCKET");
+        socketPath = qEnvironmentVariable("PHOSPHOR_AUTHENTICATION_PREVIEW_SOCKET");
     }
     if (socketPath.isEmpty()) {
         socketPath = QDir(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation))

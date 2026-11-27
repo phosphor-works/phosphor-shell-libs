@@ -51,7 +51,7 @@ target_compile_features(phosphor-ipc-demo PRIVATE cxx_std_20)
 
 # CMake-injected default socket path keeps `./bin/phosphor-ipc-demo`
 # usable without --socket. CI / manual runs override via --socket
-# or PHOSPHOR_SOCKET as documented in main.cpp.
+# or $PHOSPHOR_IPC_DEMO_SOCKET as documented in main.cpp.
 target_compile_definitions(phosphor-ipc-demo
     PRIVATE
         PHOSPHOR_IPC_DEMO_SOCKET="${CMAKE_BINARY_DIR}/phosphor-ipc-demo.sock"

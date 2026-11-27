@@ -137,9 +137,9 @@ ApplicationWindow {
                 font.pixelSize: Tokens.font_size_body_s
                 // When IPC startup failed, demoController.socketPath
                 // is empty; show a placeholder instead of emitting a
-                // bare `export PHOSPHOR_SOCKET=` line which is
+                // bare `export PHOSPHOR_IPC_DEMO_SOCKET=` line which is
                 // a syntax error in the user's shell on paste.
-                text: demoController.socketPath.length > 0 ? qsTr("# In another terminal, events from these calls\n# appear in the Live events panel below.\nexport PHOSPHOR_SOCKET=%1\nphosphorctl call count.increment              # one event per call\nphosphorctl call set-value.set --arg k=mood --arg v=happy\nphosphorctl call greet.sayHello --arg name=nate    # sync, no event\nphosphorctl list\nphosphorctl schema count | jq").arg(demoController.socketPath) : qsTr("# IPC startup failed; cheat sheet unavailable until the router is\n# running. See the status footer for the error.")
+                text: demoController.socketPath.length > 0 ? qsTr("# In another terminal, events from these calls\n# appear in the Live events panel below.\nexport PHOSPHOR_IPC_DEMO_SOCKET=%1\nphosphorctl --app phosphor-ipc-demo call count.increment    # one event per call\nphosphorctl --app phosphor-ipc-demo call set-value.set --arg k=mood --arg v=happy\nphosphorctl --app phosphor-ipc-demo call greet.sayHello --arg name=nate    # sync, no event\nphosphorctl --app phosphor-ipc-demo list\nphosphorctl --app phosphor-ipc-demo schema count | jq").arg(demoController.socketPath) : qsTr("# IPC startup failed; cheat sheet unavailable until the router is\n# running. See the status footer for the error.")
                 textFormat: Text.PlainText
                 verticalAlignment: Text.AlignTop
                 wrapMode: Text.WordWrap

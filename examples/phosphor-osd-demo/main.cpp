@@ -32,10 +32,11 @@ int main(int argc, char* argv[])
     PhosphorOsdDemo::OSDController osdController;
 
     // IPC router so `phosphorctl call osd.show ...` reaches the overlay.
-    // Socket: $PHOSPHOR_SOCKET, else a CMake-injected per-build path,
-    // else the IpcRouter XDG default.
+    // Socket: $PHOSPHOR_OSD_DEMO_SOCKET (the variable phosphor-ipc gives the
+    // app phosphor-osd-demo), else a CMake-injected per-build path. The name
+    // PHOSPHOR_SOCKET belongs to the compositor.
     PhosphorIpc::IpcRouter router;
-    QString socketPath = QProcessEnvironment::systemEnvironment().value(QStringLiteral("PHOSPHOR_SOCKET"));
+    QString socketPath = QProcessEnvironment::systemEnvironment().value(QStringLiteral("PHOSPHOR_OSD_DEMO_SOCKET"));
 #ifdef PHOSPHOR_OSD_DEMO_SOCKET
     if (socketPath.isEmpty()) {
         socketPath = QStringLiteral(PHOSPHOR_OSD_DEMO_SOCKET);
@@ -45,7 +46,7 @@ int main(int argc, char* argv[])
         qWarning(
             "phosphor-osd-demo: IPC router failed to start on '%s' (see preceding log); "
             "the in-window buttons still work",
-            qPrintable(socketPath.isEmpty() ? QStringLiteral("<XDG default>") : socketPath));
+            qPrintable(socketPath.isEmpty() ? QStringLiteral("<no path>") : socketPath));
     }
 
     QQmlApplicationEngine engine;

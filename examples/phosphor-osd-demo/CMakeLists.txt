@@ -50,7 +50,7 @@ add_executable(phosphor-osd-demo
 )
 
 # Per-build IPC socket so concurrent demos don't collide; overridable at
-# runtime via $PHOSPHOR_SOCKET.
+# runtime via $PHOSPHOR_OSD_DEMO_SOCKET.
 target_compile_definitions(phosphor-osd-demo
     PRIVATE PHOSPHOR_OSD_DEMO_SOCKET="${CMAKE_BINARY_DIR}/phosphor-osd-demo.sock"
 )
