@@ -26,7 +26,7 @@ class DemoController : public QObject
     // Live event log, newest first. Each IpcTarget in Main.qml
     // calls recordEvent() alongside its emitEvent() so the demo
     // window shows events flowing as they're broadcast. Bounded to
-    // the most recent 20 entries so a long phosphorctl call session
+    // the most recent 20 entries so a long lambentctl call session
     // doesn't grow the property unbounded.
     Q_PROPERTY(QStringList eventLog READ eventLog NOTIFY eventLogChanged)
 public:
@@ -50,7 +50,7 @@ public:
     // Append "<target>.<signal>([args])" to the eventLog. Called
     // from QML alongside IpcTarget.emitEvent so the demo window
     // visualises the same event stream wire subscribers receive,
-    // removing the need to open a separate `phosphorctl subscribe`
+    // removing the need to open a separate `lambentctl subscribe`
     // terminal to see what subscribe delivers.
     Q_INVOKABLE void recordEvent(const QString& targetName, const QString& signalName, const QVariantList& args);
 

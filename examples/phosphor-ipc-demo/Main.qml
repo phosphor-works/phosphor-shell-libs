@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // phosphor-ipc-demo entry QML. Three IpcTargets (greet / count /
 // set-value) plus a live event-log panel showing the same events
-// `phosphorctl subscribe` would stream, so a single demo window
+// `lambentctl subscribe` would stream, so a single demo window
 // covers the entire acceptance walkthrough without the user
 // having to open a separate subscribe terminal.
 
@@ -21,7 +21,7 @@ ApplicationWindow {
     title: qsTr("Phosphor IPC Demo")
     color: Theme.background
 
-    // Target 1: synchronous greet. `phosphorctl call greet.sayHello --arg name=nate`
+    // Target 1: synchronous greet. `lambentctl call greet.sayHello --arg name=nate`
     // returns "Hello, nate". No event broadcast, sync only.
     IpcTarget {
         target: "greet"
@@ -113,7 +113,7 @@ ApplicationWindow {
             color: Theme.on_surface_variant
             font.family: Tokens.font_family
             font.pixelSize: Tokens.font_size_body_m
-            text: qsTr("Drive the targets from another terminal with phosphorctl. The Live events panel below shows the same events `phosphorctl subscribe` would stream, so no separate subscribe terminal is needed.")
+            text: qsTr("Drive the targets from another terminal with lambentctl. The Live events panel below shows the same events `lambentctl subscribe` would stream, so no separate subscribe terminal is needed.")
             wrapMode: Text.WordWrap
         }
 
@@ -139,7 +139,7 @@ ApplicationWindow {
                 // is empty; show a placeholder instead of emitting a
                 // bare `export PHOSPHOR_IPC_DEMO_SOCKET=` line which is
                 // a syntax error in the user's shell on paste.
-                text: demoController.socketPath.length > 0 ? qsTr("# In another terminal, events from these calls\n# appear in the Live events panel below.\nexport PHOSPHOR_IPC_DEMO_SOCKET=%1\nphosphorctl --app phosphor-ipc-demo call count.increment    # one event per call\nphosphorctl --app phosphor-ipc-demo call set-value.set --arg k=mood --arg v=happy\nphosphorctl --app phosphor-ipc-demo call greet.sayHello --arg name=nate    # sync, no event\nphosphorctl --app phosphor-ipc-demo list\nphosphorctl --app phosphor-ipc-demo schema count | jq").arg(demoController.socketPath) : qsTr("# IPC startup failed; cheat sheet unavailable until the router is\n# running. See the status footer for the error.")
+                text: demoController.socketPath.length > 0 ? qsTr("# In another terminal, events from these calls\n# appear in the Live events panel below.\nexport PHOSPHOR_IPC_DEMO_SOCKET=%1\nlambentctl --socket \"$PHOSPHOR_IPC_DEMO_SOCKET\" call count.increment    # one event per call\nlambentctl --socket \"$PHOSPHOR_IPC_DEMO_SOCKET\" call set-value.set --arg k=mood --arg v=happy\nlambentctl --socket \"$PHOSPHOR_IPC_DEMO_SOCKET\" call greet.sayHello --arg name=nate    # sync, no event\nlambentctl --socket \"$PHOSPHOR_IPC_DEMO_SOCKET\" list\nlambentctl --socket \"$PHOSPHOR_IPC_DEMO_SOCKET\" schema count | jq").arg(demoController.socketPath) : qsTr("# IPC startup failed; cheat sheet unavailable until the router is\n# running. See the status footer for the error.")
                 textFormat: Text.PlainText
                 verticalAlignment: Text.AlignTop
                 wrapMode: Text.WordWrap
@@ -169,7 +169,7 @@ ApplicationWindow {
                     font.family: Tokens.font_family
                     font.pixelSize: Tokens.font_size_body_s
                     font.weight: Tokens.font_weight_medium
-                    text: qsTr("Live events (newest first; matches `phosphorctl subscribe` output)")
+                    text: qsTr("Live events (newest first; matches `lambentctl subscribe` output)")
                 }
                 ListView {
                     id: eventList
@@ -195,7 +195,7 @@ ApplicationWindow {
                         color: Theme.on_surface_variant
                         font.family: Tokens.font_family
                         font.pixelSize: Tokens.font_size_body_s
-                        text: qsTr("(no events yet: run `phosphorctl call count.increment` from a terminal)")
+                        text: qsTr("(no events yet: run `lambentctl call count.increment` from a terminal)")
                         visible: eventList.count === 0
                     }
                 }

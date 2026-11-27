@@ -3,7 +3,7 @@
 // phosphor-osd-demo, the demo.
 //
 // An OSDHost overlay driven two ways: in-window buttons, and
-// `phosphorctl call osd.show <kind> <value>` over IPC. The four built-in
+// `lambentctl call osd.show <kind> <value>` over IPC. The four built-in
 // OSDs are supplied by OSDController's Registry<IOSDFactory>. Repeated
 // triggers of the same kind refresh one OSD (debounce/dedupe) and restart
 // its hold timer.
@@ -31,7 +31,7 @@ ApplicationWindow {
     title: qsTr("Phosphor OSD Demo")
     color: Theme.background
 
-    // IPC: `phosphorctl call osd.show --arg kind=volume --arg value=62`.
+    // IPC: `lambentctl call osd.show --arg kind=volume --arg value=62`.
     // For the stateful OSDs (mic/caps) a value of 0 reads as off/unmuted
     // and non-zero as on/muted; value-based OSDs (volume/brightness) ignore
     // active. Returns OSDHost.show's result so a bad kind reports failure.
@@ -118,7 +118,7 @@ ApplicationWindow {
             Layout.fillHeight: true
         }
 
-        // phosphorctl cheat sheet.
+        // lambentctl cheat sheet.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Tokens.spacing_xxxl * 2
@@ -135,7 +135,7 @@ ApplicationWindow {
                 font.pixelSize: Tokens.font_size_body_s
                 textFormat: Text.PlainText
                 wrapMode: Text.WordWrap
-                text: ipcSocketPath.length > 0 ? qsTr("export PHOSPHOR_OSD_DEMO_SOCKET=%1\nphosphorctl --app phosphor-osd-demo call osd.show --arg kind=volume --arg value=62\nphosphorctl --app phosphor-osd-demo call osd.show --arg kind=mic --arg value=1\nphosphorctl --app phosphor-osd-demo schema osd | jq").arg(ipcSocketPath) : qsTr("# IPC router not running. Use the buttons above.")
+                text: ipcSocketPath.length > 0 ? qsTr("export PHOSPHOR_OSD_DEMO_SOCKET=%1\nlambentctl --socket \"$PHOSPHOR_OSD_DEMO_SOCKET\" call osd.show --arg kind=volume --arg value=62\nlambentctl --socket \"$PHOSPHOR_OSD_DEMO_SOCKET\" call osd.show --arg kind=mic --arg value=1\nlambentctl --socket \"$PHOSPHOR_OSD_DEMO_SOCKET\" schema osd | jq").arg(ipcSocketPath) : qsTr("# IPC router not running. Use the buttons above.")
             }
         }
     }

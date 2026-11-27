@@ -90,7 +90,7 @@ Repeater {
 | --- | --- |
 | Smoke harness | The public contract (role names, enum wire constants, lifecycle), with no daemon. |
 | `test_network_operations` | The live details, profile identity, connection settings and failures, a retry that updates the existing profile, and the deactivation of a late reply after a cancel. It runs against a fake NetworkManager fixture on D-Bus. |
-| `examples/phosphor-service-network-cli` | A `phosphorctl`-style CLI demo with the commands status, list-devices, list-connections, list-aps, scan and connect. |
+| `examples/phosphor-service-network-cli` | A CLI like `lambentctl` demo with the commands status, list-devices, list-connections, list-aps, scan and connect. |
 
 ## Design notes
 

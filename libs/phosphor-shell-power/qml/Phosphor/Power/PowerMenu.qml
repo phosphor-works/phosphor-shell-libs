@@ -11,7 +11,7 @@
 // selection line on the screen's edge slides between words.
 //
 // The column sits on the edge the menu was summoned from, vertically
-// centred either way: the left edge for a keybind or `phosphorctl`; the
+// centred either way: the left edge for a keybind or `lambentctl`; the
 // button's edge when the bar's power button opened it, so the pointer
 // that pressed the button does not cross the screen (`alignRight`).
 //

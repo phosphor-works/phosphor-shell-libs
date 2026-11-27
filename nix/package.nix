@@ -47,11 +47,11 @@ let
   depsArchives = linkFarm "phosphor-shell-libs-deps-archives" (
     [
       {
-        name = "phosphor-libs-8373b436c6454b4d73e28c63bffcd0f87f059c2b.tar.gz";
+        name = "phosphor-libs-e24c011113eac709ca5475092ba1f7938b1fd54e.tar.gz";
         path = fetchurl {
-          url = "https://github.com/phosphor-works/phosphor-libs/archive/8373b436c6454b4d73e28c63bffcd0f87f059c2b.tar.gz";
-          # sha256 986fde5e4895ff596e2e850a4f9113e8418bc97020b20222805b1ccda6706c47
-          hash = "sha256-mG/eXkiV/1luLoUKT5ET6EGLyXAgsgIigFsczaZwbEc=";
+          url = "https://github.com/phosphor-works/phosphor-libs/archive/e24c011113eac709ca5475092ba1f7938b1fd54e.tar.gz";
+          # sha256 2e352b46975aad988c48eb57864a455028e37c129bf3e8adbd8d7b569b4af3f2
+          hash = "sha256-LjUrRpdarZiMSOtXhkpFUCjjfBKb8+itvY17VptK8/I=";
         };
       }
       {
