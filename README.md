@@ -78,6 +78,11 @@ CPMAddPackage(NAME phosphor-shell-libs
 To build the app against a local checkout, configure it with
 `-DCPM_phosphor-shell-libs_SOURCE=/path/to/phosphor-shell-libs`.
 
+The app embeds this tree's libraries as it embeds phosphor-libs': with `PHOSPHOR_EMBED_APP` set, the install holds only
+what the app runs, in the app's own directories. See "Use from an app" in the [phosphor-libs
+README](https://github.com/phosphor-works/phosphor-libs#use-from-an-app). Every install rule here goes through the
+functions of phosphor-libs' `cmake/PhosphorSuite.cmake`.
+
 ## Contributing
 
 The suite conventions are in the [workspace](https://github.com/phosphor-works/workspace) repository, in

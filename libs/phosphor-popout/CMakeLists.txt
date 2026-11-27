@@ -73,6 +73,10 @@ set(phosphorpopout_SRCS
     src/popoutcontroller.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorPopout SHARED
     ${phosphorpopout_public_HDRS}
     ${phosphorpopout_SRCS}
@@ -249,22 +253,16 @@ if(NOT DEFINED KDE_INSTALL_BINDIR)
     set(KDE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
 endif()
 
-install(TARGETS PhosphorPopout
-    EXPORT PhosphorPopoutTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorPopout EXPORT PhosphorPopoutTargets)
 
-install(FILES ${phosphorpopout_public_HDRS}
+phosphor_install_devel(FILES ${phosphorpopout_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorPopout
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorPopout/phosphorpopout_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorPopout/phosphorpopout_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorPopout
 )
 
-install(EXPORT PhosphorPopoutTargets
+phosphor_install_devel(EXPORT PhosphorPopoutTargets
     FILE PhosphorPopoutTargets.cmake
     NAMESPACE PhosphorPopout::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorPopout
@@ -281,7 +279,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORPOPOUT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorPopoutConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorPopoutConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorPopout
@@ -291,7 +289,7 @@ install(FILES
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorPopout" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorPopout" OR PHOSPHOR_SHELL_LIBS_TESTS)
     # enable_testing() is a no-op when KDECMakeSettings already
     # included CTest at the top level. The redundant call lets a
     # standalone build of this subproject still discover ctest.

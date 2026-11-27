@@ -69,6 +69,10 @@ set(phosphorservicepolkit_SRCS
     src/authenticationsession_p.h
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 qt_add_library(PhosphorServicePolkit SHARED
     ${phosphorservicepolkit_public_HDRS}
     ${phosphorservicepolkit_SRCS}
@@ -126,22 +130,16 @@ set_target_properties(PhosphorServicePolkit PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServicePolkit
-    EXPORT PhosphorServicePolkitTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServicePolkit EXPORT PhosphorServicePolkitTargets)
 
-install(FILES ${phosphorservicepolkit_public_HDRS}
+phosphor_install_devel(FILES ${phosphorservicepolkit_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServicePolkit
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePolkit/phosphorservicepolkit_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePolkit/phosphorservicepolkit_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServicePolkit
 )
 
-install(EXPORT PhosphorServicePolkitTargets
+phosphor_install_devel(EXPORT PhosphorServicePolkitTargets
     FILE PhosphorServicePolkitTargets.cmake
     NAMESPACE PhosphorServicePolkit::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServicePolkit
@@ -158,7 +156,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICEPOLKIT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePolkitConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServicePolkitConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServicePolkit
@@ -168,7 +166,7 @@ install(FILES
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServicePolkit" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServicePolkit" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)

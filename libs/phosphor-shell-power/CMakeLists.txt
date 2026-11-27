@@ -125,7 +125,7 @@ endif()
 
 # No install rules: STATIC, in-tree-only QML module linked by the shell binary.
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorShellPower" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorShellPower" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)

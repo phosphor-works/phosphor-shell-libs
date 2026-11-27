@@ -10,8 +10,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 
 ## [Unreleased]
 
+### Added
+
+- An app can embed the libraries (phosphor-libs' `PHOSPHOR_EMBED_APP`): the install then holds only the shared
+  libraries that the app's programs link, in the app's own directory. Every install rule goes through the functions of
+  phosphor-libs' `cmake/PhosphorSuite.cmake`.
+
 ### Changed
 
+- The libraries' tests build only in this repository's own build, or in a library configured on its own. An app or
+  the workspace superbuild that adds the tree with `BUILD_TESTING` on no longer builds them.
 - The clipboard history service watches the clipboard through `ext-data-control-v1` when the compositor has it
   (phosphor-libs `bcad89a2`), and through `wlr-data-control` only when it does not. On KWin, which has only the ext
   protocol, clipboard history now works.

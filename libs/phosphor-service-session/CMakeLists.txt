@@ -76,6 +76,10 @@ set(phosphorservicesession_SRCS
     src/sessionhost.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorServiceSession SHARED
     ${phosphorservicesession_public_HDRS}
     ${phosphorservicesession_SRCS}
@@ -133,22 +137,16 @@ set_target_properties(PhosphorServiceSession PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServiceSession
-    EXPORT PhosphorServiceSessionTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServiceSession EXPORT PhosphorServiceSessionTargets)
 
-install(FILES ${phosphorservicesession_public_HDRS}
+phosphor_install_devel(FILES ${phosphorservicesession_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceSession
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceSession/phosphorservicesession_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceSession/phosphorservicesession_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceSession
 )
 
-install(EXPORT PhosphorServiceSessionTargets
+phosphor_install_devel(EXPORT PhosphorServiceSessionTargets
     FILE PhosphorServiceSessionTargets.cmake
     NAMESPACE PhosphorServiceSession::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceSession
@@ -165,7 +163,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICESESSION_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceSessionConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceSessionConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceSession
@@ -175,7 +173,7 @@ install(FILES
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceSession" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceSession" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)

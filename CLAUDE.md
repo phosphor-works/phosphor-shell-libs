@@ -122,7 +122,7 @@ that moves in from an app or an example is a relicense (see the conventions).
 - The Qt lookups (private modules included) run at this scope before phosphor-libs is added, so its IMPORTED
   targets are visible to every library here. Keep new `find_package` calls for shared targets in that block.
 - Test helpers come from phosphor-libs through `PHOSPHOR_LIBS_CMAKE_DIR` (`PhosphorTestIsolation`,
-  `PhosphorLibTesting`, `PhosphorTestPch`). Each tests `CMakeLists.txt` includes `PhosphorTestIsolation.cmake` with
+  `PhosphorTestPch`). Each tests `CMakeLists.txt` includes `PhosphorTestIsolation.cmake` with
   an `EXISTS` guard on that variable. Keep that form, not a relative path.
 - The top level calls `phosphor_share_test_pch()` once, for this tree's tests and phosphor-libs'. An app that adds
   this tree makes the same call itself.

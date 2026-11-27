@@ -88,6 +88,10 @@ set(phosphorservicenetwork_SRCS
     src/networkconnectionmodel.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorServiceNetwork SHARED
     ${phosphorservicenetwork_public_HDRS}
     ${phosphorservicenetwork_SRCS}
@@ -145,22 +149,16 @@ set_target_properties(PhosphorServiceNetwork PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServiceNetwork
-    EXPORT PhosphorServiceNetworkTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServiceNetwork EXPORT PhosphorServiceNetworkTargets)
 
-install(FILES ${phosphorservicenetwork_public_HDRS}
+phosphor_install_devel(FILES ${phosphorservicenetwork_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceNetwork
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNetwork/phosphorservicenetwork_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNetwork/phosphorservicenetwork_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceNetwork
 )
 
-install(EXPORT PhosphorServiceNetworkTargets
+phosphor_install_devel(EXPORT PhosphorServiceNetworkTargets
     FILE PhosphorServiceNetworkTargets.cmake
     NAMESPACE PhosphorServiceNetwork::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceNetwork
@@ -177,7 +175,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICENETWORK_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNetworkConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceNetworkConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceNetwork
@@ -187,7 +185,7 @@ install(FILES
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceNetwork" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceNetwork" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)

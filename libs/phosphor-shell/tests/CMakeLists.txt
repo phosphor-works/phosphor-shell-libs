@@ -13,8 +13,7 @@ find_package(Qt6 6.10 REQUIRED COMPONENTS Test Qml Quick)
 # a bare module name resolves only through the root project's
 # CMAKE_MODULE_PATH, so a standalone configure of this library (which the
 # repo supports — each lib is meant to stay extractable via `git subtree
-# split`) would hard-fail at generate time. Same shape as the
-# PhosphorLibTesting include in the sibling libraries. Included ONCE, at the
+# split`) would hard-fail at generate time. Included ONCE, at the
 # top, so every add_test below can isolate right where it registers; a second
 # include-and-apply block would double-append the XDG environment.
 if(PHOSPHOR_LIBS_CMAKE_DIR AND EXISTS "${PHOSPHOR_LIBS_CMAKE_DIR}/PhosphorTestIsolation.cmake")

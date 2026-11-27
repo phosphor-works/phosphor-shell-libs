@@ -75,6 +75,10 @@ set(phosphorserviceclipboard_SRCS
     src/waylandclipboardsource.cpp
 )
 
+if(NOT COMMAND phosphor_install_targets)
+    # Configured on its own: the install functions come with phosphor-libs.
+    find_package(PhosphorPaths REQUIRED)
+endif()
 add_library(PhosphorServiceClipboard SHARED
     ${phosphorserviceclipboard_public_HDRS}
     ${phosphorserviceclipboard_SRCS}
@@ -133,22 +137,16 @@ set_target_properties(PhosphorServiceClipboard PROPERTIES
 # Install
 # ═══════════════════════════════════════════════════════════════════════════════
 
-install(TARGETS PhosphorServiceClipboard
-    EXPORT PhosphorServiceClipboardTargets
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${KDE_INSTALL_INCLUDEDIR}
-)
+phosphor_install_targets(TARGETS PhosphorServiceClipboard EXPORT PhosphorServiceClipboardTargets)
 
-install(FILES ${phosphorserviceclipboard_public_HDRS}
+phosphor_install_devel(FILES ${phosphorserviceclipboard_public_HDRS}
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceClipboard
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceClipboard/phosphorserviceclipboard_export.h
+phosphor_install_devel(FILES ${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceClipboard/phosphorserviceclipboard_export.h
     DESTINATION ${KDE_INSTALL_INCLUDEDIR}/PhosphorServiceClipboard
 )
 
-install(EXPORT PhosphorServiceClipboardTargets
+phosphor_install_devel(EXPORT PhosphorServiceClipboardTargets
     FILE PhosphorServiceClipboardTargets.cmake
     NAMESPACE PhosphorServiceClipboard::
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceClipboard
@@ -165,7 +163,7 @@ write_basic_package_version_file(
     VERSION ${PHOSPHORSERVICECLIPBOARD_VERSION}
     COMPATIBILITY SameMajorVersion
 )
-install(FILES
+phosphor_install_devel(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceClipboardConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PhosphorServiceClipboardConfigVersion.cmake"
     DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/PhosphorServiceClipboard
@@ -175,7 +173,7 @@ install(FILES
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
-if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceClipboard" OR BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL "PhosphorServiceClipboard" OR PHOSPHOR_SHELL_LIBS_TESTS)
     enable_testing()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)
