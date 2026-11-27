@@ -246,14 +246,34 @@ private Q_SLOTS:
     }
 
 private:
-    void verifyWatcherItems(int count, const QString& absentOwner = {})
+    // The items of the watcher, or an error message.
+    static QDBusPendingReply<QVariant> watcherItems()
     {
         auto call =
             QDBusMessage::createMethodCall(watcherService, watcherPath, propertiesInterface, QStringLiteral("Get"));
         call << watcherService << QStringLiteral("RegisteredStatusNotifierItems");
-        QDBusPendingCallWatcher reply(QDBusConnection::sessionBus().asyncCall(call));
-        QTRY_VERIFY_WITH_TIMEOUT(reply.isFinished(), 3000);
-        const QDBusPendingReply<QVariant> result = reply;
+        QDBusPendingReply<QVariant> reply = QDBusConnection::sessionBus().asyncCall(call);
+        reply.waitForFinished();
+        return reply;
+    }
+
+    static int watcherItemCount()
+    {
+        const auto reply = watcherItems();
+        return reply.isError() ? -1 : int(reply.value().toStringList().size());
+    }
+
+    // The host and the watcher of this process each watch the owners of
+    // the items, and Qt posts the owner change to each watch as its own
+    // event. The host can thus drop an item, and a QTRY on the host can
+    // end, before the watcher's event runs. A Get to the watcher of this
+    // process does not wait for it either: Qt answers a call to a name of
+    // its own connection at once, without the bus. Thus wait until the
+    // watcher has the expected count.
+    void verifyWatcherItems(int count, const QString& absentOwner = {})
+    {
+        QTRY_COMPARE_WITH_TIMEOUT(watcherItemCount(), count, 5000);
+        const QDBusPendingReply<QVariant> result = watcherItems();
         QVERIFY2(!result.isError(), qPrintable(result.error().message()));
         const auto items = result.value().toStringList();
         QCOMPARE(items.size(), count);
