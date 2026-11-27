@@ -34,8 +34,8 @@ public:
     ~DemoController() override;
     Q_DISABLE_COPY_MOVE(DemoController)
 
-    // Start the router on the given socket path. Empty path falls
-    // back to PhosphorIpc::IpcRouter's XDG default. Returns true
+    // Start the router on the given socket path. An empty path
+    // fails: phosphor-ipc has no default socket. Returns true
     // on success, the demo's main() shows the resolved path in
     // the window title regardless.
     bool start(const QString& socketPath);

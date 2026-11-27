@@ -5,7 +5,7 @@
 // bin/phosphorctl.
 //
 // QGuiApplication + IpcRouter bound to a per-build socket path
-// (overridable via --socket / $PHOSPHOR_SOCKET). The QML side
+// (overridable via --socket / $PHOSPHOR_IPC_DEMO_SOCKET). The QML side
 // declares three IpcTargets (greet, count, set-value) that
 // `phosphorctl call`, `phosphorctl schema`, and
 // `phosphorctl subscribe` exercise. Window shows registered
@@ -34,11 +34,10 @@ int main(int argc, char* argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("phosphor-ipc acceptance harness"));
     parser.addHelpOption();
-    QCommandLineOption socketOption(
-        QStringList{QStringLiteral("socket"), QStringLiteral("s")},
-        QStringLiteral("Socket path to listen on. Defaults to PHOSPHOR_IPC_DEMO_SOCKET (CMake-injected), "
-                       "or a per-build path; falls back to $XDG_RUNTIME_DIR/phosphor.sock."),
-        QStringLiteral("path"));
+    QCommandLineOption socketOption(QStringList{QStringLiteral("socket"), QStringLiteral("s")},
+                                    QStringLiteral("Socket path to listen on. Defaults to $PHOSPHOR_IPC_DEMO_SOCKET, "
+                                                   "then to a per-build path."),
+                                    QStringLiteral("path"));
     parser.addOption(socketOption);
     parser.process(app);
 
@@ -49,12 +48,14 @@ int main(int argc, char* argv[])
     // phosphor-popout-demo / phosphor-registry-demo precedent.
     PhosphorIpcDemo::DemoController demoController;
 
-    // Resolve socket path priority: --socket > $PHOSPHOR_SOCKET >
-    // PHOSPHOR_IPC_DEMO_SOCKET CMake injection > empty (router
-    // falls back to XDG default).
+    // Resolve socket path priority: --socket > $PHOSPHOR_IPC_DEMO_SOCKET
+    // (the variable phosphor-ipc gives the app phosphor-ipc-demo, so that
+    // `phosphorctl --app phosphor-ipc-demo` finds it too) > the
+    // PHOSPHOR_IPC_DEMO_SOCKET CMake injection. The name PHOSPHOR_SOCKET
+    // belongs to the compositor.
     QString socketPath = parser.value(socketOption);
     if (socketPath.isEmpty()) {
-        socketPath = QProcessEnvironment::systemEnvironment().value(QStringLiteral("PHOSPHOR_SOCKET"));
+        socketPath = QProcessEnvironment::systemEnvironment().value(QStringLiteral("PHOSPHOR_IPC_DEMO_SOCKET"));
     }
 #ifdef PHOSPHOR_IPC_DEMO_SOCKET
     if (socketPath.isEmpty()) {
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
         // has not been called or failed"). Log the requested path so
         // the diagnostic actually carries useful context.
         qWarning("phosphor-ipc-demo: router failed to start on '%s' (see preceding log)",
-                 qPrintable(socketPath.isEmpty() ? QStringLiteral("<XDG default>") : socketPath));
+                 qPrintable(socketPath.isEmpty() ? QStringLiteral("<no path>") : socketPath));
     }
     // Startup banner is left to the QML status panel rather than a
     // qInfo. Qt suppresses qInfo by default and forcing
